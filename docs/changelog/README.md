@@ -44,6 +44,14 @@ pnpm changelog:check    # fail, naming the page and line, when one has drifted
 <!-- changelog-view:begin index -->
 <!-- generated from CHANGELOG.md by scripts/changelog-view.mjs — edit the entry, not this block -->
 
+### [v2.0.0-rc2](v2-0-0-rc2.md)
+
+- **Released** 2026-11-21
+- **Tag** [`v2.0.0-rc2`](https://github.com/riolabs-ai/alignsynch/releases/tag/v2.0.0-rc2)
+- **Pull requests named** 4
+- **Theme:** the rail reconciles and the demo lane refuses — a destination can no longer exist in the tree and in nobody's rail, and a demo writer can no longer open production without being stopped.
+- **Headline:** `feat(nav)` — the reconciler: a derived inventory plus the authored order, with a visible Unplaced group (#1334)
+
 ### [v2.0.0-rc1.4](v2-0-0-rc1-4.md)
 
 - **Released** 2026-11-21

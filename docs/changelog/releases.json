@@ -1,6 +1,11 @@
 {
   "releases": [
     {
+      "version": "2.0.0-rc2",
+      "theme": "the rail reconciles and the demo lane refuses — a destination can no longer exist in the tree and in nobody's rail, and a demo writer can no longer open production without being stopped.",
+      "headline": "`feat(nav)` — the reconciler: a derived inventory plus the authored order, with a visible Unplaced group (#1334)"
+    },
+    {
       "version": "2.0.0-rc1.4",
       "theme": "the rectification cut — an instrument that reads every doc's design reference against the live screen, the surfaces it found wrong repaired in one tree, and the agreement itself readable inside the app.",
       "headline": "`feat(docs)` — the v2 rectification register — 34 delta sets named, every bundle reference paired with a live 390/1280 capture (#1300)"
