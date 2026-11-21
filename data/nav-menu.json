@@ -186,7 +186,7 @@
     },
     {
       "href": "/admin/docs/updates",
-      "reason": "A docs sub-surface — the per-PR update ledger inside the docs home's tree, reached from the hub and from each release row. A rail row per docs page is what that home exists to avoid."
+      "reason": "A docs sub-surface — the per-PR update ledger inside the docs home's tree. Reached from each release's own row (`/admin/docs/releases`, which links the entry a merge wrote) and from the spec that documents it; a rail row per docs page is what the docs home exists to avoid."
     },
     {
       "href": "/admin/growth",

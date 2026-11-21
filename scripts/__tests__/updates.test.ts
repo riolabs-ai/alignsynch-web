@@ -48,7 +48,10 @@ test("a valid entry has no problems, and parses", () => {
 
 test("the filename names the PR: a non-numeric name and a disagreeing `pr` are both refused", () => {
   assert.match(updateEntryProblems("notes.json", GOOD).join("\n"), /not a pull request number/);
-  assert.match(updateEntryProblems("1342.json", GOOD).join("\n"), /`pr` is 1341 but the file is 1342/);
+  assert.match(
+    updateEntryProblems("1342.json", GOOD).join("\n"),
+    /`pr` is 1341 but the file is 1342/,
+  );
   assert.equal(updateFileNumber("1341.json"), 1341);
   assert.equal(updateFileNumber("0.json"), null);
   assert.equal(updateFileNumber("1341.json.bak"), null);
@@ -60,13 +63,22 @@ test("`date` is an ISO-8601 calendar date, and an impossible one is refused", ()
     /ISO-8601/,
   );
   // `Date` parses this as March, so only a round trip refuses it.
-  assert.match(updateEntryProblems("1341.json", variant({ date: "2026-02-31" })).join("\n"), /ISO-8601/);
+  assert.match(
+    updateEntryProblems("1341.json", variant({ date: "2026-02-31" })).join("\n"),
+    /ISO-8601/,
+  );
   assert.deepEqual(updateEntryProblems("1341.json", variant({ date: "2026-11-21T09:30:00Z" })), []);
 });
 
 test("`specs` must be non-empty and every path must be a document under docs/", () => {
-  assert.match(updateEntryProblems("1341.json", variant({ specs: [] })).join("\n"), /at least one document/);
-  assert.match(updateEntryProblems("1341.json", variant({ specs: undefined })).join("\n"), /`specs` is missing/);
+  assert.match(
+    updateEntryProblems("1341.json", variant({ specs: [] })).join("\n"),
+    /at least one document/,
+  );
+  assert.match(
+    updateEntryProblems("1341.json", variant({ specs: undefined })).join("\n"),
+    /`specs` is missing/,
+  );
   assert.match(
     updateEntryProblems("1341.json", variant({ specs: ["scripts/demo-env.mjs"] })).join("\n"),
     /not a `docs\/…` path/,
@@ -78,8 +90,14 @@ test("`specs` must be non-empty and every path must be a document under docs/", 
 });
 
 test("the two sentences are required, single-line and bounded", () => {
-  assert.match(updateEntryProblems("1341.json", variant({ summary: "  " })).join("\n"), /must not be empty/);
-  assert.match(updateEntryProblems("1341.json", variant({ summary: "a\nb" })).join("\n"), /one line/);
+  assert.match(
+    updateEntryProblems("1341.json", variant({ summary: "  " })).join("\n"),
+    /must not be empty/,
+  );
+  assert.match(
+    updateEntryProblems("1341.json", variant({ summary: "a\nb" })).join("\n"),
+    /one line/,
+  );
   assert.match(
     updateEntryProblems("1341.json", variant({ reader_impact: "x".repeat(241) })).join("\n"),
     /one sentence, at most 240/,
@@ -91,21 +109,37 @@ test("`Nobody` in the impact is a claim that needs `risk: none`", () => {
     updateEntryProblems("1341.json", variant({ reader_impact: "Nobody", risk: "low" })).join("\n"),
     /must be `none`/,
   );
-  assert.deepEqual(updateEntryProblems("1341.json", variant({ reader_impact: "Nobody", risk: "none" })), []);
+  assert.deepEqual(
+    updateEntryProblems("1341.json", variant({ reader_impact: "Nobody", risk: "none" })),
+    [],
+  );
 });
 
 test("unknown keys and unknown risk words are refused", () => {
-  assert.match(updateEntryProblems("1341.json", variant({ author: "someone" })).join("\n"), /unknown key/);
-  assert.match(updateEntryProblems("1341.json", variant({ risk: "severe" })).join("\n"), /`risk` is one of/);
+  assert.match(
+    updateEntryProblems("1341.json", variant({ author: "someone" })).join("\n"),
+    /unknown key/,
+  );
+  assert.match(
+    updateEntryProblems("1341.json", variant({ risk: "severe" })).join("\n"),
+    /`risk` is one of/,
+  );
 });
 
 test("the ledger refuses two entries for one PR, and a file that is not an entry", () => {
   assert.deepEqual(parseUpdateLedger([{ name: "1341.json", raw: GOOD }]).length, 1);
   assert.throws(
-    () => parseUpdateLedger([{ name: "1341.json", raw: GOOD }, { name: "1341.json", raw: GOOD }]),
+    () =>
+      parseUpdateLedger([
+        { name: "1341.json", raw: GOOD },
+        { name: "1341.json", raw: GOOD },
+      ]),
     /two entries/,
   );
-  assert.throws(() => parseUpdateLedger([{ name: "README.md", raw: GOOD }]), /is not a `<pr>.json` entry/);
+  assert.throws(
+    () => parseUpdateLedger([{ name: "README.md", raw: GOOD }]),
+    /is not a `<pr>.json` entry/,
+  );
 });
 
 test("the ledger is newest first, and a spec link is an address only when the hub carries it", () => {
@@ -125,7 +159,11 @@ test("the ledger is newest first, and a spec link is an address only when the hu
     [1400, 1300, 1200],
   );
   assert.deepEqual(rows[0]?.specLinks, [
-    { path: "docs/specs/admin-updates.md", href: "/admin/docs/specs/admin-updates.md", inHub: true },
+    {
+      path: "docs/specs/admin-updates.md",
+      href: "/admin/docs/specs/admin-updates.md",
+      inHub: true,
+    },
   ]);
 
   const outsideHub = updateRows(parseUpdateLedger([{ name: "1341.json", raw: GOOD }]), new Set());
@@ -138,7 +176,10 @@ test("the ledger is newest first, and a spec link is an address only when the hu
 
 test("a feat or a fix owes an entry; a chore, a docs change and a release commit do not", () => {
   assert.equal(requiresUpdateEntry(["feat(admin) · the update ledger (#1341)"]), true);
-  assert.equal(requiresUpdateEntry(["fix(ci,docs) · point the demo reset at the live project"]), true);
+  assert.equal(
+    requiresUpdateEntry(["fix(ci,docs) · point the demo reset at the live project"]),
+    true,
+  );
   assert.equal(requiresUpdateEntry(["feat: a bare subject"]), true);
   assert.equal(requiresUpdateEntry(["chore(release): 2.0.0-rc2 (#1340)"]), false);
   assert.equal(requiresUpdateEntry(["docs(specs) · write the rule down"]), false);

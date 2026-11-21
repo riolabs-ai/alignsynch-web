@@ -144,7 +144,12 @@ export function updatesCheck(options: UpdatesCheckOptions = {}): UpdatesCheck {
   const base = (options.base ?? process.env.UPDATES_BASE ?? "origin/main").trim();
   const head = run(["rev-parse", "--verify", "--quiet", "HEAD"], root);
   if (head.status !== 0) {
-    return { problems, entries: entries.length, skipped: "not a git tree, so no change to classify", subjects: 0 };
+    return {
+      problems,
+      entries: entries.length,
+      skipped: "not a git tree, so no change to classify",
+      subjects: 0,
+    };
   }
   const baseRef = run(["rev-parse", "--verify", "--quiet", `${base}^{commit}`], root);
   if (baseRef.status !== 0) {

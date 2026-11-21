@@ -267,7 +267,9 @@ export function ReleasesShelf({ copy, rows, selected, unreadable, build }: Relea
                             <span className="font-mono text-xs text-muted-foreground">
                               {commit.type}({commit.scope})
                             </span>
-                            <span className="min-w-0 text-sm text-foreground">{commit.summary}</span>
+                            <span className="min-w-0 text-sm text-foreground">
+                              {commit.summary}
+                            </span>
                           </p>
                           {commit.update === null ? (
                             <p className="text-xs text-muted-foreground">
@@ -278,7 +280,9 @@ export function ReleasesShelf({ copy, rows, selected, unreadable, build }: Relea
                               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                 {itemLabel(commits, "impact-heading")}
                               </p>
-                              <p className="text-sm text-foreground">{commit.update.reader_impact}</p>
+                              <p className="text-sm text-foreground">
+                                {commit.update.reader_impact}
+                              </p>
                               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                                 {itemLabel(commits, "specs-heading")}
                               </p>

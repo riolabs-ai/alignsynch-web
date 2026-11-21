@@ -151,7 +151,11 @@ describe("the render — the rows are the files", () => {
     const html = renderToStaticMarkup((await UpdatesPage()) as ReactElement);
     const rows = updateRows(
       parseUpdateLedger(realFiles()),
-      new Set(docsRows(parseDocsManifest(JSON.parse(readFileSync(`${ROOT}docs/docs.json`, "utf8")))).map((row) => row.path)),
+      new Set(
+        docsRows(parseDocsManifest(JSON.parse(readFileSync(`${ROOT}docs/docs.json`, "utf8")))).map(
+          (row) => row.path,
+        ),
+      ),
     );
 
     expect(rows.length).toBeGreaterThan(0);
@@ -183,7 +187,11 @@ describe("the render — the rows are the files", () => {
     });
 
     const html = renderToStaticMarkup(
-      <UpdatesLedger copy={adminDocsUpdatesPageCopy} rows={updateRows([entry], new Set())} unreadable={null} />,
+      <UpdatesLedger
+        copy={adminDocsUpdatesPageCopy}
+        rows={updateRows([entry], new Set())}
+        unreadable={null}
+      />,
     );
     expect(html).toContain('data-spec-not-in-hub="docs/specs/not-in-the-hub.md"');
     expect(html).not.toContain(`href="${updateSpecHref("docs/specs/not-in-the-hub.md")}"`);

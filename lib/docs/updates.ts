@@ -113,9 +113,10 @@ export function updateFileNumber(name: string): number | null {
 
 /** A real calendar date in ISO-8601 form: `YYYY-MM-DD`, or that date with a time and an offset. */
 function isIsoDate(value: string): boolean {
-  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?$/.exec(
-    value,
-  );
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})(?:T\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:\d{2}))?$/.exec(
+      value,
+    );
   if (match === null) return false;
   const [, year, month, day] = match;
   const parsed = new Date(`${year}-${month}-${day}T00:00:00Z`);
@@ -145,7 +146,8 @@ function sentenceProblem(value: unknown, field: string, max: number): string | n
   const text = value.trim();
   if (text === "") return `${field} must not be empty`;
   if (text.includes("\n")) return `${field} must be one line`;
-  if (text.length > max) return `${field} is ${text.length} characters — one sentence, at most ${max}`;
+  if (text.length > max)
+    return `${field} is ${text.length} characters — one sentence, at most ${max}`;
   return null;
 }
 
@@ -174,7 +176,9 @@ export function updateEntryProblems(name: string, raw: unknown): string[] {
   }
 
   if (record.pr !== number) {
-    problems.push(sentence(name, `\`pr\` is ${JSON.stringify(record.pr)} but the file is ${number}`));
+    problems.push(
+      sentence(name, `\`pr\` is ${JSON.stringify(record.pr)} but the file is ${number}`),
+    );
   }
 
   if (record.date === undefined) problems.push(sentence(name, "`date` is missing"));
@@ -190,7 +194,9 @@ export function updateEntryProblems(name: string, raw: unknown): string[] {
 
   if (record.area === undefined) problems.push(sentence(name, "`area` is missing"));
   else if (typeof record.area !== "string" || !/^[a-z][a-z0-9,.-]*$/.test(record.area)) {
-    problems.push(sentence(name, "`area` is one conventional-commit scope, lowercase (`admin`, `ci,docs`)"));
+    problems.push(
+      sentence(name, "`area` is one conventional-commit scope, lowercase (`admin`, `ci,docs`)"),
+    );
   }
 
   for (const [field, max] of [
@@ -206,7 +212,10 @@ export function updateEntryProblems(name: string, raw: unknown): string[] {
 
   const impact = typeof record.reader_impact === "string" ? record.reader_impact.trim() : "";
   const risk = record.risk;
-  if (risk !== undefined && (typeof risk !== "string" || !["none", "low", "medium", "high"].includes(risk))) {
+  if (
+    risk !== undefined &&
+    (typeof risk !== "string" || !["none", "low", "medium", "high"].includes(risk))
+  ) {
     problems.push(sentence(name, "`risk` is one of `none`, `low`, `medium`, `high`"));
   }
   if (impact.toLowerCase() === "nobody" && risk !== "none") {
@@ -215,12 +224,17 @@ export function updateEntryProblems(name: string, raw: unknown): string[] {
 
   if (record.specs === undefined) problems.push(sentence(name, "`specs` is missing"));
   else if (!Array.isArray(record.specs) || record.specs.length === 0) {
-    problems.push(sentence(name, "`specs` must name at least one document — the link a reader follows"));
+    problems.push(
+      sentence(name, "`specs` must name at least one document — the link a reader follows"),
+    );
   } else {
     for (const spec of record.specs) {
       if (typeof spec !== "string" || !isSpecPath(spec)) {
         problems.push(
-          sentence(name, `\`specs\` carries ${JSON.stringify(spec)}, not a \`${UPDATES_SPEC_PREFIX}…\` path`),
+          sentence(
+            name,
+            `\`specs\` carries ${JSON.stringify(spec)}, not a \`${UPDATES_SPEC_PREFIX}…\` path`,
+          ),
         );
       }
     }
@@ -268,7 +282,9 @@ export function parseUpdateLedger(files: readonly UpdateFile[]): UpdateEntry[] {
     if (entry === undefined) continue;
     const previous = seen.get(entry.pr);
     if (previous !== undefined) {
-      throw new UpdateLedgerUnreadable(`PR #${entry.pr} has two entries: ${previous} and ${file.name}`);
+      throw new UpdateLedgerUnreadable(
+        `PR #${entry.pr} has two entries: ${previous} and ${file.name}`,
+      );
     }
     seen.set(entry.pr, file.name);
   }

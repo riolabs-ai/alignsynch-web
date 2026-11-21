@@ -6,8 +6,8 @@
 
 <!-- docs-nav:end -->
 
-Owner ask (2026-11-21): *"better stakeholder/admin updates for each commit and links to the Admin
-Specs."* This is the document that ask produced, and the first entry in the ledger it describes
+Owner ask (2026-11-21): _"better stakeholder/admin updates for each commit and links to the Admin
+Specs."_ This is the document that ask produced, and the first entry in the ledger it describes
 points here.
 
 ## Recommendation (read this first)
@@ -15,22 +15,22 @@ points here.
 **One JSON entry per pull request, authored in the PR and validated by a required check, rendered at
 `/admin/docs/updates`.** Not a bot commit per merge, and not a mail per merge:
 
-| Question                | Answer                                                                                     |
-| ----------------------- | ------------------------------------------------------------------------------------------ |
-| Where does the record live? | `docs/changelog/updates/<pr>.json` — in the tree, in the PR that makes the change       |
-| What makes it true?     | `data:check` E44 (the rule this document calls **E-updates**) refuses a bad entry          |
-| Where does it surface?  | `/admin/docs/updates`, newest first, with each `specs[]` path linked or marked             |
-| What does a release add? | `/admin/docs/releases` lists each entry's merges with their ledger rows beside them      |
-| What does the mail do?  | One line, `Per-commit record: /admin/docs/updates` — the digest stays per tag              |
+| Question                    | Answer                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------- |
+| Where does the record live? | `docs/changelog/updates/<pr>.json` — in the tree, in the PR that makes the change   |
+| What makes it true?         | `data:check` E44 (the rule this document calls **E-updates**) refuses a bad entry   |
+| Where does it surface?      | `/admin/docs/updates`, newest first, with each `specs[]` path linked or marked      |
+| What does a release add?    | `/admin/docs/releases` lists each entry's merges with their ledger rows beside them |
+| What does the mail do?      | One line, `Per-commit record: /admin/docs/updates` — the digest stays per tag       |
 
 ## What existed before this (measured on `main` 626ed6eb1)
 
-| Surface                | Source                                              | Granularity   |
-| ---------------------- | --------------------------------------------------- | ------------- |
-| `/admin/docs` hub      | `docs/docs.json` → `docs/**/*.md`                   | a document    |
-| `/admin/docs/features` | `CHANGELOG.md` + `releases.json` + `docs/docs.json`   | per release   |
-| `/admin/docs/releases` | `CHANGELOG.md`, a section per version                | per release   |
-| Stakeholder mail       | `scripts/release-notify.mjs`, the tag's entry        | **per tag**   |
+| Surface                | Source                                              | Granularity |
+| ---------------------- | --------------------------------------------------- | ----------- |
+| `/admin/docs` hub      | `docs/docs.json` → `docs/**/*.md`                   | a document  |
+| `/admin/docs/features` | `CHANGELOG.md` + `releases.json` + `docs/docs.json` | per release |
+| `/admin/docs/releases` | `CHANGELOG.md`, a section per version               | per release |
+| Stakeholder mail       | `scripts/release-notify.mjs`, the tag's entry       | **per tag** |
 
 The gap was exactly what the owner named: **nothing recorded what a single merge changed, and
 nothing connected a merge to the document its rule now lives in.** A reader could see a release
@@ -52,16 +52,16 @@ theme and a list of documents; they could not see "PR #1337 changed the demo wri
 }
 ```
 
-| Field           | Rule                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------- |
-| filename        | `<pr>.json` — the number is the pull request, and `pr` must agree with it                                |
-| `sha`           | optional; 7–40 hex characters                                                                            |
-| `date`          | ISO-8601 (`YYYY-MM-DD`, or that date with a time and an offset); an impossible date is refused            |
-| `area`          | one conventional-commit scope, lowercase (`admin`, `ci,docs`)                                            |
-| `summary`       | one sentence, what changed, no adjectives, at most 240 characters                                        |
-| `reader_impact` | one sentence, who notices and where; `Nobody` is legal **only** with `risk` set to `none`                |
-| `specs`         | one or more real documents under `docs/` — the link a reader follows                                     |
-| `risk`          | optional: `none` / `low` / `medium` / `high`                                                             |
+| Field           | Rule                                                                                           |
+| --------------- | ---------------------------------------------------------------------------------------------- |
+| filename        | `<pr>.json` — the number is the pull request, and `pr` must agree with it                      |
+| `sha`           | optional; 7–40 hex characters                                                                  |
+| `date`          | ISO-8601 (`YYYY-MM-DD`, or that date with a time and an offset); an impossible date is refused |
+| `area`          | one conventional-commit scope, lowercase (`admin`, `ci,docs`)                                  |
+| `summary`       | one sentence, what changed, no adjectives, at most 240 characters                              |
+| `reader_impact` | one sentence, who notices and where; `Nobody` is legal **only** with `risk` set to `none`      |
+| `specs`         | one or more real documents under `docs/` — the link a reader follows                           |
+| `risk`          | optional: `none` / `low` / `medium` / `high`                                                   |
 
 Unknown keys are refused, the same rule every fixture in `data/` follows.
 

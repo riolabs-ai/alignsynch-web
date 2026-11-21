@@ -38,10 +38,7 @@ export interface UpdatesLedgerProps {
 
 /** `{count} entries` vs `{count} entry` — the pair the fixture declares, never a plural `s`. */
 function counted(index: PageCopySection, count: number): string {
-  return fillLabel(
-    itemLabel(index, count === 1 ? "entry-count-one" : "entry-count"),
-    { count },
-  );
+  return fillLabel(itemLabel(index, count === 1 ? "entry-count-one" : "entry-count"), { count });
 }
 
 export function UpdatesLedger({ copy, rows, unreadable }: UpdatesLedgerProps) {

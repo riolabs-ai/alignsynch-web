@@ -41,7 +41,12 @@ import {
 } from "@/lib/docs/releases";
 import { docsRows, hubPathsOf } from "@/lib/docs/rows";
 import { parseUpdateLedger, updateRows } from "@/lib/docs/updates";
-import { readChangelog, readDocsManifest, readReleaseRecord, readUpdateLedger } from "@/lib/docs/tree";
+import {
+  readChangelog,
+  readDocsManifest,
+  readReleaseRecord,
+  readUpdateLedger,
+} from "@/lib/docs/tree";
 
 export const dynamic = "force-dynamic";
 
@@ -71,7 +76,10 @@ export default async function AdminDocsReleasesPage({
     // Three reads, two joins. `releaseRows` maps each entry's bullets to their PR, then to the
     // update ledger's row for that PR — which is why the ledger is read here even though this screen
     // is not the ledger: a release theme is a claim about its merges, and the row is the evidence.
-    const updates = updateRows(parseUpdateLedger(readUpdateLedger()), hubPathsOf(readDocsManifest()));
+    const updates = updateRows(
+      parseUpdateLedger(readUpdateLedger()),
+      hubPathsOf(readDocsManifest()),
+    );
     rows = withManifestPresence(
       releaseRows(readChangelog(), readReleaseRecord(), updates),
       docsRows(readDocsManifest()),
