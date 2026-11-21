@@ -110,7 +110,7 @@ jobs:
           NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
           # The project is not a secret (it is named in docs/reference/env-spec.md) and is passed
           # explicitly so the script never has to guess from a list of one.
-          NEON_PROJECT_ID: fragrant-glade-99460966
+          NEON_PROJECT_ID: morning-bonus-76597456
           DEMO_BRANCH: demo
           # The schema-only base, named explicitly: `demo`'s own parent is still `production`
           # because a branch cannot be re-parented, so the source is passed instead of inherited.
