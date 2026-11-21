@@ -25,6 +25,15 @@ at exactly it, subscribe `email.bounced`, `email.complained` and `email.delivere
 detail page — not the account's API key, and not a secret from a different endpoint. Unset means the
 route answers `503` to every delivery; it never accepts an unsigned one "temporarily".
 
+**`alignsynch.com` owns the account webhook.** Exactly one deployment may accept its deliveries — the
+one Vercel reports as `production` — so a preview or demo deployment answers `410` by **identity**,
+before it reads the body or consults a secret (#1338). `RESEND_WEBHOOK_SECRET` is `forbidden` for the
+`preview` environment in `scripts/env-manifest.ts`, so `env:render` will not write it into `.env.demo`
+and `env:sync` drops it from that scope; the refusal does not depend on that succeeding, which is
+the point — a secret is a value and values drift, while `VERCEL_ENV` is set by the platform on every
+deployment and cannot be unset. The local signed `curl` below still works because a shell has no
+`VERCEL_ENV` at all, and neither does CI.
+
 ## What it answers, and why
 
 | Status | When                                                                               | Written |
@@ -32,8 +41,12 @@ route answers `503` to every delivery; it never accepts an unsigned one "tempora
 | `200`  | stored; a redelivery of one `svix-id`; or an event type this build does not act on | 0 or 1  |
 | `400`  | the body is not a JSON object with a `type`                                        | nothing |
 | `401`  | no signature, a signature that does not match, or a timestamp outside 300 s        | nothing |
+| `410`  | this deployment is not the account webhook's owner (`VERCEL_ENV` ≠ `production`)   | nothing |
 | `429`  | this client spent its delivery budget for the window (`Retry-After: 60`)           | nothing |
 | `503`  | `RESEND_WEBHOOK_SECRET` is unset, or the store did not answer                      | nothing |
+
+Probing `https://demo.alignsynch.com/api/resend/webhook` with an empty body answers `410`, not `400`:
+the identity check runs first, so the deployment says "not mine" before it says "bad request".
 
 A type the receiver does not act on is `200`, never `4xx`: a `4xx` makes the provider retry an event
 we deliberately ignore, for days.
@@ -57,7 +70,7 @@ no mark (`rowCount = 0` on the update) — which is correct, and visible in the 
 
 ## Proving it
 
-The signed cases, the replay and the marks are `tests/resend-webhook.test.ts` (28 cases, no HTTP and
+The signed cases, the replay and the marks are `tests/resend-webhook.test.ts` (36 cases, no HTTP and
 no database). The live proof is a signed `curl` against a running server plus two SQL reads:
 
 ```bash

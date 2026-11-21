@@ -22,6 +22,12 @@
  *   delivery "temporarily", and reading first would also let an anonymous caller buffer an upload
  *   the endpoint is about to reject.
  *
+ *   **a deployment that does not own the endpoint refuses before either.** The provider's account
+ *   webhook belongs to `alignsynch.com`, so a deployment Vercel reports as anything but `production`
+ *   answers `410` and never reaches the secret, the body or the store (#1338). A tree with no
+ *   `VERCEL_ENV` — local `pnpm dev`, CI, the signed `curl` in `docs/operations/resend-inbound.md` —
+ *   is not a deployment and keeps working, which is why the whole file still passes as it did.
+ *
  * The signature cases are minted with the provider's own algorithm written out independently of
  * `lib/email/signature.ts` (base64-decode the secret, HMAC the three-part string), so passing them
  * is evidence about the algorithm rather than about a shared helper.
@@ -47,6 +53,7 @@ import {
 import {
   EMAIL_WEBHOOK_RATE_MAX,
   type EmailEventStore,
+  type EmailEventStoreOutcome,
   type EmailEventWrite,
   handleEmailWebhook,
 } from "@/lib/email/webhook";
@@ -145,6 +152,7 @@ async function deliver(
     store?: EmailEventStore;
     now?: Date;
     ipHash?: string;
+    deployment?: { vercelEnv: string | undefined };
   } = {},
 ) {
   const store = over.store ?? memoryStore().store;
@@ -162,6 +170,9 @@ async function deliver(
     secret: over.secret ?? SECRET,
     store,
     now: over.now ?? NOW,
+    // A tree with no `VERCEL_ENV` is the default, so the cases that predate #1338 keep the
+    // behaviour they were written against.
+    deployment: over.deployment ?? { vercelEnv: undefined },
   });
   return { outcome, store, readBody };
 }
@@ -404,8 +415,90 @@ describe("what is refused, and with what", () => {
   });
 });
 
+describe("a deployment that does not own the endpoint", () => {
+  /** The store, as spies, so "never asked" is a fact rather than a zero row count. */
+  function spyStore() {
+    const apply = vi.fn(
+      async (_event: EmailEventWrite): Promise<EmailEventStoreOutcome> => ({
+        stored: true,
+        marked: true,
+      }),
+    );
+    const countRecent = vi.fn(async (_ipHash: string, _since: Date) => 0);
+    return { apply, countRecent, store: { apply, countRecent } };
+  }
+
+  it("a validly signed delivery to a preview deployment is 410, and the store is never asked", async () => {
+    const spies = spyStore();
+    const { outcome, readBody } = await deliver(bounced("Permanent"), {
+      store: spies.store,
+      deployment: { vercelEnv: "preview" },
+    });
+
+    expect(outcome.status).toBe(410);
+    expect(outcome.kind).toBe("not-owner");
+    expect(outcome.refusal).toBe("deployment");
+    expect(spies.apply).not.toHaveBeenCalled();
+    expect(spies.countRecent).not.toHaveBeenCalled();
+    // Before the body is read: a non-owner does not buffer an upload it will refuse.
+    expect(readBody).not.toHaveBeenCalled();
+  });
+
+  it("the same delivery to a production deployment is stored as before", async () => {
+    const memory = memoryStore();
+    const { outcome } = await deliver(bounced("Permanent"), {
+      store: memory.store,
+      deployment: { vercelEnv: "production" },
+    });
+
+    expect(outcome.status).toBe(200);
+    expect(outcome.kind).toBe("stored");
+    expect(outcome.marked).toBe(true);
+    expect(memory.rows.size).toBe(1);
+  });
+
+  it("the same delivery on a tree with no VERCEL_ENV is stored — local, CI and the signed curl", async () => {
+    const memory = memoryStore();
+    const { outcome } = await deliver(bounced("Permanent"), {
+      store: memory.store,
+      deployment: { vercelEnv: undefined },
+    });
+
+    expect(outcome.status).toBe(200);
+    expect(outcome.kind).toBe("stored");
+    expect(memory.rows.size).toBe(1);
+  });
+
+  it("an unset secret on a preview deployment is 410, not 503 — the order is the decision", async () => {
+    const spies = spyStore();
+    const { outcome } = await deliver(bounced("Permanent"), {
+      secret: "",
+      store: spies.store,
+      deployment: { vercelEnv: "preview" },
+    });
+
+    // "Not this deployment's endpoint" is the first true sentence; "you are misconfigured" is not.
+    expect(outcome.status).toBe(410);
+    expect(outcome.kind).toBe("not-owner");
+    expect(spies.apply).not.toHaveBeenCalled();
+  });
+
+  it("refuses every non-production identity Vercel reports, not only preview", async () => {
+    for (const vercelEnv of ["preview", "development", "staging", "Production"]) {
+      const spies = spyStore();
+      const { outcome } = await deliver(bounced("Permanent"), {
+        store: spies.store,
+        deployment: { vercelEnv },
+      });
+      expect(outcome.status).toBe(410);
+      expect(spies.apply).not.toHaveBeenCalled();
+    }
+  });
+});
+
 describe("a log line never carries the delivery", () => {
   const previous = process.env.RESEND_WEBHOOK_SECRET;
+  const previousVercelEnv = process.env.VERCEL_ENV;
 
   beforeEach(() => {
     db.apply.mockReset();
@@ -413,11 +506,15 @@ describe("a log line never carries the delivery", () => {
     db.countRecent.mockResolvedValue(0);
     db.apply.mockResolvedValue({ stored: true, marked: true });
     process.env.RESEND_WEBHOOK_SECRET = SECRET;
+    // A shell that carries a deployment identity would answer every delivery here with a 410.
+    delete process.env.VERCEL_ENV;
   });
 
   afterEach(() => {
     if (previous === undefined) delete process.env.RESEND_WEBHOOK_SECRET;
     else process.env.RESEND_WEBHOOK_SECRET = previous;
+    if (previousVercelEnv === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previousVercelEnv;
     vi.restoreAllMocks();
   });
 
@@ -498,6 +595,9 @@ describe("parseEmailWebhook", () => {
 
 describe("POST /api/resend/webhook", () => {
   const previous = process.env.RESEND_WEBHOOK_SECRET;
+  // A Vercel deployment sets `VERCEL_ENV` for the whole process; a shell that happens to carry it
+  // would otherwise make every case here a 410 (#1338). Deleted for the run, restored after it.
+  const previousVercelEnv = process.env.VERCEL_ENV;
 
   beforeEach(() => {
     db.apply.mockReset();
@@ -505,11 +605,14 @@ describe("POST /api/resend/webhook", () => {
     db.countRecent.mockResolvedValue(0);
     db.apply.mockResolvedValue({ stored: true, marked: true });
     process.env.RESEND_WEBHOOK_SECRET = SECRET;
+    delete process.env.VERCEL_ENV;
   });
 
   afterEach(() => {
     if (previous === undefined) delete process.env.RESEND_WEBHOOK_SECRET;
     else process.env.RESEND_WEBHOOK_SECRET = previous;
+    if (previousVercelEnv === undefined) delete process.env.VERCEL_ENV;
+    else process.env.VERCEL_ENV = previousVercelEnv;
     vi.restoreAllMocks();
   });
 
@@ -589,5 +692,41 @@ describe("POST /api/resend/webhook", () => {
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("60");
     expect(db.apply).not.toHaveBeenCalled();
+  });
+
+  it("with VERCEL_ENV=preview answers 410 and never touches the store", async () => {
+    // The route, not the handler: this is the case that proves `process.env.VERCEL_ENV` reaches
+    // `deployment.vercelEnv` — a correct signature and a set secret included, so the only thing
+    // that can produce this status is the deployment's identity.
+    process.env.VERCEL_ENV = "preview";
+    const response = await POST(request(bounced("Permanent")));
+    expect(response.status).toBe(410);
+    expect(await response.json()).toMatchObject({ error: "not-owner" });
+    expect(db.apply).not.toHaveBeenCalled();
+    expect(db.countRecent).not.toHaveBeenCalled();
+  });
+
+  it("with VERCEL_ENV=production answers 200 and writes the event", async () => {
+    process.env.VERCEL_ENV = "production";
+    const response = await POST(request(bounced("Permanent")));
+    expect(response.status).toBe(200);
+    expect(db.apply).toHaveBeenCalledTimes(1);
+  });
+
+  it("logs the deployment identity on a 410, and nothing about the delivery", async () => {
+    const lines: string[] = [];
+    for (const level of ["info", "warn", "error"] as const) {
+      vi.spyOn(console, level).mockImplementation((...args: unknown[]) => {
+        lines.push(args.map(String).join(" "));
+      });
+    }
+    process.env.VERCEL_ENV = "preview";
+    await POST(request(bounced("Permanent")));
+
+    const joined = lines.join("\n");
+    // The one line an operator greps to confirm the platform variable really arrives (#1338).
+    expect(joined).toContain("vercelEnv=preview");
+    expect(joined).not.toContain(NORMALISED);
+    expect(joined).not.toContain(SUBJECT);
   });
 });
