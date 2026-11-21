@@ -27,6 +27,7 @@ import {
   type SourceFile,
 } from "../scripts/env-manifest";
 import { carriedFile, planRender } from "../scripts/env-render";
+import { KNOWN_ENDPOINTS } from "../scripts/neon-endpoints.mjs";
 
 const row = (
   name: string,
@@ -306,6 +307,80 @@ describe("a render never crosses environments", () => {
     expect(plan.body).not.toBeNull();
     expect(plan.missing).toEqual([]);
     expect(plan.resolutions[0].status).toBe("missing");
+  });
+});
+
+/**
+ * #1339 — the six declared vault rows still named the retired project while six `_V2` twins held
+ * the live values, and `env:render` resolved every stale cell as `ok`, writing the dead endpoint
+ * into `.env.local`, `.env.demo` and `.env`. A vault value that names a `retired: true` row of
+ * `scripts/neon-endpoints.mjs` is not a value; the cases below build the vault in memory, so they
+ * need no token, no network and no database.
+ */
+describe("a render refuses a vault value on a retired endpoint", () => {
+  /** A connection string for an endpoint, with a fake credential — nothing here ever connects. */
+  const urlFor = (endpoint: string) =>
+    `postgresql://neondb_owner:***@${endpoint}.c-8.us-east-2.aws.neon.tech/neondb`;
+
+  /** The same branch through the pooler: a second host, the same endpoint. */
+  const pooledFor = (endpoint: string) => urlFor(`${endpoint}-pooler`);
+
+  const rows: EnvRow[] = [
+    row(
+      "DATABASE_URL",
+      ["required", "required", "required"],
+      { vault: "ALIGNSYNCH_DEMO_DATABASE_URL" },
+      true,
+    ),
+    row("BRAND", ["required", "required", "required"], { literal: "alignsynch" }),
+  ];
+
+  const plan = (databaseUrl: string) =>
+    planRender({
+      environment: "local",
+      rows,
+      vault: new Map([["ALIGNSYNCH_DEMO_DATABASE_URL", databaseUrl]]),
+    });
+
+  it("does not resolve a value naming the retired project, pooled or direct", () => {
+    const retired = KNOWN_ENDPOINTS.find((entry) => entry.retired);
+    expect(retired).toBeDefined();
+    if (retired === undefined) return;
+
+    for (const stale of [urlFor(retired.endpoint), pooledFor(retired.endpoint)]) {
+      const result = plan(stale);
+      // No value means no line, and no line means no file: the plan carries no body at all.
+      expect(result.body).toBeNull();
+      expect(result.missing.map((entry) => entry.name)).toEqual(["DATABASE_URL"]);
+
+      const [entry] = result.missing;
+      expect(entry.status).toBe("missing");
+      expect(entry.from).toBe("vault ALIGNSYNCH_DEMO_DATABASE_URL");
+      // The note names the row, the endpoint, and the role/project the table carries.
+      expect(entry.note).toContain("vault ALIGNSYNCH_DEMO_DATABASE_URL");
+      expect(entry.note).toContain(retired.endpoint);
+      expect(entry.note).toContain(retired.role);
+      expect(entry.note).toContain(retired.project);
+      // ...and never the value, which is the rule the whole command is built on.
+      expect(entry.note).not.toContain("neondb_owner");
+      expect(JSON.stringify(result)).not.toContain("neondb_owner");
+    }
+  });
+
+  it("resolves the same fixture on the live project's endpoint", () => {
+    const result = plan(urlFor("ep-fancy-bar-bd0pzuz0"));
+    expect(result.missing).toEqual([]);
+    expect(result.resolutions[0].status).toBe("ok");
+    expect(result.resolutions[0].note).toBeUndefined();
+    expect(result.body).toContain("DATABASE_URL=postgresql://");
+  });
+
+  it("leaves a vault value that is not an address alone", () => {
+    // A key, a secret, a host the table has never heard of: nothing to refuse, and refusing one
+    // would be a rule about values rather than about the retired project.
+    for (const untouched of ["sk_test_123", "https://example.test/auth", "ep-scratch-99999999"]) {
+      expect(plan(untouched).missing).toEqual([]);
+    }
   });
 });
 

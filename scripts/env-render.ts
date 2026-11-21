@@ -19,6 +19,10 @@
  *   3. **A file whose required variables do not all resolve is not written.** The refusal names
  *      every missing variable and its expected source, and exits 1 with no partial file: a
  *      half-written env file is worse than none, because the next command reads it.
+ *   3b. **A vault value that names a retired endpoint does not resolve.** The endpoint table
+ *      (`scripts/neon-endpoints.mjs`) marks the paused project's branches `retired: true`; a vault
+ *      row still holding one resolves as `missing` with a note naming the row and the endpoint, so
+ *      a render after a project move refuses instead of publishing the dead database (#1339).
  *
  * The output is deterministic — rows in table order, no clock, no path — so rendering twice is
  * byte-identical and a diff of the rendered file is a diff of the table.
@@ -39,6 +43,7 @@ import {
   parseEnvFile,
   sourceFor,
 } from "./env-manifest";
+import { KNOWN_ENDPOINTS } from "./neon-endpoints.mjs";
 
 /** The Bitwarden Secrets Manager project these rows live in (`alignsynch-web`). */
 export const VAULT_PROJECT_ID = "e2b8d242-ebc6-4c79-8298-b3f7012a06fa";
@@ -53,6 +58,8 @@ export interface Resolution {
   readonly status: "ok" | "missing" | "app-default";
   /** The source, described for a human: `vault ALIGNSYNCH_…`, `literal`, `carried .env`. */
   readonly from: string;
+  /** Why a resolved-looking value was refused, when it was. Names the row and the endpoint. */
+  readonly note?: string;
 }
 
 /** One environment's plan: what resolved, what did not, and the file body when it is complete. */
@@ -95,6 +102,53 @@ export function carriedFile(environment: EnvironmentId): string {
 function envLine(name: string, value: string): string {
   const needsQuotes = /[\s#'"]/.test(value);
   return `${name}=${needsQuotes ? `"${value.replaceAll('"', '\\"')}"` : value}`;
+}
+
+/**
+ * The endpoints `scripts/neon-endpoints.mjs` marks `retired: true` — the paused project's branches.
+ * Filtered from the table, never typed again, so a project move is one edit there and this refusal
+ * follows: the same derivation `PRODUCTION_HOST_MARKERS` uses (`scripts/demo-verify-rules.mjs`).
+ */
+const RETIRED_ENDPOINTS = KNOWN_ENDPOINTS.filter((entry) => entry.retired);
+
+/** The endpoint id a value names — its host's first label, without the pooler suffix. */
+function endpointIn(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return null;
+  let host = trimmed;
+  if (trimmed.includes("://")) {
+    try {
+      host = new URL(trimmed).hostname;
+    } catch {
+      return null;
+    }
+  }
+  const label = host.split(".")[0]?.replace(/-pooler$/, "");
+  return label === undefined || label === "" ? null : label;
+}
+
+/**
+ * The retired table row a vault value names, or `null` for a live endpoint, an unknown one (a
+ * scratch branch) or a value that is not an address at all.
+ *
+ * This is the half of #1339 a table alone could not hold: for a month after the project moved, the
+ * six declared vault rows still held the **retired** project's connection strings while six `_V2`
+ * twins held the live ones. `env:render` resolved every one of those cells as `ok` and wrote the
+ * dead endpoint into `.env.local`, `.env.demo` **and** `.env` — one `env:sync --target production`
+ * from being published. A value that names a retired endpoint is not a value; it is the incident.
+ * `--dry-run` said `ok` the whole time, which is why the refusal lives on the resolution, not on a
+ * flag: it is applied to every vault-sourced row that parses an endpoint, so a future re-move
+ * (or a row that is re-pointed at the old project) is refused the same way.
+ */
+function retiredEndpointIn(value: string): (typeof RETIRED_ENDPOINTS)[number] | null {
+  const endpoint = endpointIn(value);
+  if (endpoint === null) return null;
+  return (
+    RETIRED_ENDPOINTS.find(
+      (candidate) =>
+        endpoint === candidate.endpoint || endpoint.startsWith(`${candidate.endpoint}-`),
+    ) ?? null
+  );
 }
 
 /**
@@ -150,6 +204,27 @@ export function planRender(input: {
       if (requirement === "required") missing.push(resolution);
       continue;
     }
+
+    // A vault value naming a retired endpoint is the #1339 incident, not a resolvable cell: the
+    // project it opens is paused, so writing it into a file publishes a dead database one
+    // `env:sync` later. Whatever `bws` returns, this row has not resolved.
+    if ("vault" in source) {
+      const retired = retiredEndpointIn(value);
+      if (retired !== null) {
+        const resolution: Resolution = {
+          name: row.name,
+          status: "missing",
+          from: describe(source, environment),
+          note:
+            `${describe(source, environment)} names ${retired.endpoint}, a retired endpoint ` +
+            `(${retired.role} · ${retired.project}) — re-point the vault row at the live project`,
+        };
+        resolutions.push(resolution);
+        if (requirement === "required") missing.push(resolution);
+        continue;
+      }
+    }
+
     resolutions.push({ name: row.name, status: "ok", from: describe(source, environment) });
     lines.push(envLine(row.name, value));
   }
@@ -274,6 +349,7 @@ async function main(): Promise<number> {
       const mark =
         entry.status === "missing" ? "MISSING" : entry.status === "ok" ? "ok     " : "default";
       console.log(`  ${mark} ${entry.name.padEnd(40)} (${entry.from})`);
+      if (entry.note !== undefined) console.log(`        ${entry.note}`);
     }
     if (plan.missing.length > 0) {
       refused += 1;
