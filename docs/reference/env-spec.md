@@ -23,7 +23,7 @@ Hard non-goals until P3 passes: auth, multi-tenancy, payments, a live database, 
 i18n, and any eLearning/course schema.
 
 **Amendment — v1.1.0 (#145).** The P3 deferral of _persisted DB, auth_ is lifted. One route,
-`/assessment/[slug]`, reads the six content tables in Neon project `fragrant-glade-99460966`
+`/assessment/[slug]`, reads the six content tables in Neon project `morning-bonus-76597456`
 instead of prerendering fixtures, and Neon's Managed Auth is proxied at `app/api/auth/[...path]`.
 Everything else in the list stands: no multi-tenancy, no payments, no i18n, no course schema, and
 no other route reads the database. The gate is unchanged and stays database-free — CI has no
