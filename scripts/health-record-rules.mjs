@@ -22,24 +22,25 @@
  *             one check a probe cannot pass.
  *   label     `NEON_BRANCH`, the word somebody typed into `.env.local`. It can be stale or absent,
  *             so it is refused when it says `production` and never trusted on its own.
- *   host      production's endpoint marker, from `scripts/demo-verify-rules.mjs` — the same rule
- *             `pnpm db:seed` refuses on, so one definition guards both writers.
+ *   host      the production endpoints, from `scripts/neon-endpoints.mjs` — the same table
+ *             `productionRefusal()` refuses on for `demo:verify`, `demo:flow` and `db:seed`, so one
+ *             definition guards every writer (#1336).
  *
  * Everything here is pure: no database, no clock, no filesystem. `tests/health-record.test.ts`
  * proves the refusals and the postconditions without one.
  */
-import { PRODUCTION_HOST_MARKER, endpointOf, hostOf } from "./demo-verify-rules.mjs";
+import { DEMO_ENDPOINT, productionEndpointsIn } from "./neon-endpoints.mjs";
+import { endpointOf, hostOf } from "./demo-verify-rules.mjs";
 
 /** The one branch the platform record may be recorded from. */
 export const DEMO_NEON_BRANCH = "demo";
 
 /**
- * The demo branch's endpoint. An endpoint outlives every connection string in a checkout, so it is
- * the fact this module can hold; a branch cut from `demo` has a different one, which is the whole
- * refusal below. When the demo branch is re-created (a restore, a move), this constant is what the
- * recorder names in its failure — update it here and say so in `docs/operations/releasing.md`.
+ * The demo branch's endpoint, re-exported from `scripts/neon-endpoints.mjs`: a branch that moves is
+ * one row in that table, and an endpoint outlives every connection string in a checkout. A branch
+ * cut from `demo` has a different one, which is the whole refusal below.
  */
-export const DEMO_ENDPOINT = "ep-crimson-truth-b4ppwxrp";
+export { DEMO_ENDPOINT };
 
 /** Every platform-record label starts here, because `demoDatabaseLabel()` is the only writer. */
 export const DEMO_LABEL_PREFIX = "demo branch (";
@@ -78,9 +79,11 @@ export function platformDatabaseRefusal({ databaseUrl, neonBranch } = {}) {
     ].join("\n");
   }
 
-  if (host.toLowerCase().includes(PRODUCTION_HOST_MARKER)) {
+  const production = productionEndpointsIn([databaseUrl])[0];
+  if (production !== undefined) {
     return [
-      `DATABASE_URL opens ${host}, the production endpoint (it carries "${PRODUCTION_HOST_MARKER}").`,
+      `DATABASE_URL opens ${production.host}, the production endpoint (${production.endpoint},`,
+      `${production.project} · ${production.branch}${production.retired ? " · retired" : ""}).`,
       "The platform record is recorded from the demo branch, never from production.",
       "Nothing was written.",
     ].join("\n");

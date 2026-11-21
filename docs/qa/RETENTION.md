@@ -128,6 +128,7 @@ and re-justified.
 | `release-2.0.0-rc1.1`      | 0.25 MB  | keep     | cited by `docs/reference/billing.md` — the production test-mode checkout for #1053: session, mode, return URL, rows, decline                           |
 | `release-2.0.0-rc1.3`      | 0.20 MB  | keep     | cited by `docs/changelog/v2-0-0-rc1-3.md` — `/pricing` at 1440 on this candidate's own tree, the one-plan card #1241 ships                             |
 | `release-2.0.0-rc1.4`      | 0.34 MB  | keep     | cited by `docs/changelog/v2-0-0-rc1-4.md` — `/admin/spec` at 1440 on this candidate's own tree, with the capture that asserts the tree it photographed |
+| `release-2.0.0-rc2`        | 0.63 MB  | keep     | cited by `docs/changelog/v2-0-0-rc2.md` — `/admin/docs/releases` at 1440 on this tree                                                                  |
 | `review-admin`             | 0.82 MB  | keep     | cited by `docs/changelog/v1-7-0.md`                                                                                                                    |
 | `screenshots`              | 3.26 MB  | archived | twelve route screenshots at two widths — no open issue, no pointer, no release cut                                                                     |
 | `sent`                     | 0.24 MB  | archived | the Sent screen at two widths — no open issue, no pointer, no release cut                                                                              |

@@ -26,6 +26,7 @@
  */
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { PRODUCTION_ENDPOINTS } from "../scripts/neon-endpoints.mjs";
 
 import { listLibraryTemplates } from "@/lib/db/template-library";
 import { deleteTemplate } from "@/lib/flow/templates";
@@ -34,10 +35,14 @@ import { readMyRelationship } from "@/lib/member/relationships";
 const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
 const live = databaseUrl === "" ? describe.skip : describe;
 
-/** The live endpoint `ep-winter-block` is production; a probe must never open a connection to it. */
-const PRODUCTION_HOST = "ep-winter-block-b4bkk1xc";
+/**
+ * Every production endpoint, from the one table (#1336): the live project's `main` branch and the
+ * retired project's `production` branch. A probe must never open a connection to either, and typing
+ * one id here is how the other one went unnoticed.
+ */
 const host = databaseUrl === "" ? "(none)" : (databaseUrl.match(/@([^/:]+)/)?.[1] ?? "(unknown)");
-const onProduction = host.startsWith(PRODUCTION_HOST);
+const productionEndpoint = PRODUCTION_ENDPOINTS.find((entry) => host.startsWith(entry.endpoint));
+const onProduction = productionEndpoint !== undefined;
 
 const pool = new Pool({
   connectionString: databaseUrl,
@@ -127,7 +132,7 @@ async function rowCount(table: "record" | "item", id: string, key: string): Prom
 beforeAll(async () => {
   if (onProduction) {
     throw new Error(
-      `template-delete-live: refusing to run against production (${host}) — point DATABASE_URL at the demo branch`,
+      `template-delete-live: refusing to run against production (${host} · ${productionEndpoint?.endpoint}) — point DATABASE_URL at the demo branch`,
     );
   }
   if (databaseUrl === "") return;

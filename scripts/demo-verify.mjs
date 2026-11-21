@@ -56,7 +56,8 @@
  *
  * ## The refusals
  *
- *   * `NEON_BRANCH=production`, or a `DATABASE_URL` on `ep-winter-block` — a demo seeder pointed
+ *   * `NEON_BRANCH=production`, or a `DATABASE_URL` on one of the production endpoints in
+ *     `scripts/neon-endpoints.mjs` — a demo seeder pointed
  *     at production writes fake relationships next to real ones (`productionRefusal()`, proved in
  *     `tests/demo-verify.test.ts`). Always a refusal, never a warning, and never softened by
  *     `--gate`.

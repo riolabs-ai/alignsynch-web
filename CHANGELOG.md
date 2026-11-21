@@ -6,6 +6,37 @@ conventional commits on `main` by [`scripts/release.sh`](scripts/release.sh) —
 and each `## [x.y.z] - <date>` block is also the body of its GitHub Release, byte for byte. Every entry ends
 with a **Known limits** block, because a release that does not say what it cannot do reads as a claim that it can.
 
+## [2.0.0-rc2] - 2026-11-21
+
+> **Declared override.** The commit census computes 2.1.0 (minor, 4 commit(s) since v2.0.0-rc1.4); this release is cut as 2.0.0-rc2 by decision: the 2.0.0-rc candidate line continues: 2.0.0 final has never been released and milestone #28 still holds 28 open spec issues (#1294 is the platform-acceptance criterion), so the census minor bump would claim a public line that does not exist; milestone #26 names this candidate; owner decision 2026-11-21 (option B) cuts rc2 now and holds the official number
+>
+> `pnpm release:cut` printed this banner and wrote it here so the number is a declared artefact in a published document, never a silent one.
+
+### Added
+
+- `feat(nav)` — the reconciler: a derived inventory plus the authored order, with a visible Unplaced group (#862) ([#1334](https://github.com/riolabs-ai/alignsynch/pull/1334))
+
+### Fixed
+
+- `fix(ci,docs)` — point the demo reset and the env spec at the live Neon project ([#1335](https://github.com/riolabs-ai/alignsynch/pull/1335))
+
+### Maintenance
+
+- `db(guard)` — one endpoint table, and every demo writer refuses production on it (#1336) ([#1337](https://github.com/riolabs-ai/alignsynch/pull/1337))
+- `chore(health)` — re-record v2.0.0-rc1.4 at 834e99dda ([#1330](https://github.com/riolabs-ai/alignsynch/pull/1330))
+
+### Known limits
+
+- **The number is declared, and the census disagrees with it.** `v2.0.0-rc1.4..HEAD` is 4 commits — one `feat:` and three other — so `pnpm release:cut --check` computes `2.1.0` (minor) and `~/.hermes/bin/release_boundary.py` agrees with it. This tree is cut as `2.0.0-rc2` by decision, and the decision is a fact about the 2.0.0 line, not about this window: **`2.0.0` has never been released**, milestone #28 "v2.0.0 — the official release" still holds **28 open** spec issues, and **`#1294` — "the 2.0 platform (website, user app, admin) is deployed and accepted" — is the criterion that number waits on**. So `2.1.0` would claim a public line that does not exist and `2.0.0` would claim an acceptance that has not happened; `v2.0.0-rc2` is a candidate _of_ the 2.0.0 line, not the line, and `v1.22.0` remains the newest stable release. Milestone #26 "v2.0.0-rc2 — the pool" names this candidate. The banner at the top of this entry is `pnpm release:cut`'s own record of the override, not a note added afterwards.
+
+- **This window carries no schema change, and the demo writers now refuse the wrong database by construction.** `v2.0.0-rc1.4..HEAD` touches zero files under `db/migrations/`, so nothing new has to be applied before this build serves. What the window does change is who may write: `scripts/neon-endpoints.mjs` holds one endpoint table, and every demo writer refuses production on it — a shell whose `NEON_BRANCH=demo` sits over production's endpoint is stopped before a client is opened, and `pnpm demo:env` exits 1 on exactly that combination. The refusal is the feature. Its consequence is a limit: a demo write now needs the demo branch's own values (`neon env pull` for that branch), and a green `pnpm demo:verify` proves the seed, never the label the shell carried.
+
+- **No browser walk of the changed screens on a live deployment.** Every change in this window is a script, a guard, a nav derivation, a test fixture or a document; none of it re-walks a screen over HTTP against production. The evidence is `bash scripts/verify.sh` green on this tree, the cases the pull requests added (`tests/nav-reconciler.test.ts`, `tests/neon-endpoints.test.ts`, `tests/db-seed-guard.test.ts`), and the guard's refusal proven read-only on this machine rather than on a deployed host.
+
+- **The atlas sweep for this version is deferred, and the deferral is on file.** `docs/qa-atlas/DEFERRED.md` carries the row for `v2.0.0-rc2` — the version, the date, the commit the release is cut from, and the reason — rather than a capture, because atlas generation is stopped by the owner's decision (#1094) and the subjects this window changed (the nav derivation's Unplaced group, the demo lane's seed path, a guard that refuses before connecting) are states the atlas cannot reach.
+
+- **The rectification register still describes work this cut does not do.** `docs/specs/v2-rectification.md` reads 51 rows as **25 `deltas`**, **13 `unverifiable`**, **3 `not-built`** and **10 `matches`**. The 25 deltas and the 13 rows the instrument could not reach are real, user-visible work that stays open; nothing in this cut says the rectification is complete, and clearing a row is a docs-intake act on that doc's own frontmatter, not a decision this cut can take.
+
 ## [2.0.0-rc1.4] - 2026-11-21
 
 > **Declared override.** The commit census computes 2.1.0 (minor, 24 commit(s) since v2.0.0-rc1.3); this release is cut as 2.0.0-rc1.4 by decision: the 2.0.0-rc candidate line continues: 2.0.0 final has never been released and milestone #28 still holds 28 open spec issues, so the census' 2.1.0 would claim a public line that does not exist; milestone #29 names this candidate
@@ -2185,3 +2216,4 @@ The admin console, and relationship templates become products.
 [2.0.0-rc1.2]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.1...v2.0.0-rc1.2
 [2.0.0-rc1.3]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.2...v2.0.0-rc1.3
 [2.0.0-rc1.4]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.3...v2.0.0-rc1.4
+[2.0.0-rc2]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.4...v2.0.0-rc2

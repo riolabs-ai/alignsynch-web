@@ -110,6 +110,7 @@ import {
   waitFor,
 } from "./cdp.mjs";
 import { repoRoot } from "./load-env.mjs";
+import { productionRefusal } from "./demo-verify-rules.mjs";
 
 /* ------------------------------------------------------------------ *
  * Configuration
@@ -2024,10 +2025,15 @@ async function main() {
   ensureDir(OUT);
 
   console.log(`demo-flow · ${CHECK ? "check" : "run"} · base ${BASE} · out ${OUT}`);
-  if (/production/i.test(process.env.NEON_BRANCH ?? "")) {
-    console.error(
-      "demo-flow: NEON_BRANCH=production — this driver seeds and creates rows; refusing.",
-    );
+  // The host is the fact and `NEON_BRANCH` is a typed word (#1336): `productionRefusal()` reads
+  // both, against `scripts/neon-endpoints.mjs`. This driver seeds and creates rows, so a
+  // production endpoint is a refusal, never a warning.
+  const production = productionRefusal({
+    databaseUrls: [process.env.DATABASE_URL, process.env.DATABASE_URL_UNPOOLED],
+    neonBranch: process.env.NEON_BRANCH,
+  });
+  if (production !== null) {
+    console.error(`demo-flow: refusing to run.\n\n${production}`);
     process.exit(2);
   }
 
