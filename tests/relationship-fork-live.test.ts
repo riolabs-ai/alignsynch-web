@@ -29,6 +29,7 @@
  */
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { PRODUCTION_ENDPOINTS } from "../scripts/neon-endpoints.mjs";
 
 import type { Assessment } from "@/content/assessment";
 import { listLibraryTemplates } from "@/lib/db/template-library";
@@ -39,10 +40,14 @@ import { listMyTemplates } from "@/lib/member/templates";
 const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
 const live = databaseUrl === "" ? describe.skip : describe;
 
-/** The live endpoint `ep-winter-block` is production; a probe must never open a connection to it. */
-const PRODUCTION_HOST = "ep-winter-block-b4bkk1xc";
+/**
+ * Every production endpoint, from the one table (#1336): the live project's `main` branch and the
+ * retired project's `production` branch. A probe must never open a connection to either, and typing
+ * one id here is how the other one went unnoticed.
+ */
 const host = databaseUrl === "" ? "(none)" : (databaseUrl.match(/@([^/:]+)/)?.[1] ?? "(unknown)");
-const onProduction = host.startsWith(PRODUCTION_HOST);
+const productionEndpoint = PRODUCTION_ENDPOINTS.find((entry) => host.startsWith(entry.endpoint));
+const onProduction = productionEndpoint !== undefined;
 
 const pool = new Pool({
   connectionString: databaseUrl,
@@ -142,7 +147,7 @@ async function insertItems(recordId: string, prompts: readonly string[]): Promis
 beforeAll(async () => {
   if (onProduction) {
     throw new Error(
-      `relationship-fork-live: refusing to run against production (${host}) — point DATABASE_URL at the demo branch`,
+      `relationship-fork-live: refusing to run against production (${host} · ${productionEndpoint?.endpoint}) — point DATABASE_URL at the demo branch`,
     );
   }
   if (databaseUrl === "") return;

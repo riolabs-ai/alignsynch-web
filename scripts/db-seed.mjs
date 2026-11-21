@@ -36,6 +36,14 @@
  * and no HTTP. It is not implemented as "run the destructive path and roll back": a rollback still
  * takes locks, still runs inside another seed's window, and a mistake in it is a deleted branch.
  *
+ * **A production endpoint is refused before the first connection (#1336).** `main()` asks
+ * `productionRefusal()` — the rule `demo:verify` and `demo:flow` use, over the endpoint table in
+ * `scripts/neon-endpoints.mjs` — before any mode opens a client, `--check` included. The host is
+ * the fact and `NEON_BRANCH` is a label somebody typed into `.env.local`, so a checkout that was
+ * never re-pulled after the project moved cannot sweep and rewrite the live branch.
+ * `tests/db-seed-guard.test.ts` holds the ordering, because proving it by running this command
+ * against a live branch is the outcome the guard exists to prevent.
+ *
  * **The demo accounts (#183).** With `DEMO_AUTH=1` this script also creates the three demo
  * identities — `initiator@`, `counterparty@` and `admin@demo.alignsynch.test` — and binds the
  * first two to Avery and Rowan on `assessment-instance-avery-rowan`, so signing in as the
@@ -162,6 +170,7 @@ import {
   sweepLine,
 } from "./db-seed-sweep.mjs";
 import { loadEnv, repoRoot, requireVariable, writeDatabaseUrl } from "./load-env.mjs";
+import { productionRefusal } from "./demo-verify-rules.mjs";
 import { sessionStateOf } from "../content/assessment.ts";
 
 /** The auth proof's throwaway account (issue #145 comment, confirmed by Jaden). */
@@ -1375,6 +1384,40 @@ async function syncReviewArtifacts(client) {
 }
 
 /* ------------------------------------------------------------------ *\
+ * #1336 — the production guard, evaluated before the first connection
+ * ------------------------------------------------------------------ */
+
+/**
+ * Refuse to touch a production endpoint, in **every** mode that connects.
+ *
+ * This script sweeps every relationship row the bundle does not describe (#865) and then writes the
+ * demo dataset and three demo accounts. Pointed at production — which the shared checkout's
+ * `.env.local` was, after the project moved and nobody re-pulled it — it rewrites the live branch
+ * and nothing in the command says so. `scripts/demo-verify-rules.mjs` was the guard for the other
+ * writers; this file had none at all, which is what #1336 fixed.
+ *
+ * The host is the fact and `NEON_BRANCH` is a word somebody typed, so both are checked, by the same
+ * `productionRefusal()` `demo:verify`, `demo:flow` and `demo:simulate-activity` use. The endpoints
+ * it refuses live in `scripts/neon-endpoints.mjs`: a **denylist**, so a scratch branch cut from
+ * `demo` still seeds (`db:verify`'s probe workflow).
+ *
+ * Called once, from `main()`, after `loadEnv()` and before every connection this file opens —
+ * `--check` included, because a read-only connection is still a connection to the branch
+ * `writeDatabaseUrl()` names. `tests/db-seed-guard.test.ts` holds that ordering in place, because
+ * this command must never be run against a live branch just to prove it would refuse.
+ */
+function refuseProduction() {
+  const refusal = productionRefusal({
+    databaseUrls: [process.env.DATABASE_URL, process.env.DATABASE_URL_UNPOOLED],
+    neonBranch: process.env.NEON_BRANCH,
+  });
+  if (refusal === null) return false;
+  console.error(`\n✗ db:seed — refusing to run.\n\n${refusal}\n`);
+  process.exitCode = 2;
+  return true;
+}
+
+/* ------------------------------------------------------------------ *\
  * `--check` — the read-only question about a shared branch (#865)
  * ------------------------------------------------------------------ */
 
@@ -1649,6 +1692,10 @@ function rolledBackNotice(demoAccountsCreated) {
 
 async function main() {
   loadEnv();
+
+  // #1336 — before the read-only `--check`, before `--review`, before the full seed: every mode
+  // below that opens a connection reaches it through this one call, and a refused run opens none.
+  if (refuseProduction()) return;
 
   // #865 — the read-only question first, and it returns without ever reaching the lock, the
   // dataset import or the auth server: `--check` must be safe to run while another card seeds.

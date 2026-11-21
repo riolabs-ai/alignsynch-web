@@ -36,7 +36,9 @@ const DEMO_POOLED_URL = `postgresql://neondb_owner:***@${DEMO_ENDPOINT}-pooler.c
 const PROBE_URL =
   "postgresql://neondb_owner:***@ep-hidden-moon-a1b2c3d4.c-6.us-east-2.aws.neon.tech/neondb";
 const PRODUCTION_URL =
-  "postgresql://neondb_owner:***@ep-winter-block-12345678.c-6.us-east-2.aws.neon.tech/neondb";
+  "postgresql://neondb_owner:***@ep-winter-block-b4bkk1xc.c-6.us-east-2.aws.neon.tech/neondb";
+const LIVE_PRODUCTION_URL =
+  "postgresql://neondb_owner:***@ep-square-glade-bd2fcmjv-pooler.c-8.us-east-2.aws.neon.tech/neondb";
 
 /** The `env -i` argv the recorder runs, as `gate.command` records it. */
 const GATE_COMMAND = (request: string) =>
@@ -97,6 +99,10 @@ describe("which database may be recorded as platform status", () => {
   it("refuses production by host and by branch name, with the fact that refused it", () => {
     expect(platformDatabaseRefusal({ databaseUrl: PRODUCTION_URL })).toContain(
       "production endpoint",
+    );
+    // #1336 — the live project's endpoint, which the retired-project marker used to wave through.
+    expect(platformDatabaseRefusal({ databaseUrl: LIVE_PRODUCTION_URL })).toContain(
+      "ep-square-glade-bd2fcmjv",
     );
     expect(platformDatabaseRefusal({ databaseUrl: DEMO_URL, neonBranch: "production" })).toContain(
       "NEON_BRANCH=production",
