@@ -30,15 +30,21 @@
  * is a property of the *bytes* this module writes, not of a promise in a comment.
  */
 
+import { PRODUCTION_ENDPOINTS, productionEndpointsIn } from "./neon-endpoints.mjs";
+
 /** The one branch name that is never a demo. */
 export const PRODUCTION_NEON_BRANCH = "production";
 
 /**
- * The production endpoint's own prefix. `NEON_BRANCH` is a label somebody typed into `.env.local`
- * and can be stale or absent; the host is what the connection actually opens, so the check needs
- * both and refuses on either.
+ * The production endpoints' own prefixes, derived from `scripts/neon-endpoints.mjs` — never typed
+ * here. `NEON_BRANCH` is a label somebody wrote into `.env.local` and can be stale or absent; the
+ * host is what the connection actually opens, so the check needs both and refuses on either.
+ *
+ * The list has two rows because the project moved (#1336): the first marker named only the retired
+ * project, so the live production endpoint passed every refusal in this file. Adding a production
+ * endpoint is one row in the table; nothing here changes.
  */
-export const PRODUCTION_HOST_MARKER = "ep-winter-block";
+export const PRODUCTION_HOST_MARKERS = PRODUCTION_ENDPOINTS.map((entry) => entry.endpoint);
 
 /** The host of a connection string, or `null` when it does not parse. Never the URL itself. */
 export function hostOf(databaseUrl) {
@@ -53,10 +59,15 @@ export function hostOf(databaseUrl) {
 /**
  * Why this run must not proceed, or `null` when it may.
  *
- * Deliberately a message rather than a boolean: the operator needs to know *which* of the two
- * facts refused them — a stale `NEON_BRANCH=production` in a shell that is actually pointed at the
- * demo, or a `DATABASE_URL` that really is the live endpoint — because the fixes are different.
- * Both sentences end with "Nothing was changed.", so nobody goes looking for a half-written demo.
+ * Deliberately a message rather than a boolean: the operator needs to know *which* of the facts
+ * refused them — a stale `NEON_BRANCH=production` in a shell that is actually pointed at the demo,
+ * or a `DATABASE_URL` that really is a live endpoint — because the fixes are different. The two
+ * sentences therefore differ too, and the host sentence **names the disagreement first** when the
+ * label says `demo`: "the shell says demo, the host is production's endpoint" is a checkout whose
+ * `.env.local` was never re-pulled after the project moved (#1336), and reading only the endpoint
+ * id would send that operator looking for a `NEON_BRANCH` that is already correct.
+ *
+ * Every sentence ends with "Nothing was changed.", so nobody goes looking for a half-written demo.
  *
  * An unparseable or absent URL is not refused here: "no database" is a different state with its
  * own answer (`demo-verify.mjs` skips in `--gate` mode and fails with a named message otherwise),
@@ -81,18 +92,20 @@ export function productionRefusal({ databaseUrls = [], neonBranch } = {}) {
   // own `DATABASE_URL`; a run that seeded the demo through `DATABASE_URL_UNPOOLED` while the server
   // it drives read `DATABASE_URL` on the live branch would write demo rows nowhere and then diff
   // production's pages against a dataset it never saw.
-  for (const url of databaseUrls) {
-    const host = hostOf(url);
-    if (host?.toLowerCase().includes(PRODUCTION_HOST_MARKER)) {
-      return [
-        `A connection string in this shell opens ${host}, the production endpoint (it carries`,
-        `"${PRODUCTION_HOST_MARKER}"). This command seeds the demo dataset and would write fake`,
-        "relationships and fake accounts next to real rows — or diff a live page against a demo it",
-        "never seeded. Nothing was changed.",
-        "",
-        "Run `neon env pull` for the demo branch, or export that branch's connection string, and re-run.",
-      ].join("\n");
-    }
+  const match = productionEndpointsIn(databaseUrls)[0];
+  if (match !== undefined) {
+    const where = `${match.project} · ${match.branch}${match.retired ? " · retired" : ""}`;
+    const sentence =
+      branch === ""
+        ? `${match.host} is production's endpoint (${match.endpoint}, ${where}).`
+        : `the shell says NEON_BRANCH=${neonBranch.trim()}, but ${match.host} is production's endpoint (${match.endpoint}, ${where}).`;
+    return [
+      sentence,
+      "This command seeds the demo dataset and would write fake relationships and fake accounts next",
+      "to real rows — or diff a live page against a demo it never seeded. Nothing was changed.",
+      "",
+      "Run `neon env pull` for the demo branch, or export that branch's connection string, and re-run.",
+    ].join("\n");
   }
 
   return null;

@@ -27,6 +27,7 @@
  */
 import { Pool } from "pg";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { PRODUCTION_ENDPOINTS } from "../scripts/neon-endpoints.mjs";
 
 import type { Assessment } from "@/content/assessment";
 import { createSessionFromTemplate } from "@/lib/flow/store";
@@ -34,10 +35,13 @@ import { readMyRelationship, saveAspects } from "@/lib/member/relationships";
 
 const databaseUrl = process.env.DATABASE_URL?.trim() ?? "";
 
-/** The live endpoint `ep-winter-block` is production; a probe must never open a connection to it. */
-const PRODUCTION_HOST = "ep-winter-block-b4bkk1xc";
+/**
+ * Every production endpoint, from the one table (#1336): the live project's `main` branch and the
+ * retired project's `production` branch. A probe must never open a connection to either, and typing
+ * one id here is how the other one went unnoticed.
+ */
 const host = databaseUrl === "" ? "(none)" : (databaseUrl.match(/@([^/:]+)/)?.[1] ?? "(unknown)");
-const onProduction = host.startsWith(PRODUCTION_HOST);
+const onProduction = PRODUCTION_ENDPOINTS.some((entry) => host.startsWith(entry.endpoint));
 
 /** No connection string, or the production host: the file reads as skipped, never as passing. */
 const live = databaseUrl === "" || onProduction ? describe.skip : describe;

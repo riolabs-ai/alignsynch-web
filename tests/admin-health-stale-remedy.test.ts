@@ -108,7 +108,7 @@ describe("/admin/health — the stale record's remedy names a command that runs 
 
     const demo = `postgresql://neondb_owner:***@${DEMO_ENDPOINT}-pooler.c-6.us-east-2.aws.neon.tech/neondb`;
     const production =
-      "postgresql://neondb_owner:***@ep-winter-block-12345678.c-6.us-east-2.aws.neon.tech/neondb";
+      "postgresql://neondb_owner:***@ep-winter-block-b4bkk1xc.c-6.us-east-2.aws.neon.tech/neondb";
     const probe =
       "postgresql://neondb_owner:***@ep-hidden-moon-a1b2c3d4.c-6.us-east-2.aws.neon.tech/neondb";
 

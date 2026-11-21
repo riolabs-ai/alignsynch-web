@@ -35,6 +35,20 @@ that reseed, through the demo branch's own sign-up endpoint — see
 the PIN-gated panel that signs a browser in as one of them (`DEMO_AUTH=1` plus a `DEMO_PIN`;
 refused in production without `DEMO_ALLOW_PRODUCTION=1` as well).
 
+## Which endpoints, and why every writer refuses production
+
+`scripts/neon-endpoints.mjs` is the one place a project move updates. It holds four rows — the live
+project's production endpoint (`ep-square-glade-bd2fcmjv`) and demo branch
+(`ep-fancy-bar-bd0pzuz0`), and the retired project's production endpoint
+(`ep-winter-block-b4bkk1xc`) and demo branch (`ep-crimson-truth-b4ppwxrp`) — and every demo writer
+refuses on the production ones by **host**, not by the `NEON_BRANCH` label somebody typed:
+`pnpm demo:verify`, `pnpm demo:flow`, `pnpm demo:simulate-activity` and `pnpm db:seed` all call the
+same `productionRefusal()`, and the five `tests/*-live.test.ts` probes refuse to connect on the
+same table. A host the table does not list is still allowed, so a scratch branch cut from `demo`
+seeds. When a shell and the branch disagree, `pnpm demo:env` prints the label, the endpoint each
+connection string opens and the role the table knows — and exits `1` naming `.env.local` as the
+usual file to re-pull.
+
 ## What a reset is
 
 Three operations, in this order, and nothing else:

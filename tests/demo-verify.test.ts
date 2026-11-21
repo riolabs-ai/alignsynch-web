@@ -41,8 +41,11 @@ import {
   serializeExpectations,
 } from "../scripts/demo-verify-rules.mjs";
 
-const DEMO_URL =
-  "postgresql://user:pw@ep-crimson-truth-b4ppwxrp.c-6.us-east-2.aws.neon.tech/neondb";
+const DEMO_URL = "postgresql://user:***@ep-fancy-bar-bd0pzuz0.c-8.us-east-2.aws.neon.tech/neondb";
+
+/** The retired project's production endpoint — a real id, verified against the table. */
+const RETIRED_PRODUCTION_URL =
+  "postgresql://user:***@ep-winter-block-b4bkk1xc.c-6.us-east-2.aws.neon.tech/neondb";
 
 /** One line of the expectations file, as much of it as these cases read. */
 type RouteLine = {
@@ -71,12 +74,29 @@ describe("productionRefusal", () => {
   it("refuses the production host even when NEON_BRANCH is absent or stale", () => {
     for (const neonBranch of [undefined, "", "demo"]) {
       const message = productionRefusal({
-        databaseUrls: ["postgresql://u:pw@ep-winter-block-123456.us-east-2.aws.neon.tech/neondb"],
+        databaseUrls: [RETIRED_PRODUCTION_URL],
         neonBranch,
       });
       expect(message, `NEON_BRANCH=${String(neonBranch)}`).not.toBeNull();
       expect(message).toContain("ep-winter-block");
     }
+  });
+
+  it("refuses the live project's endpoint, not only the retired one (#1336)", () => {
+    // The hole this case closes: the marker named the retired project, so the endpoint a moved
+    // checkout actually opened passed every refusal `demo:verify` had.
+    const message = productionRefusal({
+      databaseUrls: [
+        "postgresql://u:***@ep-square-glade-bd2fcmjv-pooler.c-8.us-east-2.aws.neon.tech/neondb",
+      ],
+      neonBranch: "demo",
+    });
+    expect(message).not.toBeNull();
+    expect(message).toContain("ep-square-glade-bd2fcmjv");
+    // The label was right and the host was not, so the sentence leads with the disagreement: the
+    // fix is `.env.local`, not `NEON_BRANCH`.
+    expect(message?.split("\n")[0]).toContain("the shell says NEON_BRANCH=demo, but");
+    expect(message).toContain("Nothing was changed.");
   });
 
   it("refuses when **any** connection string is production, not just the one the seed uses", () => {
