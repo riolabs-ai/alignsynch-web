@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Specifications index · prev [Prototype wiring](prototype-wiring.md) · next [AS2 redesign — asset sources and credits](spec-as2-style-home-redesign/ASSET-SOURCES.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Specifications index · prev [Prototype wiring](prototype-wiring.md) · next [The update ledger](admin-updates.md)
 
 <!-- docs-nav:end -->
 
@@ -52,6 +52,6 @@ reason — a handbook is read, not cloned.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Specifications index · prev [Prototype wiring](prototype-wiring.md) · next [AS2 redesign — asset sources and credits](spec-as2-style-home-redesign/ASSET-SOURCES.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Specifications index · prev [Prototype wiring](prototype-wiring.md) · next [The update ledger](admin-updates.md)
 
 <!-- docs-nav:end -->

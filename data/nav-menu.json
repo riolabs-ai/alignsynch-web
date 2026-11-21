@@ -185,6 +185,10 @@
       "reason": "A docs sub-surface (#901) — the release notes inside the docs home's tree."
     },
     {
+      "href": "/admin/docs/updates",
+      "reason": "A docs sub-surface — the per-PR update ledger inside the docs home's tree, reached from the hub and from each release row. A rail row per docs page is what that home exists to avoid."
+    },
+    {
       "href": "/admin/growth",
       "reason": "The growth model (#1095). The owner kept the page and removed its rail row, because a screen charting a simulated business does not belong in an operator's rail — so it stays URL-only by that ruling, and this entry is where the ruling is written down."
     },

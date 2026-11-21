@@ -108,6 +108,9 @@ const rows: readonly SurfaceColumn[] = [
   // shelf's own grid is inside it.
   { path: "/admin/docs/features", mode: "column" },
   { path: "/admin/docs/releases", mode: "column" },
+  // the ledger. A list of cards down the column — the reading measure is the console's, and a row
+  // is two sentences and a short list of documents, never a table that needs the width.
+  { path: "/admin/docs/updates", mode: "column" },
   { path: "/admin/gaps", mode: "column" },
   // #920 — the growth model. The charts are `aspect`-free (a fixed height inside the column), so the
   // band that could have been wide stays at the console's width like every other admin page.

@@ -104,6 +104,16 @@ export function docsIndex(manifest: DocsManifest): Map<string, DocsRow> {
   return new Map(docsRows(manifest).map((row) => [row.path, row]));
 }
 
+/**
+ * Every document's path, as a set — what "is this in the hub?" is answered with.
+ *
+ * The update ledger joins its `specs[]` against this (`lib/docs/updates.ts::updateRows`), and it
+ * takes a set rather than the manifest so that module stays free of `docs.json`'s shape.
+ */
+export function hubPathsOf(manifest: DocsManifest): Set<string> {
+  return new Set(manifest.sections.flatMap((section) => section.docs.map((entry) => entry.path)));
+}
+
 /** The row a URL names, or `null`. An unknown address is the caller's `notFound()`. */
 export function findDoc(manifest: DocsManifest, segments: readonly string[]): DocsRow | null {
   const path = docPathOfSegments(segments);
