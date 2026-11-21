@@ -334,9 +334,9 @@ export const ENV_ROWS: readonly EnvRow[] = [
   ),
   row(
     "RESEND_WEBHOOK_SECRET",
-    ["optional", "optional", "optional"],
+    ["optional", "forbidden", "optional"],
     carried,
-    "Signs POST /api/resend/webhook. Unset means the endpoint refuses every delivery with a 503.",
+    "Signs POST /api/resend/webhook, whose endpoint alignsynch.com owns. Forbidden on preview: the demo deployment must not hold the account endpoint's secret, and it answers 410 by identity instead (#1338).",
   ),
   row(
     "RESEND_ENDPOINT",

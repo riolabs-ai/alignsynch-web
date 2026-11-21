@@ -7,7 +7,8 @@
  *
  * The route is thin on purpose. It hands the **exact bytes** and the three `svix-*` headers to
  * `lib/email/webhook.ts::handleEmailWebhook()`, and turns the outcome into a status code; every
- * decision — refuse an unconfigured deployment, verify, read, record once, mark — lives there, so
+ * decision — refuse a deployment that is not the endpoint's owner, refuse an unconfigured one,
+ * verify, read, record once, mark — lives there, so
  * the same code path is what `tests/resend-webhook.test.ts` drives and what this route cannot
  * accidentally bypass.
  *
@@ -18,6 +19,9 @@
  *   400  a body that is not a JSON object with a `type` — nothing about it can be stored.
  *   401  no signature, a signature that does not match, or a timestamp outside the 5-minute
  *        window. The delivery was not from the provider (or not from *now*), and nothing is written.
+ *   410  this deployment is not the account webhook's owner — Vercel reports it as anything but
+ *        `production`, and the endpoint belongs to `alignsynch.com` alone. Nothing is written and
+ *        nothing is read. See `lib/email/webhook.ts::webhookOwnershipRefusal()`.
  *   429  this client spent its delivery budget for the window; `Retry-After` says for how long.
  *   503  `RESEND_WEBHOOK_SECRET` is unset, or the store did not answer. The first is our
  *        misconfiguration and the second is a database we can retry — neither is a reason to accept
@@ -71,6 +75,15 @@ function logOutcome(outcome: EmailWebhookOutcome): void {
         `[resend] a delivery was refused (${outcome.refusal ?? "unsigned"}) — nothing written`,
       );
       return;
+    case "not-owner": {
+      // Names the deployment's identity and nothing about the delivery: a non-owner never parses
+      // one, and this line is how an operator confirms `VERCEL_ENV` really reaches the route.
+      const vercelEnv = process.env.VERCEL_ENV ?? "unset";
+      console.warn(
+        `[resend] a delivery was refused — this deployment is not the account webhook's owner (vercelEnv=${vercelEnv}) — nothing written`,
+      );
+      return;
+    }
     case "unconfigured":
       console.error(
         "[resend] RESEND_WEBHOOK_SECRET is not set — every delivery is refused with a 503",
@@ -100,6 +113,8 @@ export async function POST(request: Request): Promise<Response> {
     ipHash: ipHashOf(clientIpOf(request.headers)),
     secret: process.env.RESEND_WEBHOOK_SECRET ?? "",
     store: { apply: applyEmailEventOnce, countRecent: countRecentEmailEvents },
+    // The deployment's own identity: the account webhook belongs to `production` alone (#1338).
+    deployment: { vercelEnv: process.env.VERCEL_ENV },
   });
 
   logOutcome(outcome);
