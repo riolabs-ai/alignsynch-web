@@ -2,15 +2,17 @@
  * The decisions `scripts/env-sync.mjs` makes, as pure functions.
  *
  * The script itself talks to Vercel at module scope (it awaits `manifestMode()` on import), so a
- * test cannot import it. These four things are the whole of the policy it applies — which keys may
- * never be synced, which rows `--prune` may delete, when `--prune` must refuse, and what a prune
- * says while it runs — and they are the part worth holding still with a case. The network stays in
- * the script; a caller passes its own `request`.
+ * test cannot import it. These are the whole of the policy it applies — which keys may
+ * never be synced, which rows `--prune` may delete, when `--prune` must refuse, whether a run
+ * pushes values at all, what a prune says while it runs, and the two passes themselves — and they
+ * are the part worth holding still with a case. The network stays in the script; a caller passes
+ * its own `request`.
  *
  * Nothing here reads a clock, a file, an argument vector or a value: `pruneRefusal` takes the flags
- * it judges, `planPrune` takes the table rows and the target's entries, and `pruneTarget` takes the
- * request function. That is what lets `tests/env-sync-prune.test.ts` state the rule without a mock
- * of the Vercel API, and what keeps a value out of every line this file prints.
+ * it judges, `planPrune` takes the table rows and the target's entries, `shouldWritePass` takes
+ * two flags, and `pruneTarget` / `writePass` take the request function. That is what lets
+ * `tests/env-sync-prune.test.ts` state the rule without a mock of the Vercel API, and what keeps a
+ * value out of every line this file prints.
  */
 
 /**
@@ -159,4 +161,135 @@ export async function pruneTarget({ project, team, token, plan, request, log = c
     }
   }
   return { deleted, failed };
+}
+
+/**
+ * Whether this run pushes values at all.
+ *
+ * `--prune` is a **retire verb and nothing else** (#1349). Before this, `--prune --write` ran the
+ * whole manifest write first and then deleted the forbidden rows, so a one-row cleanup created
+ * five optional rows on a live scope — the opposite of what the docstring promised. `--write`
+ * still carries the writer intent `pruneRefusal` requires, because a delete is a write; what it
+ * does *not* buy back is the value pass.
+ *
+ * So a run that names `--prune` issues the DELETEs and no PUT/POST, and syncing plus retiring in
+ * one sitting is two runs: `--write`, then `--prune --write`. No flag re-opens the combined form.
+ *
+ * @param {object} flags
+ * @param {boolean} [flags.prune]
+ * @param {boolean} [flags.write]
+ * @returns {boolean}
+ */
+export function shouldWritePass({ prune, write }) {
+  return write === true && prune !== true;
+}
+
+/**
+ * Vercel's type for a key this script creates. `sensitive` is never readable back, so a key that
+ * looks like a credential is created in the type that keeps it one.
+ *
+ * It lives here rather than in `scripts/env-sync.mjs` because the value pass that needs it does:
+ * the script used to declare it below its own top-level `await manifestMode()`, and a later edit
+ * that made it a `const` arrow crashed `--write` with `Cannot access 'typeFor' before
+ * initialization`. A declaration in this module is initialised before any caller runs.
+ */
+export function typeFor(key) {
+  return /SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL/.test(key) ? "sensitive" : "encrypted";
+}
+
+/**
+ * Run the value pass: one `POST /v10/projects/…/env` per create, one
+ * `PATCH /v9/projects/…/env/{id}` per replace, and a line per name.
+ *
+ * The caller decides *whether* this runs (`shouldWritePass`) and what is in `todo`; this function
+ * only issues what it was handed. `request` is the script's own `call`, injected so a case can
+ * count the verbs without a network — which is how #1349 is held still: in prune mode this
+ * function is never reached and the recorder sees DELETEs only.
+ *
+ * A failure on one name does not stop the rest, and the returned `failed` count is what makes the
+ * run exit non-zero.
+ */
+export async function writePass({
+  project,
+  team,
+  target,
+  branch = /** @type {string|null} */ (null),
+  token,
+  todo,
+  request,
+  log = console.log,
+}) {
+  let written = 0;
+  let failed = 0;
+  for (const { verb, key, value, id } of todo) {
+    const body = {
+      key,
+      value,
+      type: typeFor(key),
+      target: [target],
+      ...(target === "preview" ? { gitBranch: branch } : {}),
+    };
+    try {
+      if (verb === "create") {
+        await request("POST", `/v10/projects/${project}/env?teamId=${team}`, body, token);
+      } else {
+        await request(
+          "PATCH",
+          `/v9/projects/${project}/env/${id}?teamId=${team}`,
+          { value },
+          token,
+        );
+      }
+      written += 1;
+      log(`  wrote   ${key}`);
+    } catch (error) {
+      failed += 1;
+      log(`  FAILED  ${key}: ${error.message}`);
+    }
+  }
+  return { written, failed };
+}
+
+/**
+ * The whole pass sequence a manifest run makes, in the order it makes it, so the script branches
+ * on nothing and a case runs the same branch the operator's command runs.
+ *
+ *   - the value pass only when `shouldWritePass` says so — never in prune mode;
+ *   - the prune pass only when `--prune` is given.
+ *
+ * `todo` is empty in prune mode (the script reads no value file there); `writePass` reports
+ * `writePass: false` in that case so the caller can print how many declared rows it did not write
+ * instead of a `written` line that would be a lie.
+ */
+export async function runManifestPasses({
+  prune,
+  write,
+  project,
+  team,
+  target,
+  branch = /** @type {string|null} */ (null),
+  token,
+  todo = /** @type {Array<Record<string, unknown>>} */ ([]),
+  forbidden = /** @type {Array<Record<string, unknown>>} */ ([]),
+  present = new Map(),
+  neverAtAll = NEVER_AT_ALL,
+  request,
+  log = console.log,
+}) {
+  const pushesValues = shouldWritePass({ prune, write });
+  const written = pushesValues
+    ? await writePass({ project, team, target, branch, token, todo, request, log })
+    : { written: 0, failed: 0 };
+  let pruned = { deleted: 0, failed: 0 };
+  if (prune) {
+    const plan = planPrune({ forbidden, present, neverAtAll });
+    pruned = await pruneTarget({ project, team, token, plan, request, log });
+  }
+  return {
+    writePass: pushesValues,
+    written: written.written,
+    failed: written.failed,
+    pruned: pruned.deleted,
+    pruneFailed: pruned.failed,
+  };
 }

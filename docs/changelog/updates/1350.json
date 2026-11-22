@@ -1,0 +1,9 @@
+{
+  "pr": 1350,
+  "date": "2026-11-22",
+  "area": "env",
+  "summary": "`env:sync --prune --write` now only deletes the rows the table marks forbidden for that environment and never runs the value pass beside them.",
+  "reader_impact": "An operator running a prune sees one DELETE and a `prune mode — N declared row(s) not written` line instead of five new rows on the demo scope.",
+  "specs": ["docs/operations/resend-inbound.md", "docs/reference/env-spec.md"],
+  "risk": "low"
+}
