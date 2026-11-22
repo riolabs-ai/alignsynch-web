@@ -44,6 +44,7 @@ import { ROUTE_PATTERNS, routeManifest } from "../content/routes";
 import { zNavDocument } from "../content/nav";
 import { coverageLine, coverageOf, inventoryDocument } from "../lib/nav-reconcile";
 import { inventoryFrom } from "./nav-inventory";
+import { updatesCheck } from "./updates-check";
 import { matchRoute, normalizePath } from "../content/route-manifest";
 import {
   NOTIFICATION_ICON_KEYS,
@@ -2096,6 +2097,23 @@ if (!existsSync(navInventoryPath)) {
 }
 
 /* ------------------------------------------------------------------ *
+ * E44 — the update ledger owes one entry per feat/fix PR (the spec's E-updates)
+ * ------------------------------------------------------------------ */
+/**
+ * The rule the spec `alignsynch-admin-updates-spec.md` calls **E-updates**, stored under `E44` so it
+ * shares the diagnostic vocabulary with every other rule.
+ *
+ * Two halves, and they fail for different reasons. The ledger on disk is validated whatever the
+ * change is: every `docs/changelog/updates/<pr>.json` parses, names its own PR, carries an ISO date
+ * and one sentence each of summary and reader impact, and lists at least one `docs/specs/` path that
+ * really exists. The coverage half asks the question a reader cares about: a `feat` or `fix` commit
+ * in `<base>..HEAD` must have added an entry. `scripts/updates-check.ts` owns both and says so out
+ * loud when the base ref cannot be read, because a check that quietly skips is not a check.
+ */
+const updateLedger = updatesCheck({ root: process.cwd() });
+for (const problem of updateLedger.problems) err("E44", problem);
+
+/* ------------------------------------------------------------------ *
  * report
  * ------------------------------------------------------------------ */
 const errors = diagnostics.filter((diagnostic) => diagnostic.severity === "error");
@@ -2193,6 +2211,9 @@ console.log(
 );
 console.log(`      ${surfaceRows.length} surfaces declared: ${surfaceCensus} (E36)`);
 console.log(`      ${navCensusLine} (E43)`);
+console.log(
+  `      ${updateLedger.entries} update entr${updateLedger.entries === 1 ? "y" : "ies"}, ${updateLedger.subjects} commit subject(s) classified (E44, the spec's E-updates)${updateLedger.skipped === null ? "" : ` — coverage skipped: ${updateLedger.skipped}`}`,
+);
 console.log(`      ${brandWordCensus} (E37)`);
 console.log(`      ${vocabularyCensus} (E41)`);
 console.log(`      ${leavingCensus} (E39)`);

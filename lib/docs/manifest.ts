@@ -23,6 +23,7 @@ import { z } from "zod";
 
 import { zId } from "@/content/core";
 import { isDocsPath } from "@/lib/docs/rows";
+import { UpdateLedgerUnreadable } from "@/lib/docs/updates";
 
 /**
  * A document's path, relative to `docs/`.
@@ -178,5 +179,9 @@ export function parseReleaseRecord(raw: unknown): ReleaseRecord {
 export function docsSourceProblem(error: unknown): string | null {
   if (error instanceof DocsManifestUnreadable) return error.reason;
   if (error instanceof ReleaseRecordUnreadable) return error.reason;
+  // The update ledger is the fourth source the docs screens read, and it fails the same way: a
+  // missing directory, a file that is not JSON, an entry that does not satisfy the schema. Named
+  // here so a screen cannot quietly swallow a different error into its own panel.
+  if (error instanceof UpdateLedgerUnreadable) return error.reason;
   return null;
 }

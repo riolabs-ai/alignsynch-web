@@ -105,6 +105,15 @@ export interface ParsedEntry {
 const LIMITS_TITLE = "known limits";
 
 /**
+ * The one line the digest carries about the per-commit record (the owner ask of 2026-11-21).
+ *
+ * The spec's own sentence, verbatim: the pointer names the admin path, and the mail stays a digest —
+ * one mail per tag with a line telling a reader where the merges are recorded, never a mail per
+ * merge. `lib/docs/updates.ts` is that record and `/admin/docs/updates` is the screen.
+ */
+export const PER_COMMIT_RECORD = "Per-commit record: /admin/docs/updates";
+
+/**
  * The title of the ledger `scripts/release.sh` appends to a curated entry.
  *
  * `release.sh --check` refuses the newest entry unless it names every commit in
@@ -278,6 +287,12 @@ export function releaseNoteBlocks(
       { kind: "list", items: sub.items },
     ]),
     ...noteFigures(highlights, section, options),
+    // The per-commit record, as one line — the owner ask of 2026-11-21. It sits *above* the Known
+    // limits block on purpose: the note must end on what does not work yet, and a pointer appended
+    // below the limits would make the last thing a reader reads a navigation hint instead of a
+    // limit. The spec's word was "appends one line"; the rule it would have broken is older and
+    // this is the placement that keeps both.
+    { kind: "paragraph", text: PER_COMMIT_RECORD },
     { kind: "heading", text: limits.title },
     ...limits.prose.map((text): EmailBlock => ({ kind: "paragraph", text })),
     // Verbatim: the limits are taken as the entry wrote them, bullets and all.

@@ -1,0 +1,9 @@
+{
+  "pr": 1346,
+  "date": "2026-11-21",
+  "area": "admin",
+  "summary": "One validated JSON entry per merged pull request, rendered at /admin/docs/updates and joined to every release's merges, replaces the record nothing kept.",
+  "reader_impact": "An admin or a stakeholder can see what one merge changed and which document the rule now lives in — from /admin/docs/updates and from each release's own commit rows.",
+  "specs": ["docs/specs/admin-updates.md"],
+  "risk": "low"
+}

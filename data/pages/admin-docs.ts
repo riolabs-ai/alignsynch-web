@@ -99,6 +99,49 @@ export const adminDocsFeaturesPageCopy: PageCopy = zPageCopy.parse({
 });
 
 /**
+ * `/admin/docs/updates` — the update ledger (the owner ask of 2026-11-21).
+ *
+ * One row per merged pull request, newest first: the date, the area, the summary, who notices and
+ * where, and the documents the rule now lives in. The body prints the rule rather than a promise:
+ * the entries are authored in the PR that makes the change (`docs/changelog/updates/<pr>.json`) and
+ * validated by `data:check` E44, so a reader who can read the rule can audit every row instead of
+ * trusting the list. `empty` says why the first deploy may be short, and says it plainly: nothing is
+ * backfilled.
+ */
+export const adminDocsUpdatesPageCopy: PageCopy = zPageCopy.parse({
+  heading: "Updates",
+  subtitle:
+    "One entry per merged pull request: what changed, who notices and where, and the document the rule now lives in. Authored in the PR that makes the change and validated by data:check's E-updates rule — no list here is maintained by hand, and nothing before the ledger's first merge is backfilled.",
+  cta: { label: "Read the release notes", href: "/admin/docs/releases" },
+  sections: [
+    {
+      id: "ledger",
+      heading: "Newest first",
+      body: "Ordered by the entry's own date, then by the pull request that made it — never by a directory's iteration order. A spec that docs/docs.json does not carry is printed as a path with a marker rather than linked: a link to a 404 is worse than a path a reader can search for.",
+      items: [
+        { id: "entry-count", label: "{count} entries" },
+        { id: "entry-count-one", label: "{count} entry" },
+        { id: "pull-request-label", label: "PR" },
+        { id: "impact-label", label: "Who notices" },
+        { id: "specs-label", label: "Where the rule lives" },
+        { id: "not-in-hub", label: "not in the hub" },
+        { id: "risk-label", label: "Risk" },
+        {
+          id: "empty",
+          label:
+            "No entry is recorded yet. The ledger starts at its first merge: an entry is written in the pull request that makes the change, so an empty page here is the correct first state rather than a missing record.",
+        },
+        {
+          id: "unreadable",
+          label:
+            "The update ledger could not be read: {reason}. Nothing is listed, because an empty ledger would claim nothing has changed.",
+        },
+      ],
+    },
+  ],
+});
+
+/**
  * `/admin/docs/releases` (#893) — the release record, one release at a time.
  *
  * Three panes and one list, the `/admin/review` arrangement: the list is every release newest first,
@@ -168,6 +211,23 @@ export const adminDocsReleasesPageCopy: PageCopy = zPageCopy.parse({
             "This build is not the newest release the record holds. The record's newest is {version}.",
         },
         { id: "unknown", label: "A build made without git cannot know its commit." },
+      ],
+    },
+    {
+      id: "commits",
+      heading: "The merges behind it",
+      body: "Every bullet the entry carries, in the entry's own order, with the update ledger's row for that pull request beside it: who notices, and the documents the rule now lives in. A merge whose PR wrote no entry says so — the ledger starts at its first merge, so an older release is short here and that is the record, not a gap.",
+      items: [
+        {
+          id: "no-commits",
+          label:
+            "This entry names no conventional-commit scope, so there are no merges to list. The release note above is the whole record of it.",
+        },
+        { id: "no-update-entry", label: "No ledger entry for this pull request." },
+        { id: "impact-heading", label: "Who notices" },
+        { id: "specs-heading", label: "Where the rule lives" },
+        { id: "not-in-hub", label: "not in the hub" },
+        { id: "open-entry", label: "Open the entry" },
       ],
     },
     {

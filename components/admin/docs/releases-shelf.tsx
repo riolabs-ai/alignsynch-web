@@ -65,6 +65,7 @@ export function ReleasesShelf({ copy, rows, selected, unreadable, build }: Relea
   const list = sectionOf(copy, "list");
   const detail = sectionOf(copy, "detail");
   const buildCopy = sectionOf(copy, "build");
+  const commits = sectionOf(copy, "commits");
   const unreadableCopy = sectionOf(copy, "unreadable");
 
   const isNewest = selected !== null && rows[0]?.version === selected.version;
@@ -234,6 +235,90 @@ export function ReleasesShelf({ copy, rows, selected, unreadable, build }: Relea
                               {area}
                             </Badge>
                           </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card data-commits={selected.commits.length}>
+                <CardHeader>
+                  <CardTitle>{commits.heading ?? ""}</CardTitle>
+                  <CardDescription>{sectionBody(commits)}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {selected.commits.length === 0 ? (
+                    <p
+                      data-no-commits="true"
+                      className="rounded-lg border border-dashed border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground"
+                    >
+                      {itemLabel(commits, "no-commits")}
+                    </p>
+                  ) : (
+                    <ul className="space-y-4">
+                      {selected.commits.map((commit) => (
+                        <li
+                          key={`${commit.pr ?? "no-pr"}-${commit.type}-${commit.scope}-${commit.summary}`}
+                          data-commit={commit.pr ?? ""}
+                          className="space-y-1 border-b border-border pb-3 last:border-0 last:pb-0"
+                        >
+                          <p className="flex flex-wrap items-baseline gap-2">
+                            <span className="font-mono text-xs text-muted-foreground">
+                              {commit.type}({commit.scope})
+                            </span>
+                            <span className="min-w-0 text-sm text-foreground">
+                              {commit.summary}
+                            </span>
+                          </p>
+                          {commit.update === null ? (
+                            <p className="text-xs text-muted-foreground">
+                              {itemLabel(commits, "no-update-entry")}
+                            </p>
+                          ) : (
+                            <div className="space-y-1 border-l border-border pl-3">
+                              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                {itemLabel(commits, "impact-heading")}
+                              </p>
+                              <p className="text-sm text-foreground">
+                                {commit.update.reader_impact}
+                              </p>
+                              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                {itemLabel(commits, "specs-heading")}
+                              </p>
+                              <ul className="flex flex-wrap items-baseline gap-2">
+                                {commit.update.specLinks.map((spec) => (
+                                  <li key={spec.path} className="text-sm">
+                                    {spec.href === null ? (
+                                      <span
+                                        className="flex items-baseline gap-2 text-muted-foreground"
+                                        data-spec-not-in-hub={spec.path}
+                                      >
+                                        <span className="font-mono text-xs">{spec.path}</span>
+                                        <Badge variant="warning">
+                                          {itemLabel(commits, "not-in-hub")}
+                                        </Badge>
+                                      </span>
+                                    ) : (
+                                      <Link
+                                        href={spec.href}
+                                        data-spec-link={spec.path}
+                                        className="font-mono text-xs text-action hover:underline"
+                                      >
+                                        {spec.path}
+                                      </Link>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                              <Link
+                                href={`${selected.updatesHref}#pr-${commit.update.pr}`}
+                                className="inline-flex text-xs font-medium text-action hover:underline"
+                              >
+                                {itemLabel(commits, "open-entry")}
+                              </Link>
+                            </div>
+                          )}
                         </li>
                       ))}
                     </ul>

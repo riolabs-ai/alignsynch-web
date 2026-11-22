@@ -1,0 +1,10 @@
+{
+  "pr": 1337,
+  "sha": "8c57a1864",
+  "date": "2026-11-21",
+  "area": "db",
+  "summary": "One endpoint table replaces the derived production marker, so every script that can write to a Neon branch refuses a production endpoint before it connects.",
+  "reader_impact": "Nobody yet — the change is a refusal in the scripts, and the first person it stops is an operator whose .env.local says demo while the host is production.",
+  "specs": ["docs/getting-started/demo.md"],
+  "risk": "low"
+}

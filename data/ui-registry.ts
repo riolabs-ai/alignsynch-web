@@ -251,6 +251,16 @@ export const uiRegistry: readonly UiEntry[] = zUiRegistry.parse([
   },
   {
     kind: "route",
+    surface: "/admin/docs/updates",
+    status: "fixture",
+    templates: ["quizhub", "alignsynch"],
+    capability:
+      "The update ledger: one row per merged pull request — date, area, what changed, who notices and where, the documents the rule now lives in and the risk it carries — newest first, with a spec that the docs hub does not carry printed as a marked path rather than an anchor.",
+    notes:
+      'the owner ask of 2026-11-21 ("better stakeholder/admin updates for each commit and links to the Admin Specs"). Authored, not generated: the entry is written in the PR that makes the change (`docs/changelog/updates/<pr>.json`) and validated by `data:check` E44 — the rule the spec calls E-updates — which refuses a missing/unparseable entry, a `pr` that disagrees with the filename, a non-ISO `date`, empty `specs` and a `specs[]` path that does not exist, and which requires a `feat`/`fix` commit in `<base>..HEAD` to have added one. The rows come from `lib/docs/updates.ts` (pure — the files arrive as values, which is what lets the gate and the page share one parser) through `lib/docs/tree.ts::readUpdateLedger`; the manifest is joined only to answer "is this spec an address or a path". `force-dynamic`; no clock in the render; every word from `data/pages/admin-docs.ts` (E23 budget 0). Not per-commit email, deliberately: the digest plus the per-tag mail is the cadence, and `/admin/docs/releases` now lists each release\'s commits with their entries.',
+  },
+  {
+    kind: "route",
     surface: "/admin/permissions",
     status: "fixture",
     templates: ["quizhub", "alignsynch"],

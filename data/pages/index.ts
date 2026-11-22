@@ -25,6 +25,7 @@ import {
   adminDocsFeaturesPageCopy,
   adminDocsPageCopy,
   adminDocsReleasesPageCopy,
+  adminDocsUpdatesPageCopy,
 } from "./admin-docs";
 import { adminGapsPageCopy } from "./admin-gaps";
 // #920 — the growth model: cohorts, plan mix, churn and invoices from one committed artifact.
@@ -127,6 +128,9 @@ export const pageCopies: PageCopyTable = zPageCopyTable.parse({
   // the releases shelf prints the build answering.
   "/admin/docs/features": adminDocsFeaturesPageCopy,
   "/admin/docs/releases": adminDocsReleasesPageCopy,
+  // the owner ask of 2026-11-21 — the update ledger: one validated entry per merged pull request,
+  // with the documents the rule now lives in. Its own fixture because it prints a different rule.
+  "/admin/docs/updates": adminDocsUpdatesPageCopy,
   "/admin/gaps": adminGapsPageCopy,
   // #920 — the growth model and the sampled operational set beside it.
   "/admin/growth": adminGrowthPageCopy,

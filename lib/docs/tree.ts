@@ -25,13 +25,14 @@
  * `force-dynamic` on both pages means that read happens on the request, not at build: a docs change
  * is live without a rebuild, and `pnpm build` still needs no database and no request.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { extname, join, resolve, sep } from "node:path";
 
 import { cache } from "react";
 
 import { CHANGELOG_PATH, type ChangelogEntry, parseChangelog } from "@/lib/docs/changelog";
 import { IMAGE_EXTENSIONS } from "@/lib/docs/links";
+import { UpdateLedgerUnreadable, type UpdateFile } from "@/lib/docs/updates";
 import {
   DocsManifestUnreadable,
   type DocsManifest,
@@ -55,6 +56,15 @@ export const DOCS_MANIFEST_PATH = join(DOCS_ROOT, "docs.json");
 
 /** The release record `scripts/changelog-view.mjs` writes against and `pnpm changelog:check` holds. */
 export const RELEASE_RECORD_PATH = join(DOCS_ROOT, "changelog", "releases.json");
+
+/**
+ * The update ledger's directory — one `<pr>.json` per merged pull request (`lib/docs/updates.ts`).
+ *
+ * Not a generated view and not a manifest page: the entries are authored in the PR that makes the
+ * change, and `data:check` E44 (the spec's E-updates) refuses a missing, unparseable, empty-spec or
+ * non-ISO entry. This module opens them read-only on the request, exactly like the two files above.
+ */
+export const UPDATES_ROOT = join(DOCS_ROOT, "changelog", "updates");
 
 /** `CHANGELOG.md` at the repository root — the source of every release fact (#893). */
 export const CHANGELOG_FILE_PATH = join(process.cwd(), CHANGELOG_PATH);
@@ -173,6 +183,45 @@ export const readReleaseRecord = cache((): ReleaseRecord => {
     throw new ReleaseRecordUnreadable("docs/changelog/releases.json is not valid JSON");
   }
   return parseReleaseRecord(raw);
+});
+
+/**
+ * The update ledger, read — once per request.
+ *
+ * A missing directory, a file that is not JSON and an entry that does not satisfy the schema are all
+ * `UpdateLedgerUnreadable` with a sentence the page draws. They are *not* swallowed into an empty
+ * list: "nothing has changed yet" and "the record could not be read" are different statements.
+ *
+ * The parse is `lib/docs/updates.ts::parseUpdateLedger` — the same function `data:check` runs — so the
+ * screen and the gate cannot disagree about what a valid entry is.
+ */
+export const readUpdateLedger = cache((): UpdateFile[] => {
+  let names: string[];
+  try {
+    names = readdirSync(UPDATES_ROOT).sort();
+  } catch {
+    throw new UpdateLedgerUnreadable(
+      "docs/changelog/updates could not be read from the repository root",
+    );
+  }
+  const files: UpdateFile[] = [];
+  for (const name of names) {
+    // A file that is not an entry is refused rather than skipped: this directory has exactly one
+    // kind of file, and a stray one is a mistake the gate names by filename.
+    if (!name.endsWith(".json")) {
+      throw new UpdateLedgerUnreadable(
+        `docs/changelog/updates/${name} is not a <pr>.json entry — the directory holds entries and nothing else`,
+      );
+    }
+    let raw: unknown;
+    try {
+      raw = JSON.parse(readFileSync(join(UPDATES_ROOT, name), "utf8")) as unknown;
+    } catch {
+      throw new UpdateLedgerUnreadable(`docs/changelog/updates/${name} is not valid JSON`);
+    }
+    files.push({ name, raw });
+  }
+  return files;
 });
 
 /**
