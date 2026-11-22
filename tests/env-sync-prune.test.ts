@@ -15,10 +15,23 @@
  * No network and no mock of the Vercel API: `pruneTarget` takes the `request` function, so a case
  * counts the verbs it was handed. The delete case was watched red by replacing the `DELETE` call in
  * `pruneTarget` with a no-op — one DELETE expected, zero issued — and green again when restored.
+ *
+ * #1349 is the other half of the same rule: `--prune --write` used to run the whole value pass
+ * before it deleted, so one DELETE arrived with five POSTs beside it and the demo scope grew rows
+ * nobody asked for. `shouldWritePass` is the guard, `runManifestPasses` is the branch the script
+ * itself runs, and the case below asserts the injected `request` saw DELETEs only. It was watched
+ * red the same way: with `shouldWritePass` forced to `true`, the case reports the POSTs.
  */
 import { describe, expect, it } from "vitest";
 
-import { NEVER_AT_ALL, planPrune, pruneRefusal, pruneTarget } from "../scripts/env-sync-plan.mjs";
+import {
+  NEVER_AT_ALL,
+  planPrune,
+  pruneRefusal,
+  pruneTarget,
+  runManifestPasses,
+  shouldWritePass,
+} from "../scripts/env-sync-plan.mjs";
 
 const PROJECT = "prj_fixture";
 const TEAM = "team_fixture";
@@ -223,5 +236,121 @@ describe("pruneRefusal — a delete never happens by accident", () => {
 
   it("is silent when --prune is not given, whatever else is missing", () => {
     expect(pruneRefusal({ prune: false, write: false, target: "production" })).toBeNull();
+  });
+
+  it("keeps all three refusals, and none of them leaves the value pass open", () => {
+    const cases = [
+      { flags: { prune: true, write: false, target: "preview" }, says: "--write" },
+      {
+        flags: { prune: true, write: true, target: "production", confirmProduction: false },
+        says: "--confirm-production",
+      },
+      {
+        flags: { prune: true, write: true, target: "preview", from: ".env.demo" },
+        says: "manifest mode",
+      },
+    ];
+    for (const { flags, says } of cases) {
+      const reason = pruneRefusal(flags);
+      expect(reason).toContain(says);
+      expect(reason).toContain("Nothing was deleted");
+      // A refused run reaches no pass at all. Checked here as well as by the script's own
+      // ordering, so a caller that skipped the refusal still cannot write on a prune's behalf.
+      expect(shouldWritePass(flags)).toBe(false);
+    }
+  });
+});
+
+/**
+ * The rows a `--prune --write` run used to write on its way to one DELETE (#1349, measured on
+ * `main` @ `f08552b0a`): the value pass ran before the prune block, so a one-row cleanup put five
+ * optional rows on `preview@demo`. Three of the five are enough to prove the point — one create,
+ * another create, and a replace so both write verbs are covered.
+ */
+const WRITE_TODO = [
+  { verb: "create", key: "NEXT_PUBLIC_BASE_URL", value: "https://demo.example.test" },
+  { verb: "create", key: "NAV_SOURCE", value: "manifest" },
+  { verb: "replace", key: "APP_VERSION", value: "2.0.0-rc2", id: "env_kept_1" },
+];
+
+const targetArgs = {
+  project: PROJECT,
+  team: TEAM,
+  target: "preview",
+  branch: "demo",
+  token: "fixture-token",
+};
+
+describe("shouldWritePass — `--prune` is a retire verb and nothing else", () => {
+  it("is true only for a write that does not also name --prune", () => {
+    expect(shouldWritePass({ prune: false, write: true })).toBe(true);
+    expect(shouldWritePass({ write: true })).toBe(true);
+    expect(shouldWritePass({ prune: true, write: true })).toBe(false);
+    expect(shouldWritePass({ prune: true, write: false })).toBe(false);
+    expect(shouldWritePass({ prune: false, write: false })).toBe(false);
+  });
+});
+
+describe("runManifestPasses — `--prune --write` issues DELETEs and no write request", () => {
+  it("runs the delete and zero PUT/POST, and prints that the declared rows were not written", async () => {
+    const { calls, request } = recorder();
+    const { lines, log } = collector();
+
+    const result = await runManifestPasses({
+      ...targetArgs,
+      prune: true,
+      write: true,
+      todo: WRITE_TODO,
+      forbidden,
+      present,
+      request,
+      log,
+    });
+
+    // The whole of #1349: the injected request saw a DELETE and nothing else.
+    expect(calls.map((call) => call.method)).toEqual(["DELETE"]);
+    expect(calls.filter((call) => call.method !== "DELETE")).toEqual([]);
+    expect(calls[0].url).toBe(`/v9/projects/${PROJECT}/env/env_forbidden_1?teamId=${TEAM}`);
+    for (const row of WRITE_TODO) {
+      expect(lines.some((line) => line.includes("wrote") && line.includes(row.key))).toBe(false);
+    }
+    expect(
+      lines.some((line) => line.includes("pruned") && line.includes("RESEND_WEBHOOK_SECRET")),
+    ).toBe(true);
+    expect(result).toEqual({
+      writePass: false,
+      written: 0,
+      failed: 0,
+      pruned: 1,
+      pruneFailed: 0,
+    });
+  });
+
+  it("still runs the value pass when --prune is absent — create, create, replace, no DELETE", async () => {
+    const { calls, request } = recorder();
+    const { lines, log } = collector();
+
+    const result = await runManifestPasses({
+      ...targetArgs,
+      prune: false,
+      write: true,
+      todo: WRITE_TODO,
+      forbidden,
+      present,
+      request,
+      log,
+    });
+
+    expect(calls.map((call) => call.method)).toEqual(["POST", "POST", "PATCH"]);
+    expect(calls[0].url).toBe(`/v10/projects/${PROJECT}/env?teamId=${TEAM}`);
+    expect(calls[0].body).toMatchObject({
+      key: "NEXT_PUBLIC_BASE_URL",
+      type: "encrypted",
+      target: ["preview"],
+      gitBranch: "demo",
+    });
+    expect(calls[2].url).toBe(`/v9/projects/${PROJECT}/env/env_kept_1?teamId=${TEAM}`);
+    expect(lines.some((line) => line.includes("wrote") && line.includes("APP_VERSION"))).toBe(true);
+    expect(result).toEqual({ writePass: true, written: 3, failed: 0, pruned: 0, pruneFailed: 0 });
   });
 });

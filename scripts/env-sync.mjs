@@ -10,8 +10,11 @@
  *   that decides what the app reads also decides what a deployment is given. It **defaults to a
  *   check** (`--check`, names and scope only, never a value); `--write` is the only path that
  *   changes a target, and `--write --target production` additionally needs `--confirm-production`.
- *   `--prune --write` retires the rows the table marks `forbidden` for that environment; nothing
- *   else is deletable by it (the rule is `planPrune` in `scripts/env-sync-plan.mjs`).
+ *   `--prune --write` **only** retires the rows the table marks `forbidden` for that environment:
+ *   it deletes them and skips the value pass entirely, printing how many declared rows it did not
+ *   write. `--write` still authorises the delete — a delete is a write — but it does not buy back
+ *   the sync, so syncing and retiring in one sitting is two runs, `--write` then `--prune --write`.
+ *   The rule is `shouldWritePass` + `planPrune` in `scripts/env-sync-plan.mjs`.
  *
  *   FILE MODE (`--from <file>`) — the older shape, kept because a one-off file is sometimes the
  *   honest input: `--from .env.demo --target preview --branch demo --diff` reports drift,
@@ -51,9 +54,10 @@ import { fileURLToPath } from "node:url";
 import {
   NEVER_AT_ALL,
   NEVER_PREVIEW,
-  planPrune,
   pruneRefusal,
-  pruneTarget,
+  runManifestPasses,
+  shouldWritePass,
+  typeFor,
 } from "./env-sync-plan.mjs";
 
 const PROJECT = "prj_jvt3U5GpGv5TnmWfyqkQ5kbbou5k";
@@ -174,13 +178,10 @@ function parseEnv(text) {
   return out;
 }
 
-/* Vercel's type for a key this script creates. `sensitive` is never readable back.
-   A `function` declaration, not a `const` arrow: manifest mode is awaited at the top of this
-   module, so anything declared below that line is still in its temporal dead zone when a write
-   runs — which is how `--write` crashed with `Cannot access 'typeFor' before initialization`. */
-function typeFor(key) {
-  return /SECRET|KEY|TOKEN|PASSWORD|DATABASE_URL/.test(key) ? "sensitive" : "encrypted";
-}
+/* `typeFor` now lives in `scripts/env-sync-plan.mjs` beside the value pass that uses it: an
+   imported binding is initialised before `manifestMode()` is awaited below, which is the problem
+   the old `const` arrow here had — `--write` crashed with `Cannot access 'typeFor' before
+   initialization` because the declaration sat below that await. */
 
 async function call(method, url, body, tok) {
   const res = await fetch(`${API}${url}`, {
@@ -286,8 +287,8 @@ async function manifestMode() {
      scope is a thing an operator can act on instead of a line they learn to skim past. */
   if (policy.length > 0 && write !== true) {
     console.log(
-      `  hint    ${"--prune --write".padEnd(38)} would delete ${policy.length} forbidden row(s) ` +
-        `from ${where}`,
+      `  hint    ${"--prune --write".padEnd(38)} deletes ${policy.length} forbidden row(s) from ` +
+        `${where} and writes nothing else`,
     );
   }
 
@@ -307,89 +308,82 @@ async function manifestMode() {
       "--write --target production rewrites the live project; add --confirm-production to mean it",
     );
   }
-  const file = path.join(envDir ?? ROOT, TARGET_FILE[target]);
-  if (!fs.existsSync(file)) {
-    refuse(
-      `${TARGET_FILE[target]} is not rendered yet — run \`pnpm env:render\` first (or --from)`,
-    );
-  }
-  const values = parseEnv(fs.readFileSync(file, "utf8"));
-  const blocked = new Set([...NEVER_AT_ALL.keys(), ...forbidden.map((row) => row.name)]);
+  /* `--prune` is a retire verb and nothing else (#1349). It used to run the whole value pass first
+     and delete second, so a one-row cleanup created five optional rows on a live scope. The
+     decision is `shouldWritePass` in `scripts/env-sync-plan.mjs`, and `runManifestPasses` is the
+     same branch `tests/env-sync-prune.test.ts` runs: with `--prune` the run issues the DELETEs and
+     no PUT/POST at all. It also reads no value file — a prune from a worktree, which has no
+     `.env.demo`, is the ordinary case, and a delete never needs a value. */
+  const writing = shouldWritePass({ prune, write });
   const todo = [];
-  for (const row of declared) {
-    if (blocked.has(row.name)) {
-      console.log(`  drop    ${row.name.padEnd(38)} policy — never synced to ${where}`);
-      continue;
-    }
-    const value = values.get(row.name);
-    if (value === undefined || value === "") {
-      if (row.environments[envId] === "required") {
-        refuse(
-          `${TARGET_FILE[target]} has no ${row.name} and ${envId} requires it — nothing was written`,
-        );
-      }
-      console.log(`  skip    ${row.name.padEnd(38)} not in ${TARGET_FILE[target]} (optional)`);
-      continue;
-    }
-    const have = present.get(row.name);
-    if (have && force !== true) {
-      console.log(
-        `  keep    ${row.name.padEnd(38)} already present (${have.type}) — --force overwrites`,
+  if (writing) {
+    const file = path.join(envDir ?? ROOT, TARGET_FILE[target]);
+    if (!fs.existsSync(file)) {
+      refuse(
+        `${TARGET_FILE[target]} is not rendered yet — run \`pnpm env:render\` first (or --from)`,
       );
-      continue;
     }
-    todo.push({ verb: have ? "replace" : "create", key: row.name, value, id: have?.id });
+    const values = parseEnv(fs.readFileSync(file, "utf8"));
+    const blocked = new Set([...NEVER_AT_ALL.keys(), ...forbidden.map((row) => row.name)]);
+    for (const row of declared) {
+      if (blocked.has(row.name)) {
+        console.log(`  drop    ${row.name.padEnd(38)} policy — never synced to ${where}`);
+        continue;
+      }
+      const value = values.get(row.name);
+      if (value === undefined || value === "") {
+        if (row.environments[envId] === "required") {
+          refuse(
+            `${TARGET_FILE[target]} has no ${row.name} and ${envId} requires it — nothing was written`,
+          );
+        }
+        console.log(`  skip    ${row.name.padEnd(38)} not in ${TARGET_FILE[target]} (optional)`);
+        continue;
+      }
+      const have = present.get(row.name);
+      if (have && force !== true) {
+        console.log(
+          `  keep    ${row.name.padEnd(38)} already present (${have.type}) — --force overwrites`,
+        );
+        continue;
+      }
+      todo.push({ verb: have ? "replace" : "create", key: row.name, value, id: have?.id });
+    }
   }
 
-  let failed = 0;
-  for (const { verb, key, value, id } of todo) {
-    const body = {
-      key,
-      value,
-      type: typeFor(key),
-      target: [target],
-      ...(target === "preview" ? { gitBranch: branch } : {}),
-    };
-    try {
-      if (verb === "create") {
-        await call("POST", `/v10/projects/${PROJECT}/env?teamId=${TEAM}`, body, tok);
-      } else {
-        await call("PATCH", `/v9/projects/${PROJECT}/env/${id}?teamId=${TEAM}`, { value }, tok);
-      }
-      console.log(`  wrote   ${key}`);
-    } catch (error) {
-      failed += 1;
-      console.log(`  FAILED  ${key}: ${error.message}`);
-    }
-  }
   /* `--prune` is the only path that deletes, and the only names it can reach are the ones the
      table marks `forbidden` for this environment and the target actually holds — `planPrune` is
      the whole rule, and `tests/env-sync-prune.test.ts` is what keeps it that way. An `extra` key
      is a decision nobody has made and a `NEVER_AT_ALL` key is a finding; both are reported by the
      check above and neither is deletable here. */
-  let pruned = 0;
-  let pruneFailed = 0;
+  const result = await runManifestPasses({
+    prune,
+    write,
+    project: PROJECT,
+    team: TEAM,
+    target,
+    branch,
+    token: tok,
+    todo,
+    forbidden,
+    present,
+    request: call,
+  });
   if (prune) {
-    const plan = planPrune({ forbidden, present, neverAtAll: NEVER_AT_ALL });
-    const result = await pruneTarget({
-      project: PROJECT,
-      team: TEAM,
-      token: tok,
-      plan,
-      request: call,
-    });
-    pruned = result.deleted;
-    pruneFailed = result.failed;
     console.log(
-      `env-sync: ${pruned} forbidden row(s) pruned from ${where}` +
-        (pruneFailed ? `, ${pruneFailed} failed` : ""),
+      `env-sync: ${result.pruned} forbidden row(s) pruned from ${where}` +
+        (result.pruneFailed ? `, ${result.pruneFailed} failed` : ""),
     );
   }
-  console.log(
-    `env-sync: ${todo.length - failed}/${todo.length} written to ${where} — a new deployment is ` +
-      "required for these to take effect",
-  );
-  if (failed > 0 || pruneFailed > 0) process.exit(2);
+  if (result.writePass) {
+    console.log(
+      `env-sync: ${result.written}/${todo.length} written to ${where} — a new deployment is ` +
+        "required for these to take effect",
+    );
+  } else {
+    console.log(`env-sync: prune mode — ${declared.length} declared row(s) not written`);
+  }
+  if (result.failed > 0 || result.pruneFailed > 0) process.exit(2);
 }
 
 const tok = token();
