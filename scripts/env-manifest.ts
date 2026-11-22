@@ -37,7 +37,9 @@
  * `required` — the environment cannot work without it; `env:render` refuses to write that file
  * while it does not resolve. `optional` — the code reports its absence honestly (an unset
  * `RESEND_API_KEY` means no mail is attempted, not a crash). `forbidden` — the value must not be
- * in that deployment, and `env:sync` drops it there even if a file carries it. `ADMIN_EMAILS` is
+ * in that deployment: `env:render` refuses to write it there, `env:sync --write` will not push it
+ * even when a file carries it, and a row the target already holds is reported by
+ * `env:sync --check` and deleted only by `env:sync --prune --write`. `ADMIN_EMAILS` is
  * forbidden on the demo because that target is signed into by demo identities and shown to
  * whoever is being shown the product.
  *

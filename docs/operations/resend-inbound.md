@@ -29,10 +29,12 @@ route answers `503` to every delivery; it never accepts an unsigned one "tempora
 one Vercel reports as `production` — so a preview or demo deployment answers `410` by **identity**,
 before it reads the body or consults a secret (#1338). `RESEND_WEBHOOK_SECRET` is `forbidden` for the
 `preview` environment in `scripts/env-manifest.ts`, so `env:render` will not write it into `.env.demo`
-and `env:sync` drops it from that scope; the refusal does not depend on that succeeding, which is
-the point — a secret is a value and values drift, while `VERCEL_ENV` is set by the platform on every
-deployment and cannot be unset. The local signed `curl` below still works because a shell has no
-`VERCEL_ENV` at all, and neither does CI.
+and `env:sync --write` will not push it there. A row that already sits on the scope is reported by
+`env:sync --check` and retired only by `env:sync --prune --write`, which an operator runs
+deliberately — nothing deletes it by default. The refusal does not depend on either command
+succeeding, which is the point — a secret is a value and values drift, while `VERCEL_ENV` is set by
+the platform on every deployment and cannot be unset. The local signed `curl` below still works
+because a shell has no `VERCEL_ENV` at all, and neither does CI.
 
 ## What it answers, and why
 

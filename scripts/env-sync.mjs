@@ -10,6 +10,8 @@
  *   that decides what the app reads also decides what a deployment is given. It **defaults to a
  *   check** (`--check`, names and scope only, never a value); `--write` is the only path that
  *   changes a target, and `--write --target production` additionally needs `--confirm-production`.
+ *   `--prune --write` retires the rows the table marks `forbidden` for that environment; nothing
+ *   else is deletable by it (the rule is `planPrune` in `scripts/env-sync-plan.mjs`).
  *
  *   FILE MODE (`--from <file>`) — the older shape, kept because a one-off file is sometimes the
  *   honest input: `--from .env.demo --target preview --branch demo --diff` reports drift,
@@ -46,6 +48,14 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  NEVER_AT_ALL,
+  NEVER_PREVIEW,
+  planPrune,
+  pruneRefusal,
+  pruneTarget,
+} from "./env-sync-plan.mjs";
+
 const PROJECT = "prj_jvt3U5GpGv5TnmWfyqkQ5kbbou5k";
 const TEAM = "team_kA2uEuTmRU2RhACF1Len0GES";
 const API = "https://api.vercel.com";
@@ -56,48 +66,11 @@ const ROOT = path.resolve(HERE, "..");
 const TARGET_FILE = { production: ".env", preview: ".env.demo", development: ".env.local" };
 
 /**
- * Keys that must never be synced to a preview/demo target, even when the file carries
- * them. The value is the reason printed beside the decision, so the argument is visible
- * where the rule fires instead of living only in this comment.
- *
- *   ADMIN_EMAILS — the console's operator allowlist. A demo target is signed into by demo
- *   identities and shown to whoever is being shown the product; inheriting the real
- *   operators' addresses would put a working console account behind a demo login. The
- *   demo carries its own allowlist, or none.
+ * `NEVER_PREVIEW` and `NEVER_AT_ALL` are release policy, not local preference — they decide which
+ * keys may reach a demo target, which is why they are versioned in this repo instead of living in
+ * an operator's home directory. They live in `scripts/env-sync-plan.mjs` so the rule `--prune`
+ * obeys can be held still by a case without a network; this script is one of their two readers.
  */
-const NEVER_PREVIEW = new Map([
-  ["ADMIN_EMAILS", "operator allowlist — a demo target must not admit the real operators"],
-]);
-
-/**
- * Never app configuration, at any target. Each entry is a local tool credential or a
- * stray field from a pasted curl. Syncing one hands the deployment a credential the app
- * does not use, and hides a real configuration mistake behind a key that looks set.
- *
- *   VERCEL_OIDC_TOKEN        minted per deployment by Vercel for the build to call Vercel
- *                            APIs. A copy in a local file is a captured, short-lived
- *                            credential — stale by the next deploy, and a secret the
- *                            deployment already mints for itself.
- *   BWS_ACCESS_TOKEN         Bitwarden Secrets Manager token: a local tool credential.
- *                            The deployment reads its secrets from Vercel, not Bitwarden,
- *                            so nothing there has a consumer for it.
- *   STRIPE_TEST_WEBHOOK_URL  the Stripe dashboard owns the endpoint URL and the app reads
- *                            only the signing secret. Syncing the URL lets a local value
- *                            silently disagree with the endpoint Stripe posts to.
- *   client_id, client_secret, scope, grant_type
- *                            request parameters from an OAuth token exchange that was
- *                            pasted into a scratch file as a curl. They are not app env,
- *                            and encrypted they would look like configuration.
- */
-const NEVER_AT_ALL = new Map([
-  ["VERCEL_OIDC_TOKEN", "minted per deployment — a local copy is stale, not config"],
-  ["BWS_ACCESS_TOKEN", "Bitwarden access token — a local tool credential"],
-  ["STRIPE_TEST_WEBHOOK_URL", "Stripe owns the endpoint URL; the app reads the signing secret"],
-  ["client_id", "OAuth parameter left over from a pasted curl — never app env"],
-  ["client_secret", "OAuth parameter left over from a pasted curl — never app env"],
-  ["scope", "OAuth parameter left over from a pasted curl — never app env"],
-  ["grant_type", "OAuth parameter left over from a pasted curl — never app env"],
-]);
 
 function arg(name, def = null) {
   const i = process.argv.indexOf(`--${name}`);
@@ -114,6 +87,8 @@ const apply = Boolean(arg("apply", false));
 const force = Boolean(arg("force", false));
 const diff = Boolean(arg("diff", false));
 const write = Boolean(arg("write", false));
+/** Manifest mode only: retire the rows the table marks `forbidden` for this environment. */
+const prune = Boolean(arg("prune", false));
 const confirmProduction = Boolean(arg("confirm-production", false));
 /** Where the value file is read from, when the tree running this has no `.env*` (a worktree). */
 const envDirArg = arg("env-dir");
@@ -132,6 +107,19 @@ if (branch === true) {
 }
 if (target === "preview" && !branch) {
   refuse("--target preview needs --branch <git branch> so it cannot leak to other previews");
+}
+/* `--prune` deletes rows, so it refuses before anything is read: manifest-only, a writer, and
+   gated on production exactly as the value write is. The rule is pure and case-tested in
+   `scripts/env-sync-plan.mjs`, so the guard and its test cannot drift apart. */
+{
+  const reason = pruneRefusal({
+    prune,
+    write,
+    target,
+    confirmProduction,
+    from: Boolean(from),
+  });
+  if (reason) refuse(reason);
 }
 
 /* --- manifest mode: the table decides the names, the rendered file carries the values ------ */
@@ -294,6 +282,14 @@ async function manifestMode() {
   for (const key of NEVER_AT_ALL.keys()) {
     if (present.has(key)) console.log(`  policy  ${key.padEnd(38)} never a deployment's config`);
   }
+  /* The read path reports; it never deletes. Say which verb would, so a forbidden row on a live
+     scope is a thing an operator can act on instead of a line they learn to skim past. */
+  if (policy.length > 0 && write !== true) {
+    console.log(
+      `  hint    ${"--prune --write".padEnd(38)} would delete ${policy.length} forbidden row(s) ` +
+        `from ${where}`,
+    );
+  }
 
   if (write !== true) {
     console.log(
@@ -366,11 +362,34 @@ async function manifestMode() {
       console.log(`  FAILED  ${key}: ${error.message}`);
     }
   }
+  /* `--prune` is the only path that deletes, and the only names it can reach are the ones the
+     table marks `forbidden` for this environment and the target actually holds — `planPrune` is
+     the whole rule, and `tests/env-sync-prune.test.ts` is what keeps it that way. An `extra` key
+     is a decision nobody has made and a `NEVER_AT_ALL` key is a finding; both are reported by the
+     check above and neither is deletable here. */
+  let pruned = 0;
+  let pruneFailed = 0;
+  if (prune) {
+    const plan = planPrune({ forbidden, present, neverAtAll: NEVER_AT_ALL });
+    const result = await pruneTarget({
+      project: PROJECT,
+      team: TEAM,
+      token: tok,
+      plan,
+      request: call,
+    });
+    pruned = result.deleted;
+    pruneFailed = result.failed;
+    console.log(
+      `env-sync: ${pruned} forbidden row(s) pruned from ${where}` +
+        (pruneFailed ? `, ${pruneFailed} failed` : ""),
+    );
+  }
   console.log(
     `env-sync: ${todo.length - failed}/${todo.length} written to ${where} — a new deployment is ` +
       "required for these to take effect",
   );
-  if (failed > 0) process.exit(2);
+  if (failed > 0 || pruneFailed > 0) process.exit(2);
 }
 
 const tok = token();
