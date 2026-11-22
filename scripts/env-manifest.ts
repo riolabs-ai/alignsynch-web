@@ -654,6 +654,10 @@ export const OUT_OF_SCOPE: readonly OutOfScopeRow[] = [
     why: "the pid of the connection holding `algn/1`, declared to a spawned seed and proved against pg_locks before it runs (scripts/db-seed.mjs, #1321); a handoff, not a switch — never a deployment's config",
   },
   {
+    name: "UPDATES_BASE",
+    why: "the git ref the update ledger's coverage half reads `<base>..HEAD` against (scripts/updates-check.ts), defaulting to origin/main — a local override for checking a change against another branch, never deployed",
+  },
+  {
     name: "BUNDLES_DIR",
     why: "the v2 design bundle drop the fidelity audit reads its references from (scripts/design-audit.mjs); a path outside the checkout, never deployed",
   },

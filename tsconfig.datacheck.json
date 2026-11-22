@@ -33,6 +33,8 @@
     "scripts/template-ancestor.ts",
     "scripts/ui-refs.ts",
     "scripts/nav-inventory.ts",
+    "scripts/updates-check.ts",
+    "lib/docs/updates.ts",
     "scripts/metric-refs.ts",
     "scripts/metric-invariants.ts",
     "scripts/taxonomy-refs.ts",

@@ -40,6 +40,9 @@ const STATIC_ROUTES = [
   // so Next resolves them before `[...slug]`.
   "/admin/docs/features",
   "/admin/docs/releases",
+  // the owner ask of 2026-11-21 — the update ledger: one validated entry per merged pull request,
+  // and the documents the rule now lives in. Static, beside the other two derived views.
+  "/admin/docs/updates",
   // #1126 — the CRUD & Permissions matrix: the v2 spec reference for every card that adds a
   // create, edit, archive or leave action. Admin-only and read-only, and directly after Docs in
   // the rail; the source (`docs/specs/v2-prototype/crud-matrix.md`) is parsed per request.

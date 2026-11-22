@@ -186,6 +186,15 @@ export const pageCopyBudget: PageCopyBudget = zPageCopyBudget.parse({
     fixture: "data/pages/admin-docs",
     budget: 0,
   },
+  // the update ledger. Budget 0 from the first commit: the count pair, the four labels, the
+  // "not in the hub" marker and the empty/unreadable sentences are `data/pages/admin-docs.ts`, so
+  // the next literal written in `updates-ledger.tsx` is a red build.
+  "/admin/docs/updates": {
+    page: "app/(mainlayout)/admin/docs/updates/page.tsx",
+    dirs: ["components/admin/docs"],
+    fixture: "data/pages/admin-docs",
+    budget: 0,
+  },
   // #893 — the releases shelf. Budget 0: the eight fact labels, the row meta, the build sentences
   // and the unreadable panel are the same fixture. Attribution is the subdirectory, so this row and
   // the two above share it without sharing a count — each route measures its own reachable set.

@@ -34,6 +34,7 @@ import AdminConsolePage from "@/app/(mainlayout)/admin/console/page";
 import AdminDocsPage from "@/app/(mainlayout)/admin/docs/page";
 import AdminDocsFeaturesPage from "@/app/(mainlayout)/admin/docs/features/page";
 import AdminDocsReleasesPage from "@/app/(mainlayout)/admin/docs/releases/page";
+import AdminDocsUpdatesPage from "@/app/(mainlayout)/admin/docs/updates/page";
 import AdminGapsPage from "@/app/(mainlayout)/admin/gaps/page";
 import AdminHealthPage from "@/app/(mainlayout)/admin/health/page";
 import AdminSessionsPage from "@/app/(mainlayout)/admin/instances/page";
@@ -273,6 +274,14 @@ export const adminProductRoutes: readonly AdminProductRoute[] = [
     // is the newest release. The PR's `curl` table is where the 200 and the 404 are proven.
     route: "/admin/docs/releases",
     page: AdminDocsReleasesPage as unknown as ParityPage,
+    params: {},
+    open: "render",
+  },
+  {
+    // the owner ask of 2026-11-21 — the update ledger. `render`: the page reads the entries from the
+    // tree on the request and hands them to a server component, so an open gate produces a document.
+    route: "/admin/docs/updates",
+    page: AdminDocsUpdatesPage as unknown as ParityPage,
     params: {},
     open: "render",
   },

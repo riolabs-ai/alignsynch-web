@@ -22,13 +22,16 @@
  */
 import {
   type ChangelogEntry,
+  type ScopedCommit,
   allScopedCommits,
   limitsOf,
   releasePathOf,
+  scopedCommits,
   sectionTitles,
   tagUrl,
 } from "@/lib/docs/changelog";
 import type { ReleaseRecord } from "@/lib/docs/manifest";
+import { ADMIN_DOCS_UPDATES_PATH, type UpdateRow } from "@/lib/docs/updates";
 import { docHref, type DocsRow } from "@/lib/docs/rows";
 
 /** Where this screen lives. The one spelling, so a link and a route cannot drift. */
@@ -46,6 +49,24 @@ export const ADMIN_DOCS_FEATURES_PATH = "/admin/docs/features";
  */
 export function releaseHref(version: string): string {
   return `${ADMIN_DOCS_RELEASES_PATH}?release=${encodeURIComponent(version)}`;
+}
+
+/**
+ * One bullet of a release's entry, with the ledger entry its PR wrote beside it — the per-release
+ * commit list this screen gained with the update ledger (the owner ask of 2026-11-21).
+ *
+ * A release theme is a claim about a set of merges, and this row is the evidence: the commit's own
+ * type and scope, the sentence the entry wrote for it, and — when the ledger has one — who notices
+ * and where the rule now lives. `update` is `null` for a commit whose PR wrote no entry, and the
+ * screen says so rather than leaving a blank, because "no record" and "no impact" are different.
+ */
+export interface ReleaseCommitRow {
+  /** The pull request the bullet links (`#1340`), or `null` when the bullet names none. */
+  readonly pr: string | null;
+  readonly type: string;
+  readonly scope: string;
+  readonly summary: string;
+  readonly update: UpdateRow | null;
 }
 
 /** One release, as this screen draws it: the entry's facts, the record's judgement, the addresses. */
@@ -73,6 +94,14 @@ export interface ReleaseRow {
   readonly areas: readonly string[];
   /** The feature scopes (`feat(<area>)`) the entry carries, in order and deduplicated. */
   readonly featureAreas: readonly string[];
+  /**
+   * The merges the entry names, in its own order, each joined to its update-ledger entry when that
+   * PR wrote one. Empty for an entry whose bullets carry no conventional-commit scope — the screen
+   * says so rather than inventing rows.
+   */
+  readonly commits: readonly ReleaseCommitRow[];
+  /** This screen's address for a commit's ledger entry — `…/updates#pr-<n>`. */
+  readonly updatesHref: string;
   /** Does the entry carry a `Known limits` block? `changelog:check` requires one. */
   readonly hasLimits: boolean;
   /** This screen's address for the row — `?release=<version>`. */
@@ -91,8 +120,10 @@ export interface ReleaseRow {
 export function releaseRows(
   entries: readonly ChangelogEntry[],
   record: ReleaseRecord,
+  updates: readonly UpdateRow[] = [],
 ): ReleaseRow[] {
   const byVersion = new Map(record.releases.map((row) => [row.version, row]));
+  const byPr = new Map(updates.map((row) => [row.pr, row]));
   return entries.map((entry) => {
     const judged = byVersion.get(entry.version);
     if (judged === undefined) {
@@ -122,10 +153,33 @@ export function releaseRows(
       sections: sectionTitles(entry),
       areas,
       featureAreas,
+      commits: commitRows(scopedCommits(entry), byPr),
+      updatesHref: ADMIN_DOCS_UPDATES_PATH,
       hasLimits: limitsOf(entry) !== null,
       shelfHref: releaseHref(entry.version),
     };
   });
+}
+
+/**
+ * One entry's commits, each joined to the ledger entry its PR wrote.
+ *
+ * The join is by PR number and nothing else: the ledger's filename *is* the pull request, so a
+ * matching number is the only evidence available at render time, and the `sha` a merged entry
+ * carries is not the squash commit this file knows. A bullet that names no PR gets `null` rather
+ * than a guess.
+ */
+function commitRows(
+  commits: readonly ScopedCommit[],
+  byPr: ReadonlyMap<number, UpdateRow>,
+): ReleaseCommitRow[] {
+  return commits.map((commit) => ({
+    pr: commit.pullRequest,
+    type: commit.type,
+    scope: commit.scope,
+    summary: commit.summary,
+    update: commit.pullRequest === null ? null : (byPr.get(Number(commit.pullRequest)) ?? null),
+  }));
 }
 
 /**

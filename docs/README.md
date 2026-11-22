@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**202 documents in 9 sections.** Every page carries the same nav block, generated
+**203 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -41,7 +41,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
 - [Operations](#operations) — 22 documents
-- [Specs & design briefs](#specs-design-briefs) — 85 documents
+- [Specs & design briefs](#specs-design-briefs) — 86 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
@@ -126,6 +126,7 @@ What the product promises, written down before it was built.
 - [`specs/prototype-save.md`](specs/prototype-save.md) — **Prototype copy saves** — Where a reviewer's in-page copy edits go when they press Save, and what the implementation reads from them?
 - [`specs/prototype-wiring.md`](specs/prototype-wiring.md) — **Prototype wiring** — What of the one prototype screen moves into the build, and in what order?
 - [`specs/README.md`](specs/README.md) — **Specifications index** — What are these research specs, and what do they have in common?
+- [`specs/admin-updates.md`](specs/admin-updates.md) — **The update ledger** — What records what a single merge changed, and where does each entry's rule live?
 - [`specs/spec-as2-style-home-redesign/ASSET-SOURCES.md`](specs/spec-as2-style-home-redesign/ASSET-SOURCES.md) — **AS2 redesign — asset sources and credits** — Where did each photograph come from, who took it, and under which licence?
 - [`specs/spec-as2-style-home-redesign/IMPLEMENTATION-PROMPT.md`](specs/spec-as2-style-home-redesign/IMPLEMENTATION-PROMPT.md) — **AS2 home redesign — implementation brief** — Which existing components does the redesign reuse, and what must not change?
 - [`specs/spec-as2-style-home-redesign/README.md`](specs/spec-as2-style-home-redesign/README.md) — **AS2 home redesign (handoff)** — What is in the approved home-redesign package, and how do I preview it?
