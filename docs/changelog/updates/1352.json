@@ -1,0 +1,9 @@
+{
+  "pr": 1352,
+  "date": "2026-11-22",
+  "area": "release",
+  "summary": "A generated release entry joins the update ledger, so every bullet carries a who-notices clause and a link per specs[] path, and an unrecorded feat/fix is named in the preamble instead of being dropped.",
+  "reader_impact": "Whoever reads the next release note gets each change's who-notices clause and the document its rule now lives in, instead of a census of commit subjects.",
+  "specs": ["docs/operations/releasing.md"],
+  "risk": "low"
+}
