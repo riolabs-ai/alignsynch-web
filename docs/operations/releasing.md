@@ -188,6 +188,39 @@ tagged** and validate it before publication ships it:
 bash scripts/release.sh --check-limits limits.md
 ```
 
+#### The entry is assembled from the update ledger
+
+A generated entry is not a census of commit subjects. Every bullet whose PR has an entry in
+`docs/changelog/updates/<pr>.json` is **joined**: the entry's `reader_impact` as a `Who notices:`
+clause, and a link per `specs[]` path, pointing at the tagged tree
+(`blob/v<version>/<path>`) so a reader lands on the document as this release shipped it.
+
+```text
+- `feat(admin)` — the update ledger, one validated entry per PR ([#1346]($SLUG_URL/pull/1346)) · Who notices: An admin can see what one merge changed and which document the rule now lives in. · Rule: [docs/specs/admin-updates.md]($SLUG_URL/blob/v<version>/docs/specs/admin-updates.md)
+```
+
+A merged `feat`/`fix` in range with **no** entry is named in the entry's preamble — a blockquote
+after the heading listing the PR (or the subject, when the commit carries no `(#n)` marker). That is
+a finding about the range, never a refusal: a doc-only PR owes no entry, a release cut before the
+ledger existed owes nothing at all, and neither is backfilled. The join's reader is
+`scripts/release-ledger.mjs`; the parsing and validation are `lib/docs/updates.ts`, the same module
+`data:check` E44 compiles, so the release lane and the gate cannot disagree about what a valid entry
+is.
+
+`release:check` proves two things about it, and only while the newest entry is **untagged**:
+
+- every `specs[]` path in the ledger exists in the tree — a row whose document moved would publish
+  a release-note link to a 404;
+- a bullet that names a PR the ledger has a row for carries that row's `reader_impact` and its
+  `specs[]` path. A mismatch means the entry was hand-patched instead of regenerated: re-run
+  `--dry-run` and replace the entry rather than editing the clause.
+
+A _published_ entry is not re-judged — the tag fixes it, and a check that can only report published
+text cannot prevent anything. An unreadable ledger is a `release:check` failure (E44 refuses the same
+tree) but **not** a blocked cut: the entry is written with no rows joined, and its preamble says
+which `feat`/`fix` commits arrived unrecorded. A tree with no `docs/changelog/updates/` directory at
+all is a pre-ledger tree and is not refused.
+
 `pnpm changelog` then derives `docs/changelog/v<x-y-z>.md` from the entry, and `pnpm changelog:check`
 — a gate step — fails until the page and the entry say the same thing.
 

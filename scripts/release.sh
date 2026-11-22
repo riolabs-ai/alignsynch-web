@@ -22,6 +22,20 @@
 # --limits <file> supplies the Known limits block for a generated entry. Without it a generation
 # refuses to write: the block is public release-note content, so a human writes it.
 #
+# **An entry is assembled from the update ledger, not only from commit subjects (issue #1351).** A
+# census says four commits happened; the ledger (`docs/changelog/updates/<pr>.json`, shipped in
+# #1346) says per merged pull request what changed, **who notices** (`reader_impact`) and where the
+# rule now lives (`specs[]`) — the two things a subject cannot say. So every bullet whose PR has an
+# entry is joined: `· Who notices: …` and `· Rule: <a link per specs[] path>`. A merged `feat`/`fix`
+# in range with **no** entry is named in the entry's preamble instead: an unrecorded change is a
+# finding about the range, never a refusal of the cut, and nothing is backfilled for a commit that
+# predates the ledger. The join's reader half is `scripts/release-ledger.mjs` (one `node` call for
+# the whole range, parsed by `lib/docs/updates.ts` — the same module `data:check` E44 compiles) and
+# `--check` proves the result: while the newest entry is untagged, a bullet that names a PR the
+# ledger has a row for must carry that row's `reader_impact` and its `specs[]` path, so a broken
+# link surfaces before the tag rather than in public notes. A *published* entry is fixed text and is
+# not re-judged — `--check-limits` says the same thing about the block it reads.
+#
 # **The version may be written either way (#1248):** `2.0.0-rc1.3` or `v2.0.0-rc1.3`. The tag is
 # always `v<version>` — never doubled — and a run that was given the tagged spelling prints the bare
 # version it used, so the transcript answers which form it got. All five release verbs share one
@@ -98,6 +112,12 @@ CHANGELOG="CHANGELOG.md"
 VERSION_TOOL="scripts/release-version.mjs"
 LIMITS_TOOL="scripts/release-limits.mjs"
 RECORD_TOOL="scripts/release-record.mjs"
+LEDGER_TOOL="scripts/release-ledger.mjs"
+# Where the update ledger lives, relative to the root. One spelling, shared with `lib/docs/updates.ts`
+# (`UPDATES_DIR`) — the module is TypeScript and this script is not, so the string is repeated and
+# `tests/release-ledger.test.ts` asserts the two agree.
+LEDGER_DIR="docs/changelog/updates"
+
 # A subject is conventional when a lowercase type follows with an optional `(scope)` then a
 # separator: the `: ` the convention specifies, or the ` · ` and ` — ` this repo's commits use for
 # the same thing. All three are the same claim — a type and a scope — so all three classify:
@@ -268,22 +288,131 @@ subject_class() { # Added | Fixed | Maintenance — every commit lands in one, s
   esac
 }
 
-bullet() { # <subject> -> one markdown line; the PR marker becomes its link, so nothing repeats
-  local prefix text pr=""
+# --- the update ledger ----------------------------------------------------------
+# The ledger is the record a *reader* needs: per merged pull request, `summary`, `reader_impact` and
+# the `specs[]` the rule now lives in (`docs/changelog/updates/<pr>.json`, #1346). A commit subject
+# cannot say "who notices", which is why the rc2 note was a census. So the generator joins it.
+#
+# **One node call for the whole range.** `release-ledger.mjs table` prints every entry as one TSV row
+# and the shell keeps it in `LEDGER_ROWS`; a per-bullet subprocess would spawn node forty times for a
+# forty-commit range. The lookup is `awk` over that string rather than a bash associative array,
+# because this script still runs on the bash 3.2 macOS ships (see the `date -v-1d` fallback below),
+# and `declare -A` does not exist there.
+#
+# **A ledger that cannot be read never stops a cut.** The parse failure is printed, the table is
+# empty, and the entry gets a preamble naming every unrecorded `feat`/`fix` — the honest reading of a
+# range nobody recorded. `--check` turns the same failure into a refusal, because at that point a
+# human is being asked to sign the tree rather than to produce notes from it.
+LEDGER_ROWS=""
+LEDGER_LOADED=0
+LEDGER_STATUS=0
+LEDGER_ABSENT=0
+
+load_ledger() {
+  if [ "$LEDGER_LOADED" -eq 1 ]; then return 0; fi
+  LEDGER_LOADED=1
+  # **A tree with no ledger directory is a tree from before the ledger existed**, not a broken one:
+  # nothing is backfilled for it and nothing is refused. This is also what makes a probe tree that
+  # copies a single script behave like the pre-ledger release it is modelling.
+  if [ ! -d "$ROOT/$LEDGER_DIR" ]; then
+    LEDGER_ABSENT=1
+    return 0
+  fi
+  if [ ! -f "$ROOT/$LEDGER_TOOL" ] || ! command -v node >/dev/null 2>&1; then
+    LEDGER_STATUS=1
+    printf 'release: %s is not runnable here — this entry joins no ledger rows\n' "$LEDGER_TOOL" >&2
+    return 0
+  fi
+  LEDGER_ROWS="$(node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON "$ROOT/$LEDGER_TOOL" table)" || {
+    LEDGER_STATUS=$?
+    LEDGER_ROWS=""
+    printf 'release: the %s ledger could not be read (see above) — this entry joins no ledger rows\n' "$LEDGER_DIR" >&2
+  }
+  return 0
+}
+
+# `awk` over the table, not `grep "^\$pr\t"`: a PR number is a number, and `grep -w 134` would match
+# a row for 1346. The field is compared whole.
+ledger_field() { # <pr> <2|3> -> the row's reader_impact or specs, or ""
+  awk -F'\t' -v pr="$1" -v field="$2" '$1 == pr { print $field; exit }' <<<"$LEDGER_ROWS"
+}
+ledger_impact() { ledger_field "$1" 2; }
+ledger_specs() { ledger_field "$1" 3; }
+
+ledger_clause() { # <pr> <version> -> " · Who notices: … · Rule: <links>", or "" when the PR has no entry
+  local pr="$1" version="$2" impact specs spec links="" clause
+  if [ -z "$pr" ]; then return 0; fi
+  impact="$(ledger_impact "$pr")"
+  if [ -z "$impact" ]; then return 0; fi
+  specs="$(ledger_specs "$pr")"
+  # The link target is the tagged tree, so a reader of the published note lands on the document as
+  # this release shipped it — never on whatever `main` says next month. Without a remote (a probe
+  # tree, a checkout with no origin) the path is printed bare rather than invented as a URL.
+  for spec in $specs; do
+    if [ -n "$SLUG_URL" ]; then
+      links="${links}${links:+, }[$spec]($SLUG_URL/blob/v$version/$spec)"
+    else
+      links="${links}${links:+, }\`$spec\`"
+    fi
+  done
+  clause=" · Who notices: $impact"
+  if [ -n "$links" ]; then clause="$clause · Rule: $links"; fi
+  printf '%s' "$clause"
+}
+
+# A `feat`/`fix` in range with no entry is named in the preamble. Not a refusal: an unrecorded
+# commit is a finding about the range, and a doc-only or pre-ledger release must still cut. A commit
+# with no `(#n)` marker has no PR to look up, so the subject is named instead — the point is that the
+# reader can see which changes arrived without their record.
+ledger_preamble() { # <subjects> -> the warning block, or "" when every feat/fix in range is recorded
+  local subjects="$1" line pr label missing="" count=0
+  while IFS= read -r line; do
+    [ -n "$line" ] || continue
+    case "$(subject_class "$line")" in
+      Added | Fixed) ;;
+      *) continue ;;
+    esac
+    pr="$(subject_pr "$line")"
+    if [ -z "$pr" ]; then
+      label="\`$(entry_text "$line")\`"
+    else
+      if [ -n "$(ledger_impact "$pr")" ]; then continue; fi
+      label="#$pr"
+    fi
+    count=$((count + 1))
+    missing="${missing}${missing:+, }$label"
+  done <<<"$subjects"
+  if [ "$count" -eq 0 ]; then return 0; fi
+  printf '> **Ledger coverage — %s `feat`/`fix` commit(s) in this range carry no `%s/<pr>.json` entry:** %s. Their bullets read as the commit subject alone. The ledger entry — its `reader_impact` and the `specs[]` the rule now lives in — is written in the pull request that makes the change, so this is a finding about the range, never a refusal of the cut.\n' \
+    "$count" "$LEDGER_DIR" "$missing"
+}
+
+# A curated entry carries a `### Commits` block, which is provenance rather than prose: it lists every
+# PR its bullets may not name. So the join check reads the entry's prose only, up to that block — a
+# curated entry that deliberately drew its own words is not told it forgot the ledger's.
+ledger_prose() { # <entry> -> the entry without its curated `### Commits` block
+  awk '/^### Commits[[:space:]]*$/ { exit } { print }' <<<"$1"
+}
+
+bullet() { # <subject> <version> -> one markdown line; the PR marker becomes its link, so nothing repeats
+  local prefix text pr="" line
   prefix="$(subject_prefix "$1")"
   text="$(entry_text "$1")"
   pr="$(subject_pr "$1")"
   if [ -n "$prefix" ]; then
     if [ -n "$pr" ] && [ -n "$SLUG_URL" ]; then
-      printf -- '- `%s` — %s ([#%s](%s/pull/%s))' "$prefix" "$text" "$pr" "$SLUG_URL" "$pr"
+      line="$(printf -- '- `%s` — %s ([#%s](%s/pull/%s))' "$prefix" "$text" "$pr" "$SLUG_URL" "$pr")"
     else
-      printf -- '- `%s` — %s' "$prefix" "$text"
+      line="$(printf -- '- `%s` — %s' "$prefix" "$text")"
     fi
   elif [ -n "$pr" ] && [ -n "$SLUG_URL" ]; then
-    printf -- '- %s ([#%s](%s/pull/%s))' "$text" "$pr" "$SLUG_URL" "$pr"
+    line="$(printf -- '- %s ([#%s](%s/pull/%s))' "$text" "$pr" "$SLUG_URL" "$pr")"
   else
-    printf -- '- %s' "$text"
+    line="$(printf -- '- %s' "$text")"
   fi
+  # The ledger's half of the line: who notices, and where the rule now lives. Empty when this PR has
+  # no entry — that case is named in the preamble instead, never guessed at here.
+  printf '%s%s' "$line" "$(ledger_clause "$pr" "$2")"
 }
 
 commits_between() { # <from-ref or ""> <to-ref> -> one subject per line
@@ -303,17 +432,22 @@ previous_tag() { # <tag-ref> -> the nearest older version tag, or "" when this i
 }
 
 generate_entry() { # <version> <from> <to> <limits-file>
-  local version="$1" from="$2" to="$3" limits="$4" date section body line subjects
+  local version="$1" from="$2" to="$3" limits="$4" date section body line subjects preamble
   date="${RELEASE_DATE:-$(date -u +%F)}"
   subjects="$(commits_between "$from" "$to" | release_commits)"
+  load_ledger
 
   printf '## [%s] - %s\n' "$version" "$date"
+  # Before the sections: what this range carries and the ledger does not. Silent when everything is
+  # recorded, which is the normal case — a preamble on every release would stop being read.
+  preamble="$(ledger_preamble "$subjects")"
+  if [ -n "$preamble" ]; then printf '\n%s\n' "$preamble"; fi
   for section in Added Fixed Maintenance; do
     body=""
     while IFS= read -r line; do
       [ -n "$line" ] || continue
       [ "$(subject_class "$line")" = "$section" ] || continue
-      body="${body}$(bullet "$line")"$'\n'
+      body="${body}$(bullet "$line" "$version")"$'\n'
     done <<<"$subjects"
     [ -n "$body" ] || continue
     printf '\n### %s\n\n%s' "$section" "$body"
@@ -342,6 +476,7 @@ cmd_check() {
   [ -f "$CHANGELOG" ] || die "$CHANGELOG is missing — a release is an entry, and there is none"
 
   local newest pkg version bullets text entry tag from examined=0 missing=0 first_missing=""
+  local pr impact specs spec prose joined=0 tagged=0
 
   if grep -qE '^## \[Unreleased\]' "$CHANGELOG"; then
     complain "an '## [Unreleased]' heading is present — an entry is a released version, not a parking space"
@@ -397,6 +532,60 @@ cmd_check() {
     fi
   else
     note "v$newest is not tagged yet — commit coverage is checked from the moment it is"
+  fi
+
+  # --- the ledger join (issue #1351) ---------------------------------------------
+  # Two facts, and they are not the same fact:
+  #
+  #   1. **every `specs[]` path on disk exists in this tree** — a row whose document moved silently
+  #      publishes a release-note link to a 404, and this is the only place in the release lane that
+  #      reads the ledger as release-note content (`data:check` E44 checks the same paths for the
+  #      admin screen, in a different lane and against a different base ref);
+  #   2. **an untagged entry joined every row it names** — a bullet carrying `([#n](…))` for a PR the
+  #      ledger has a row for must carry that row's `reader_impact` and its `specs[]` path. That is
+  #      the "broken link surfaces before the tag" half, and it is checked only while the entry is
+  #      untagged: a *published* entry is fixed text, so re-judging it cannot prevent anything —
+  #      the same reason `--check-limits` reads the candidate block rather than a tagged one.
+  #
+  # The prose read stops at a curated entry's `### Commits` block: that block lists every PR in the
+  # range as provenance, so scanning it would demand a joined clause from an entry whose whole point
+  # was human words.
+  load_ledger
+  if [ "$LEDGER_STATUS" -ne 0 ]; then
+    complain "the $LEDGER_DIR ledger could not be read — no bullet can be shown to join it (data:check E44 refuses the same tree)"
+  elif [ "$LEDGER_ABSENT" -eq 1 ]; then
+    # A pre-ledger tree: no directory, nothing to join, and nothing to refuse. The entry says so in
+    # its preamble, because a reader of the notes must not read silence as coverage.
+    note "this tree carries no $LEDGER_DIR ledger — the entry joins no rows, and says so"
+  elif [ -z "$LEDGER_ROWS" ]; then
+    note "the $LEDGER_DIR ledger is empty — this entry joins no rows"
+  else
+    entry="$(entry_of "$newest")"
+    prose="$(ledger_prose "$entry")"
+    if git rev-parse -q --verify "refs/tags/v$newest" >/dev/null 2>&1; then tagged=1; fi
+    while IFS=$'\t' read -r pr impact specs; do
+      [ -n "$pr" ] || continue
+      for spec in $specs; do
+        [ -f "$spec" ] ||
+          complain "the $LEDGER_DIR/$pr.json ledger entry names $spec, which this tree does not carry — the release-note link would 404"
+      done
+      # `([#n](` is the bullet's marker: the preamble's bare `#n` list must not read as joined.
+      if [ "$tagged" -eq 0 ] && grep -Fq -- "([#$pr](" <<<"$prose"; then
+        joined=$((joined + 1))
+        if ! grep -Fq -- "$impact" <<<"$entry"; then
+          complain "entry [$newest] names #$pr but does not carry that PR's ledger reader_impact — regenerate the entry (bash scripts/release.sh --dry-run $newest --limits <file>), never hand-patch it"
+        fi
+        for spec in $specs; do
+          grep -Fq -- "$spec" <<<"$entry" ||
+            complain "entry [$newest] names #$pr but links no $spec — the ledger's specs[] is where the rule this change made now lives"
+        done
+      fi
+    done <<<"$LEDGER_ROWS"
+    if [ "$tagged" -eq 1 ]; then
+      note "the ledger join was checked while v$newest was untagged — a published entry is fixed text"
+    else
+      note "entry [$newest] joins $joined ledger row(s), and every specs[] path on disk resolves"
+    fi
   fi
 
   if [ "$CHECK_FAILED" -ne 0 ]; then
