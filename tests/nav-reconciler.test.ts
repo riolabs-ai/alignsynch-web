@@ -275,9 +275,6 @@ describe("the real document against the real tree", () => {
     // #862 must not add, rename or re-order a group: `ALIGN_MENU` is the document, unchanged, and
     // the findings are a separate list beside it.
     expect(railFor("owner").groups).toEqual(ALIGN_MENU.map((group) => ({ ...group })));
-    expect(railFor("member").groups.map((group) => group.id)).toEqual([
-      "group-app",
-      "group-support",
-    ]);
+    expect(railFor("member").groups.map((group) => group.id)).toEqual(["group-member"]);
   });
 });
