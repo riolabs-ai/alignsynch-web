@@ -635,14 +635,14 @@ function NavGroup({
   return (
     <div className="grid gap-1" data-nav-group={label ?? id}>
       {/*
-       * No heading when the group has none: `group-project-spec` is the one group that names
-       * nothing, because it sits above the first heading and holds a single row that already says
-       * what it is. A heading is drawn only when the document gave the group a label id.
+       * A heading is drawn only when the document gave the group a label id. Since v5 every group in
+       * the document has one — the title-less group was v3's way to carry a single row above the
+       * first heading, and the 2026-11-23 reorganisation dissolved it — so this branch is the
+       * schema's remaining allowance rather than a shape the rail ships.
        *
        * `data-nav-group` carries the resolved words for every group that has them — that attribute
        * is a QA handle written into the parity manifest's renders, so the labelled groups keep the
-       * markup they already shipped — and falls back to the group's id for the one group that draws
-       * no heading.
+       * markup they already shipped — and falls back to the group's id for a group with no heading.
        */}
       {label === undefined ? null : (
         <p

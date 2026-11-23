@@ -1,57 +1,78 @@
 {
-  "version": 4,
-  "note": "v4 (#862): the reconciler. `groups` still places every rail row; `unlisted` now accounts for the shell surfaces the rail does not owe, by address and reason, and `data:check` E43 fails the build on any route under app/(mainlayout) that neither list names. The drawn rail is unchanged by this version.",
+  "version": 5,
+  "note": "v5 (2026-11-23): the five-section rail. The groups are now the taxonomy the `unlisted` reasons used to bury — Start, Operations, Content & configuration, Specs & docs, Member — in a stable order, and a surface joins the section its family names. The schema did not change; the arrangement did, and the version is how a later edit is a bump plus a diff rather than a silent reinterpretation of the same number. No route was added, removed, renamed or redirected: `data:check` E43 still accounts for every route under app/(mainlayout), and every href drawn here resolved before this version did.",
   "groups": [
     {
-      "id": "group-project-spec",
+      "id": "group-start",
+      "label": "group-start",
       "items": [
         {
-          "id": "admin-spec",
-          "href": "/admin/spec",
-          "icon": "spec",
-          "needs": "stakeholder",
-          "capability": "spec-read",
-          "note": "#1252, re-homed 2026-11-19 at the owner's request — the project spec is a group of its own, drawn above the Admin heading, and it is the only row there. It is not an operator destination: it is the one staff-adjacent surface a stakeholder reads and reviews against. needs: stakeholder is the rung (between member and support), and capability: spec-read is the gate the rung cannot express — support outranks a stakeholder and is refused the spec, so the row names both. The group carries no label on purpose: a one-row group sitting above the first heading does not get one, and any heading would repeat the row's own word. One row, one href."
+          "id": "admin-start",
+          "href": "/admin/start",
+          "icon": "dashboard",
+          "needs": "admin",
+          "note": "The admin landing, surfaced 2026-11-23 (nav evaluation F1). It was `unlisted` on the ruling that the account menu's admin door was enough; the rail's job is to name destinations, and a landing no rail row names is the one surface an operator cannot see from the rail. The account-menu door (#1376) stays — this is a second door to one destination, not a replacement, which is the one place that ruling read wrong rather than the ruling itself. `dashboard` is the glyph the member's Start row draws: both rows open a landing."
         }
       ]
     },
     {
-      "id": "group-admin",
-      "label": "group-admin",
+      "id": "group-operations",
+      "label": "group-operations",
       "items": [
-        {
-          "id": "admin-inbox",
-          "href": "/admin/inbox",
-          "icon": "inbox",
-          "needs": "support",
-          "note": "#542 phase 2 — the one queue a support seat works, and the only row in this group below admin. The hub page links neither this nor the health row."
-        },
         {
           "id": "console",
           "href": "/admin/console",
           "icon": "console",
           "needs": "admin",
-          "note": "#542 phase 2 — the hub for its own subtree (users, templates, relationships). It had no row anywhere in the UI before this, and it leads the group."
+          "note": "#542 phase 2 — the hub for its own subtree (users, templates, relationships), first in the section because every other operator surface hangs off it or beside it. Its three children stay unlisted: the hub names the family, and a row per detail list would be that family written twice."
         },
         {
           "id": "admin-instances",
           "href": "/admin/instances",
           "icon": "instances",
           "needs": "admin",
-          "note": "#542 phase 2 — the console's five existing destinations, in the order they were carried."
+          "note": "#542 phase 2 — every relationship the platform holds, after the hub that owns the surface."
         },
         {
           "id": "console-gaps",
           "href": "/admin/gaps",
           "icon": "gaps",
-          "needs": "admin"
+          "needs": "admin",
+          "note": "The Gap across every relationship: the same operator's question, one level up from a single pair."
         },
+        {
+          "id": "admin-inbox",
+          "href": "/admin/inbox",
+          "icon": "inbox",
+          "needs": "support",
+          "note": "#542 phase 2 — the one queue a support seat works, and the only row in this section below admin. It sits with the operator surfaces because that is what it is, not with the member's help pair it shared a heading with under #929."
+        },
+        {
+          "id": "review",
+          "href": "/admin/review",
+          "icon": "review",
+          "needs": "admin",
+          "note": "#665 — the review shelf: published artifacts, each with its to-dos and its feedback. It was one of the two staff rows #929 put inside the member's Support group; Operations is the family the nav evaluation named (F2, F5)."
+        },
+        {
+          "id": "admin-health",
+          "href": "/admin/health",
+          "icon": "health",
+          "needs": "admin",
+          "note": "Platform health — the second of the two staff rows #929 had put in Support, back beside the surfaces it reports on."
+        }
+      ]
+    },
+    {
+      "id": "group-content",
+      "label": "group-content",
+      "items": [
         {
           "id": "admin-billing",
           "href": "/admin/billing",
           "icon": "billing",
           "needs": "admin",
-          "note": "#505 — billing control: the plan each relationship carries, and the owner's comp."
+          "note": "#505 — billing control: the plan each relationship carries, and the owner's comp. A change to a *setting*, which is why it belongs here and not in the operator list."
         },
         {
           "id": "admin-broadcast",
@@ -61,38 +82,81 @@
           "note": "#507 — the broadcast: a one-off notice to the news list."
         },
         {
-          "id": "admin-docs",
-          "href": "/admin/docs",
-          "icon": "library",
+          "id": "admin-email-templates",
+          "href": "/admin/email-templates",
+          "icon": "inbox",
           "needs": "admin",
-          "note": "#901 — the docs home renders the 117-page manifest and had no row, so the tree was URL-only. It sits after the review shelf and before the log: the reference you look things up in, then what the rows above it did."
+          "note": "#1138 — the transactional-mail override editor: what the product writes to a person. `inbox` is the glyph the console's own mail surface uses; it is not drawn by another row in this section."
         },
         {
           "id": "admin-permissions",
           "href": "/admin/permissions",
           "icon": "review",
           "needs": "admin",
-          "note": "#1126 — the CRUD & Permissions matrix, directly after Docs because it is the second reference: the docs say how the product works, this says which role may do what. `review` is the checklist glyph and no name in the set draws a table; the console's own review row lives in group-support, so the reuse never reads as the same destination in one rail."
-        },
-        {
-          "id": "admin-email-templates",
-          "href": "/admin/email-templates",
-          "icon": "inbox",
-          "needs": "admin",
-          "note": "#1138 — the transactional-mail override editor, the third reference row: the docs say how the product works, CRUD says who may do it, and this says what it writes to a person. `inbox` is the glyph the console's own mail surface uses, and it is not drawn by any other row in this group — a distinct letter is the point of a rail. It carries `needs: admin` so a support seat does not see it, which is the issue's own condition."
+          "note": "#1126 — the CRUD & Permissions matrix: which role may do what. `review` is the checklist glyph and no name in the set draws a table; the review *shelf* is a row in Operations, so the reuse never reads as the same destination inside one section."
         },
         {
           "id": "admin-audit",
           "href": "/admin/audit",
           "icon": "audit",
           "needs": "admin",
-          "note": "#503 — the log every row above it commits into, and last in the group for that reason: an operator reads it after acting."
+          "note": "#503 — the log every row above it commits into, and last in the section for that reason: an operator reads it after acting."
+        },
+        {
+          "id": "admin-brand",
+          "href": "/admin/brand",
+          "icon": "relationships",
+          "needs": "admin",
+          "note": "The brand and audience profile (#906), surfaced 2026-11-23 (nav evaluation F6). It was `unlisted` because the admin notice bar's CTA already opens it on every screen; it is a *configuration* surface, and this section is where a reader looks for one. `relationships` is the glyph this set draws for people, and an audience profile is about people."
         }
       ]
     },
     {
-      "id": "group-app",
-      "label": "group-app",
+      "id": "group-specs",
+      "label": "group-specs",
+      "items": [
+        {
+          "id": "admin-spec",
+          "href": "/admin/spec",
+          "icon": "spec",
+          "needs": "stakeholder",
+          "capability": "spec-read",
+          "note": "#1252 — the project spec. It led the rail in a title-less group of its own under the 2026-11-19 ruling; that group held one row and is dissolved here, because a section header over a single link is a heading doing no work (nav evaluation F3). `needs: stakeholder` is the rung (between member and support), and `capability: spec-read` is the gate the rung cannot express — support outranks a stakeholder and is refused the spec, so the row names both."
+        },
+        {
+          "id": "admin-docs",
+          "href": "/admin/docs",
+          "icon": "library",
+          "needs": "admin",
+          "note": "#901 — the docs home, which renders the 117-page manifest. Its two railed sub-surfaces are named below it; `/admin/docs/features` stays inside its tree."
+        },
+        {
+          "id": "admin-spec-validation",
+          "href": "/admin/spec/validation",
+          "icon": "review",
+          "needs": "stakeholder",
+          "capability": "spec-read",
+          "note": "The project spec's validation page (#1252), surfaced 2026-11-23 (nav evaluation F4). It was `unlisted` on \"the submenu reaches its pages\"; the spec's two pages are one family, and a reader asking what is proven should not have to open the home first. Same gate pair as its parent, because the page calls `requireSpecReader()` itself."
+        },
+        {
+          "id": "admin-docs-updates",
+          "href": "/admin/docs/updates",
+          "icon": "audit",
+          "needs": "admin",
+          "note": "The per-PR update ledger, surfaced 2026-11-23 (nav evaluation F4 — \"where is the changelog?\" had no stable answer from the rail). `audit` is the scroll glyph: a ledger is a log of entries, which is what an operator reads this page for."
+        },
+        {
+          "id": "admin-docs-releases",
+          "href": "/admin/docs/releases",
+          "icon": "broadcast",
+          "needs": "admin",
+          "note": "The release notes, surfaced 2026-11-23 with the ledger beside it — the two halves of one question. `broadcast` is the megaphone: a release note is the announcement whose entries the ledger records."
+        }
+      ]
+    },
+    {
+      "id": "group-member",
+      "label": "group-member",
       "items": [
         {
           "id": "start",
@@ -121,32 +185,14 @@
           "href": "/dashboard/chat",
           "icon": "chat",
           "needs": "member",
-          "note": "#1131 — one thread per relationship, last of the member's destinations as the v2 rail draws it (Start · My Relationships · Templates · Chat). NOT /chat: that address is the quiz product's conversations, gated to the quiz brand (#300), and it answers 404 on the build this rail belongs to."
-        }
-      ]
-    },
-    {
-      "id": "group-support",
-      "label": "group-support",
-      "items": [
-        {
-          "id": "review",
-          "href": "/admin/review",
-          "icon": "review",
-          "needs": "admin",
-          "note": "#665 — the review shelf: published artifacts, each with its to-dos and its feedback. One row, between Broadcast and the audit log."
+          "note": "#1131 — one thread per relationship, last of the member's own work as the v2 rail draws it (Start · My Relationships · Templates · Chat). NOT /chat: that address is the quiz product's conversations, gated to the quiz brand (#300), and it answers 404 on the build this rail belongs to."
         },
         {
           "id": "how-it-works",
           "href": "/dashboard/help",
           "icon": "help",
-          "needs": "member"
-        },
-        {
-          "id": "admin-health",
-          "href": "/admin/health",
-          "icon": "health",
-          "needs": "admin"
+          "needs": "member",
+          "note": "The help centre. It is in the member's section because its reader is a member: the 2026-11-23 reorganisation folded the old Support group into this one, and this row plus the contact row below are the help/contact tail of it, not a second workspace."
         },
         {
           "id": "support",
@@ -154,95 +200,75 @@
           "icon": "support",
           "needs": "member",
           "tourAnchor": "help",
-          "note": "The first-run tour points at this row (data-tour=\"help\"), still in the Support group — group-support is the help/contact pair, not a second workspace."
+          "note": "The first-run tour points at this row (data-tour=\"help\"). Its reader is a member, so the anchor stays on the last row every rung sees."
         }
       ]
     }
   ],
   "unlisted": [
     {
-      "href": "/admin/brand",
-      "reason": "The brand and audience profile (#906). Its door is the admin notice bar's CTA, which is on every screen; a rail row would be a second control for one destination."
-    },
-    {
       "href": "/admin/console/relationships",
-      "reason": "A console detail list (#478) — reached from the console hub's own row, and it lists what My Relationships lists for the other role."
+      "reason": "A console child (#478) — one of the three detail lists inside the console hub's tree, reached from `/admin/console`. Family: the console's own subtree; the hub's row is its door."
     },
     {
       "href": "/admin/console/templates",
-      "reason": "A console detail list (#478) — reached from the console hub, and the operator's view of the same catalogue the member's Templates row opens."
+      "reason": "A console child (#478) — the operator's view of the template catalogue, inside the console hub's tree and reached from it. Family: the console's subtree."
     },
     {
       "href": "/admin/console/users",
-      "reason": "A console detail list (#478) — reached from the console hub; an operator's queue, never a destination of its own."
+      "reason": "A console child (#478) — the operator's user queue, inside the console hub's tree and reached from it. Family: the console's subtree."
     },
     {
       "href": "/admin/docs/features",
-      "reason": "A docs sub-surface (#901) — inside the docs home's own tree, which is what the `admin-docs` row opens. A rail row per docs page is what that home exists to avoid."
-    },
-    {
-      "href": "/admin/docs/releases",
-      "reason": "A docs sub-surface (#901) — the release notes inside the docs home's tree."
-    },
-    {
-      "href": "/admin/docs/updates",
-      "reason": "A docs sub-surface — the per-PR update ledger inside the docs home's tree. Reached from each release's own row (`/admin/docs/releases`, which links the entry a merge wrote) and from the spec that documents it; a rail row per docs page is what the docs home exists to avoid."
+      "reason": "A docs sub-surface (#901) — a feature page inside the docs home's tree, reached from `/admin/docs`, which renders the whole 117-page manifest. Family: the docs home's tree."
     },
     {
       "href": "/admin/growth",
-      "reason": "The growth model (#1095). The owner kept the page and removed its rail row, because a screen charting a simulated business does not belong in an operator's rail — so it stays URL-only by that ruling, and this entry is where the ruling is written down."
-    },
-    {
-      "href": "/admin/spec/validation",
-      "reason": "The project spec's validation page (#1252). The `admin-spec` row opens the spec, and its submenu is how its pages are reached — a rail row per spec page would be the submenu again, in the rail."
-    },
-    {
-      "href": "/admin/start",
-      "reason": "The read-only admin landing (#1374). Its door is the account menu's admin row — the avatar path the owner asked for — and a rail row beside it would be a second control for one destination, the ruling `/admin/brand` already records."
+      "reason": "The growth model (#1095) — a screen charting a simulated business, kept by the owner's ruling and drawn by no rail row. Family: operator analytics, deliberately URL-only; this entry is where the ruling is written down."
     },
     {
       "href": "/admin/templates",
-      "reason": "The operator's template list — the alignment product's authoring tree, alignment-only and admin-gated, reached from the console hub."
+      "reason": "An operator authoring tree — the alignment product's template list, admin-gated, reached from the console hub. Family: the console's subtree, which is older than the hub's own three children."
     },
     {
       "href": "/assessment",
-      "reason": "The published-template catalogue (#146). Two ways in already exist — the Templates row and a relationship's own screen — and a third would make the rail a list of form entries."
+      "reason": "The published-template catalogue (#146). Family: the member's browse surfaces, reached from the Templates row and from a relationship's own screen; a third door would make the rail a list of form entries."
     },
     {
       "href": "/assessment/new/failed",
-      "reason": "The create flow's failure screen (#1226) — a state a browser lands on when a write throws, never a destination."
+      "reason": "A failure state in the create flow (#1226) — where a browser lands when a write throws. Family: the create flow's own states, never a destination."
     },
     {
       "href": "/assessments",
-      "reason": "My Assessments (#877). #1129 retired its rail row when Start took the top slot; the listing still answers at its own address, and the sessions are one click from My Relationships."
+      "reason": "My Assessments (#877) — the session listing, one click from My Relationships, which is the record that owns each session. Family: the member's relationship surfaces; #1129 retired its rail row when Start took the top slot."
     },
     {
       "href": "/dashboard/payment",
-      "reason": "The member's billing surface (#1132) — reached from a relationship's own screen and the account menu. The v2 reference draws Payment as the last rail row; when the document gains that row, this entry is deleted."
+      "reason": "The member's billing surface (#1132) — reached from a relationship's own screen and the account menu. Family: the member's own account surfaces. The v2 reference draws Payment as the last rail row; when the document gains that row, this entry is deleted."
     },
     {
       "href": "/how-it-works",
-      "reason": "The recorded walkthrough (#898). The rail's How It Works row is `/dashboard/help`; this is the signed-out visitor's copy of the same story, reached from the public chrome."
+      "reason": "The recorded walkthrough (#898) — the signed-out visitor's copy of the story the rail's How It Works row tells inside the app. Family: the public chrome's pages, reached from it; the rail's row is `/dashboard/help`."
     },
     {
       "href": "/leaderboard",
-      "reason": "The community leaderboard (#175) — gated on `community.leaderboard` and off on the builds this rail ships. A row would advertise a surface that answers 404."
+      "reason": "The community leaderboard (#175) — gated on `community.leaderboard` and off on the builds this rail ships, so a row would advertise a 404. Family: the quiz product's community surfaces."
     },
     {
       "href": "/news",
-      "reason": "Quiz News & Updates — the quiz catalogue's news list; the alignment build's announcements arrive through the broadcast and the marketing chrome."
+      "reason": "Quiz News & Updates — the quiz catalogue's news list. Family: the quiz product's content surfaces; the alignment build's announcements arrive through the broadcast and the marketing chrome."
     },
     {
       "href": "/search",
-      "reason": "The palette's view-all page (#156). The header's search opens it, and a rail row beside a search field is a second way to the same results."
+      "reason": "The palette's view-all page (#156) — the header's search field opens it, and the palette lists the same results. Family: the chrome's own search surface."
     },
     {
       "href": "/settings",
-      "reason": "The signed-in person's own profile (#164) — opened from the account menu, which is where a person looks for themselves."
+      "reason": "The signed-in person's own profile (#164) — reached from the account menu, which is where a person looks for themselves. Family: the account menu's surfaces."
     },
     {
       "href": "/support",
-      "reason": "The account support page's shorter address — the rail's Support row is `/dashboard/support`, which is the workspace surface #542 phase 1 built; this one is the page it replaced and still answers."
+      "reason": "The account support page's shorter address — the rail's Support row is `/dashboard/support`, the workspace surface #542 phase 1 built; this one is the page it replaced and still answers. Family: the shell's legacy addresses."
     }
   ]
 }
