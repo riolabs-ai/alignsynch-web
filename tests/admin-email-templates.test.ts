@@ -3,9 +3,11 @@
  *
  * Eight claims, each mapping to a line the issue states:
  *
- *   1. **The row is in `group-admin`, directly after the two reference rows**, labelled "Email
- *      Templates", gated on `admin` — so a `support` seat does not see it (#1138 "Admin rail and
- *      page").
+ *   1. **The row is in `Content & configuration`**, labelled "Email Templates", gated on `admin` —
+ *      so a `support` seat does not see it (#1138 "Admin rail and page"). It sits after the
+ *      broadcast and before the CRUD matrix: the 2026-11-23 reorganisation split the old
+ *      `group-admin` list into Operations and Content & configuration, and a mail override is a
+ *      change to a setting, not an operation.
  *   2. **Both routes are in the manifest**, so a literal `href` to either resolves under E10 and a
  *      visitor who types the address gets the page rather than a 404.
  *   3. **The gates run in `/admin/docs` order and the pages are request-time** — the capability
@@ -55,22 +57,24 @@ const navMenu = JSON.parse(read("data/nav-menu.json")) as {
   readonly groups: readonly { readonly id: string; readonly items: readonly NavRow[] }[];
 };
 
-const adminGroup = navMenu.groups.find((group) => group.id === "group-admin");
-const adminRows = adminGroup?.items ?? [];
+const contentGroup = navMenu.groups.find((group) => group.id === "group-content");
+const contentRows = contentGroup?.items ?? [];
 
 describe("the rail row", () => {
-  it("sits in the Admin group, directly after the two reference rows", () => {
-    const ids = adminRows.map((row) => row.id);
+  it("sits in Content & configuration, after the broadcast and before the CRUD matrix", () => {
+    const ids = contentRows.map((row) => row.id);
     const position = ids.indexOf("admin-email-templates");
     expect(position).toBeGreaterThan(0);
-    // #1138: "immediately after `admin-docs` (after `admin-permissions` if #1126 has already
-    // landed)". It has — the row is on `main` — so the order is docs, permissions, email templates.
-    expect(ids[position - 1]).toBe("admin-permissions");
-    expect(ids[position - 2]).toBe("admin-docs");
+    // 2026-11-23 — #1138's original ordering rule ("immediately after `admin-docs`, after
+    // `admin-permissions` if #1126 has landed") described the single `group-admin` list. The
+    // reorganisation separated the docs family from the settings family, so the row's neighbours
+    // are now the broadcast it writes beside and the permission matrix that says who may edit it.
+    expect(ids[position - 1]).toBe("admin-broadcast");
+    expect(ids[position + 1]).toBe("admin-permissions");
   });
 
   it("is admin-only, and points at the register", () => {
-    const row = adminRows.find((candidate) => candidate.id === "admin-email-templates");
+    const row = contentRows.find((candidate) => candidate.id === "admin-email-templates");
     expect(row).toBeDefined();
     expect(row?.href).toBe("/admin/email-templates");
     expect(row?.needs).toBe("admin");

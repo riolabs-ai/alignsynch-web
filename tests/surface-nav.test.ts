@@ -108,36 +108,43 @@ describe("the shell's menus", () => {
       "/dashboard/support",
     ]);
     expect(hrefsOf(navHtml("admin"))).toEqual([
-      // 2026-11-19 — the project spec leads the rail, above the Admin heading, in a group with no
-      // heading of its own: the owner asked for the row *above the group title*, which is a place
-      // no row inside that group can occupy.
-      "/admin/spec",
-      // #929 — the owner's standard menu for every role: the staff group leads, in the owner's
-      // order (the inbox first), then the reader's own rows, then Support. The review shelf and
-      // the health page are admin-gated rows drawn inside Support, where the owner put them.
-      "/admin/inbox",
+      // 2026-11-23 — the five-section rail: Start (the admin landing), Operations, Content &
+      // configuration, Specs & docs, then the member's own rows under Member.
+      "/admin/start",
       "/admin/console",
       "/admin/instances",
       "/admin/gaps",
-      // #1095 — no growth row: the model charts a simulated business, so the page is URL-only.
+      // #542 phase 2 — the one queue a support seat works, beside the operator surfaces it reports on.
+      "/admin/inbox",
+      // #665 — the review shelf, and the health page: staff rows that lived inside the member's
+      // Support group until this reorganisation moved them into Operations.
+      "/admin/review",
+      "/admin/health",
+      // Content & configuration — a change to a setting rather than an operation.
       "/admin/billing",
       "/admin/broadcast",
-      // #901 — the docs home: the manifest's 117 pages had no way in but the address bar.
-      "/admin/docs",
-      // #1126 — the CRUD & Permissions matrix: the spec reference the docs alone cannot state.
-      "/admin/permissions",
       // #1138 — the transactional-mail override editor: the words the product sends.
       "/admin/email-templates",
+      // #1126 — the CRUD & Permissions matrix: the spec reference the docs alone cannot state.
+      "/admin/permissions",
       "/admin/audit",
+      // #906 — the brand and audience profile, surfaced by this change.
+      "/admin/brand",
+      // Specs & docs — the spec and the docs tree as one family; the one-row title-less group is
+      // gone (its header did no work over a single link).
+      "/admin/spec",
+      // #901 — the docs home: the manifest's 117 pages had no way in but the address bar.
+      "/admin/docs",
+      "/admin/spec/validation",
+      "/admin/docs/updates",
+      "/admin/docs/releases",
+      // #1129 — Start, the signed-in landing, is the first row of the member's own section.
       "/dashboard",
       "/dashboard/relationships",
       "/dashboard/templates",
-      // #1131 — Chat, last of the member's destinations.
+      // #1131 — Chat, last of the member's own work.
       "/dashboard/chat",
-      // #665 — the review shelf: published artifacts with their to-dos and feedback.
-      "/admin/review",
       "/dashboard/help",
-      "/admin/health",
       "/dashboard/support",
     ]);
   });

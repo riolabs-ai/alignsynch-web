@@ -62,6 +62,18 @@ export function adminInboxMessagePath(messageId: string): string {
 export const ADMIN_START_PATH = "/admin/start";
 
 /**
+ * `/admin/console` — the console's overview, and the pair `/admin/start` points at.
+ *
+ * The route has been spelled in `data/admin/start-surfaces.ts` (as a directory row) since #1374;
+ * this constant is the half a *page* needs, because `/admin/console` now renders the shared
+ * submenu and has to tell it which route it is (`components/admin/submenu/admin-submenu.tsx`
+ * derives `aria-current` from it, with no pathname hook). The fixture keeps its literal because a
+ * directory row is read by E10's manifest check; `tests/admin-submenu.test.tsx` holds the two names
+ * for the same address equal.
+ */
+export const ADMIN_CONSOLE_PATH = "/admin/console";
+
+/**
  * `/admin/templates/<id>` — one template's editor.
  *
  * Here rather than beside `lib/admin/templates.ts` (#502a): the editor is a client component and

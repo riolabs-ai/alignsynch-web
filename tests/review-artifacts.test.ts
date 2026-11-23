@@ -451,3 +451,74 @@ describe("the artifact route", () => {
     }
   });
 });
+
+/**
+ * 2026-11-23 — the owner's Delivery history exhibit is published as a review artifact.
+ *
+ * The exhibit lived only as a file on the owner's disk, so the decision was "review artifact"
+ * over a new admin page and over a static file in `public/`: the mechanism already exists (a
+ * catalogue row, a committed file, a seed mirror and a route), and reusing it means the page
+ * inherits the shell, the manifest and every rule `data:check` already enforces.
+ *
+ * **The file is the owner's page, not a re-creation of it**, so this suite asserts the shape of
+ * the registration and the fact that the row describes *a capture of a closed window*: the
+ * payload names `2026-10-28 → 2026-11-23`, and `capturedAt` falls inside it. A newer snapshot is
+ * `delivery-history-v2` — a new file and a new row — which is why the window, not the row's age,
+ * is what is pinned here.
+ */
+describe("the delivery-history exhibit is registered", () => {
+  const id = "review-delivery-history-v1";
+  const slug = "delivery-history-v1";
+
+  it("publishes the row as a report over a committed file", () => {
+    const row = reviewArtifacts.find((artifact) => artifact.id === id);
+    expect(row?.slug).toBe(slug);
+    expect(row?.kind).toBe("report");
+    expect(row?.path).toBe("docs/review/artifacts/delivery-history-v1.html");
+
+    /* The path resolves through the same read path every other artifact uses — a row whose file
+       the tree does not have is an empty frame, which `reviewFilePath` refuses by name. */
+    const path = reviewFilePath(row!, root);
+    expect(path).toBe(join(root, "docs/review/artifacts/delivery-history-v1.html"));
+    expect(readFileSync(path, "utf8").toLowerCase()).toContain("<!doctype html");
+
+    /* The title names the window, so the list says what period is being looked at. */
+    expect(row?.title).toContain("Oct 28 → Nov 23, 2026");
+    expect(row?.title.toLowerCase()).not.toContain("prototype");
+  });
+
+  it("dates the capture inside the exhibit's own window, never from a clock", () => {
+    const row = reviewArtifacts.find((artifact) => artifact.id === id);
+    expect(row).toBeDefined();
+    const html = readFileSync(reviewFilePath(row!, root), "utf8");
+
+    /* The payload's window is the fact; the row's `capturedAt` is a reading of it. */
+    expect(html).toContain('"begin":"2026-10-28"');
+    expect(html).toContain('"end":"2026-11-23"');
+
+    const captured = Date.parse(row!.capturedAt);
+    expect(captured).toBeGreaterThanOrEqual(Date.parse("2026-10-28T00:00:00.000Z"));
+    expect(captured).toBeLessThanOrEqual(Date.parse("2026-11-23T23:59:59.999Z"));
+  });
+
+  it("serves the owner's page from the artifact route", async () => {
+    const { GET } = await import("../app/review-artifacts/[id]/route");
+    const response = await GET(new Request("http://localhost/review-artifacts/x"), {
+      params: Promise.resolve({ id: slug }),
+    });
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-security-policy")).toBe("sandbox allow-scripts");
+    expect(await response.text()).toContain("<h1>Delivery history");
+  });
+
+  it("resolves by slug on the shelf, grouped under a release the changelog records", () => {
+    const manifest = readReviewManifest(join(root, "docs/review/artifacts.json"), reviewArtifacts);
+    const versions = readReleaseVersions(join(root, "docs/changelog/releases.json"));
+    const row = reviewArtifacts.find((artifact) => artifact.id === id);
+    const shelf = shelfOf([summaryOf(id, row?.version ?? "")], manifest, versions);
+
+    expect(shelf.bySlug.get(slug)?.summary.artifact.id).toBe(id);
+    /* `lookFor` is the line a reviewer reads first; a row with none is a shelf with no heading. */
+    expect(shelf.byId.get(id)?.lookFor.length ?? 0).toBeGreaterThan(80);
+  });
+});

@@ -55,6 +55,11 @@
       "id": "review-brand-icons-963",
       "release": "1.17.0",
       "lookFor": "The icon set, as pixels. Top to bottom: the measured ink table (both brands, before and after), then each brand's app mark at 16/32/48/180/192/512 px with before on the left and after on the right, then the maskable 512 inside the crop circle the OS may apply. Check three things: the book fills the tile instead of floating in it, the corner reads like the app's 5 px rather than a 20 % blob, and the monogram keeps its own aspect — fill is scale, never a stretch. The bottom of the page carries the two gate transcripts that show a retyped radius failing by name."
+    },
+    {
+      "id": "review-delivery-history-v1",
+      "release": "2.0.0-rc2",
+      "lookFor": "What actually shipped between 28 Oct and 23 Nov 2026, day by day, from a GitHub snapshot — the window closed on 23 Nov and this page is that capture, not a live query. Read it in this order: the summary band (commits, files, merges, issues opened vs closed, PRs opened vs merged), then the milestones (planned against delivered, with the baseline each one is measured from), then the deliverables table (one row per shipped surface, its issue, its commit, and the gate state at the time), then activity (the day-by-day bars, where the flat days are as legible as the bursts), then effort (spend and tokens by area against the project's own baseline) and validation (what was proven, and the note that open issues and PRs match source states while no deployment or production behaviour was verified). It is a record of work, not a claim about the product: read it for what landed and when, and take the numbers as of 23 Nov."
     }
   ]
 }

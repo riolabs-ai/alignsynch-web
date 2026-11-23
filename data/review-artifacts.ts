@@ -211,4 +211,27 @@ export const reviewArtifacts: readonly ReviewArtifact[] = [
     path: "docs/review/artifacts/report-brand-icons-963.html",
     capturedAt: "2026-11-13T00:00:00.000Z",
   },
+  /**
+   * The owner's Delivery history exhibit (2026-11-23). A `report`, not a prototype: it is a data
+   * exhibit — the day-by-day record of what shipped in one window, drawn from a GitHub snapshot —
+   * and there is nothing in it to operate.
+   *
+   * **This row is a capture of a window that closed, and it says so.** `capturedAt` is authored at
+   * the window's own end (`begin`/`end` in the payload are `2026-10-28` and `2026-11-23`), never
+   * read from a clock: the file is the owner's page, copied byte-for-byte, so re-dating it here
+   * would describe a capture nobody took. A newer snapshot is `delivery-history-v2` — a new file
+   * and a new row — and never an edit to this one.
+   *
+   * The title names the window rather than the artefact's internal name, because the list is read
+   * to answer "what period am I looking at" before "what is this".
+   */
+  {
+    id: "review-delivery-history-v1",
+    slug: "delivery-history-v1",
+    title: "Delivery history — Oct 28 → Nov 23, 2026 (GitHub snapshot)",
+    kind: "report",
+    version: "v1",
+    path: "docs/review/artifacts/delivery-history-v1.html",
+    capturedAt: "2026-11-23T00:00:00.000Z",
+  },
 ];
