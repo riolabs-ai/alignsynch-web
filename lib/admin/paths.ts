@@ -51,6 +51,17 @@ export function adminInboxMessagePath(messageId: string): string {
 }
 
 /**
+ * `/admin/start` — the read-only admin landing (#1374).
+ *
+ * Here rather than in `lib/admin/start.ts` for the reason this file gives above: the account menu's
+ * admin row (`lib/shell/account-menu.ts`) is reachable from the `"use client"` header and needs this
+ * address, while the figures module type-imports `lib/db/**`. A string never has to cross that
+ * boundary, and E10 only reads literal `href`s — the manifest entry in `content/routes.ts` is what
+ * makes a path built from this constant safe.
+ */
+export const ADMIN_START_PATH = "/admin/start";
+
+/**
  * `/admin/templates/<id>` — one template's editor.
  *
  * Here rather than beside `lib/admin/templates.ts` (#502a): the editor is a client component and
