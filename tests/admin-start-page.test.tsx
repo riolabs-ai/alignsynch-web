@@ -45,6 +45,7 @@ vi.mock("@/lib/db/admin-audit", () => ({
 }));
 
 import AdminStartPage from "@/app/(mainlayout)/admin/start/page";
+import { ADMIN_START_SURFACES } from "@/data/admin/start-surfaces";
 import { adminStartPageCopy } from "@/data/pages/admin-start";
 
 beforeEach(() => {
@@ -77,8 +78,12 @@ describe("/admin/start — an admin's request", () => {
     expect(html).toContain(">2</span>"); // relationships
     expect(html).toContain(">13</span>"); // the audit log's newest page
     expect(html).toContain("2 artifacts · 4 issues still open.");
-    // The page's own door is not on it: /admin/start links to surfaces, not to itself.
-    expect(html).not.toContain('href="/admin/start"');
+    // The page's own door is not in its directory — /admin/start links to surfaces, not to itself.
+    // It *does* now carry its own address once, in the shared submenu's current pill (#1377), which
+    // is why this asserts the directory fixture rather than the absence of the string: one link to
+    // itself, marked `aria-current="page"`, is the row saying where you are, not a door back here.
+    expect(ADMIN_START_SURFACES.map((surface) => surface.href)).not.toContain("/admin/start");
+    expect(html.match(/href="\/admin\/start"/g)).toHaveLength(1);
   });
 
   it("reads all four shelves, and no fifth query", async () => {
