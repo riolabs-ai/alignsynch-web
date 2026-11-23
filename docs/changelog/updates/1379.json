@@ -1,0 +1,9 @@
+{
+  "pr": 1379,
+  "date": "2026-11-23",
+  "area": "admin",
+  "summary": "The owner's Delivery history page is published as a review artifact — one catalogue row, one manifest row and the owner's file byte for byte — so it renders on the review shelf instead of existing only on the owner's disk.",
+  "reader_impact": "A signed-in reviewer opens `/admin/review?artifact=delivery-history-v1` and reads the Oct 28 → Nov 23 window in the shell, with its release grouping and the rest of the shelf, instead of asking the owner for a file.",
+  "specs": ["docs/review/artifacts.json"],
+  "risk": "low"
+}
