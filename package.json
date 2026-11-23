@@ -88,6 +88,7 @@
     "env:matrix": "node scripts/env-matrix.mjs",
     "env:render": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-modules.mjs scripts/env-render.ts",
     "env:sync": "node scripts/env-sync.mjs",
+    "mentions:watch": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/watch-mentions.mjs",
     "deploy:prune": "node scripts/vercel-prune.mjs",
     "deploy:demo": "node scripts/deploy-demo.mjs",
     "lint": "biome check && node scripts/lint-brand-classes.mjs && node scripts/noun-check.mjs",

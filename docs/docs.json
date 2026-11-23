@@ -183,6 +183,11 @@
           "question": "Which loop do I run for this edit — `check:fast` or the full gate?"
         },
         {
+          "path": "operations/mentions.md",
+          "title": "Mentions",
+          "question": "How does an `@alignsynch` comment reach the lead, and what stops the watcher from answering it?"
+        },
+        {
           "path": "operations/migrations.md",
           "title": "Migrations",
           "question": "How is a migration numbered, and why can an applied one never be renumbered?"
