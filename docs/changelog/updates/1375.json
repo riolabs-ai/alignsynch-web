@@ -1,5 +1,5 @@
 {
-  "pr": 1374,
+  "pr": 1375,
   "date": "2026-11-23",
   "area": "ci",
   "summary": "A GitHub-hosted workflow labels a thread `needs-agent-reply` the moment `@alignsynch` appears in a comment, an issue body or a review, and removes it when the thread closes or the mention is edited away.",
