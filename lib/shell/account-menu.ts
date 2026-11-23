@@ -29,11 +29,13 @@
  * header stays a renderer: it decides icons and markup, never which rows exist.
  */
 import type { PageCopySection } from "@/content/pages";
+import { ADMIN_START_PATH } from "@/lib/admin/paths";
 import type { ShellAccount } from "@/lib/auth/shell-account";
 import { itemLabel, itemLabelOr } from "@/lib/page-copy";
 
 /** The rows a menu can carry. A closed union so the header's icon map is exhaustive. */
 export type AccountMenuRowId =
+  | "admin-start"
   | "sign-in"
   | "sign-up"
   | "profile"
@@ -85,10 +87,20 @@ export function accountMenu(input: {
   readonly account: ShellAccount | null;
   /** `seesQuizProduct(brandId, viewer)` — whether this viewer carries the quiz destinations. */
   readonly quizRows: boolean;
+  /**
+   * `sees(viewer, "admin-console")` — whether this session may open the console (#1374).
+   *
+   * A **capability**, not a role: `navViewer()` grants `admin-console` to `admin` and everything
+   * above it on the ladder, and the viewer handed to this function is that capability set, resolved
+   * on the server for this request. Nothing here compares role strings, so an `owner` gets the row
+   * for the same reason an `admin` does, and a `support` seat — which may open the inbox and no
+   * other console page — does not.
+   */
+  readonly adminConsole: boolean;
   /** The signed-in person's own profile path, or `null` when they have no handle yet (#226). */
   readonly profileHref: string | null;
 }): AccountMenu {
-  const { copy, account, quizRows, profileHref } = input;
+  const { copy, account, quizRows, profileHref, adminConsole } = input;
   const menuLabel = itemLabel(copy, "menu");
 
   if (account === null) {
@@ -105,6 +117,27 @@ export function accountMenu(input: {
   }
 
   const rows: AccountMenuRow[] = [];
+
+  /**
+   * The console's landing, and only for a session that can open the console (#1374).
+   *
+   * **It is the first row, not the last.** The menu's identity block names the person; the row
+   * under it is where an operator works, and an admin's own description of the defect this closes
+   * is "the first thing an admin sees when they click the profile avatar". A row drawn under
+   * Settings would be the same link with a worse address.
+   *
+   * **Absent, not disabled.** A refused role cannot see the door at all: `/admin/start` answers
+   * that session the unknown-URL 404, and a row that advertises a page it cannot open is the
+   * "a row that leads to a 404 is a row that advertises a surface" rule `lib/nav.ts` already
+   * writes down for the rail.
+   */
+  if (adminConsole) {
+    rows.push({
+      id: "admin-start",
+      label: itemLabel(copy, "admin-start"),
+      href: ADMIN_START_PATH,
+    });
+  }
 
   /**
    * The quiz product's three rows, including the person's own page — the gate is the shipped one

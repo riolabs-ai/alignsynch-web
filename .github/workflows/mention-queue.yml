@@ -1,0 +1,216 @@
+name: Mention queue
+
+# A mention of `@alignsynch` is answered by a poll (`pnpm mentions:watch`, issue #1372). That poll
+# runs on one machine, so a mention is silent whenever the machine is off. The proven case is
+# comment `7096092208` on #847 (2026-11-23T08:59:51Z) — addressed to `@alignsynch`, unanswered until
+# the owner pasted the link himself.
+#
+# This workflow is the durable half. It runs on GitHub's runners, so it labels the thread the moment
+# the mention lands, with nothing of ours switched on, and `needs-agent-reply` is the queue the
+# poller reads first.
+#
+# **There is no `mention` event on GitHub.** Mentions are not webhooks, so the hook is the concrete
+# events a mention can arrive in — a new comment, an issue body, a review, a review comment — plus a
+# body match. Edits, closes and a merged/closed PR are the removal half, in the same file: a sticky
+# label becomes a liar.
+#
+# **The match is not `@alignsynch\b`, and the difference is one character.** `-` is a non-word
+# character, so a trailing `\b` finds a boundary between `h` and `-`, and `@alignsynch-web` matches a
+# workflow that is meant for this account alone. The boundary therefore has to be spelled out, as
+# the character classes below do (case-insensitive):
+#
+#     (^|[^[:alnum:]_@])@alignsynch([^[:alnum:]_-]|$)
+#
+#   accepts   `@alignsynch`   `@AlignSynch`   `@alignsynch.`   `(@alignsynch:`   "`@alignsynch`"
+#   rejects   `@alignsynch-web`   `@alignsynchx`   `name@alignsynch`
+#
+# `grep -E`, not `grep -P`: a lookbehind would read better but is a GNU extension, and this job has
+# no Node and no third-party action to fall back on, so the expression stays POSIX.
+#
+# **The label makes one claim — "a mention on this thread is unanswered" — so the removal test is
+# not "the comment that carried it was edited".** An edited body triggers a re-scan of the issue
+# body, every comment, and on a PR every review and review comment; the label only comes off when
+# nothing on the thread mentions us. Clearing it because one of two mentions was edited away would
+# manufacture exactly the silent unanswered mention this workflow exists to prevent.
+#
+# **Author identity is deliberately not the loop guard.** Replies are posted by the lead's own
+# account (`jadenblack`, owner decision 2026-11-23), and the lead is also the person who writes the
+# mentions — filtering on that login would drop the case this was built for. A loop is impossible
+# structurally instead: **this workflow posts no comment**, and a label write raises none of the
+# events listed below. What it does skip is an event raised by an automation — any `[bot]` account,
+# or the `alignsynch` account itself — so a machine that mentions us still cannot re-enter here.
+#
+# **Clearing the label when the reply lands is a human act, and it is the one thing the poller and
+# this file must agree on:** `needs-agent-reply` present means unanswered. The human who answers
+# removes it (`gh issue edit <n> --remove-label needs-agent-reply`); thread close and an
+# edited-away mention clear it automatically; nothing else does.
+#
+# **`continue-on-error` is deliberately absent.** Labelling that quietly stopped working looks
+# exactly like a queue with nothing in it — the same failure, with no trace. `permissions:` is the
+# whole grant: no checkout, no Node, no secret, no third-party action (`gh` ships on the runner).
+#
+# **Quoted `"on"`, unlike most files in this directory.** A YAML 1.1 reader resolves a bare `on` to
+# the boolean `true`, and the acceptance check for this file reads the trigger list out of the
+# parsed document.
+"on":
+  issue_comment:
+    # `edited` is a removal path, not a second add path: a mention edited away must unqueue the
+    # thread, and an edit that adds one is handled by the same match.
+    types: [created, edited]
+  issues:
+    types: [opened, edited, closed]
+  pull_request_review_comment:
+    types: [created]
+  pull_request_review:
+    types: [submitted]
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: read
+  # Label writes. A PR is an issue for labelling, so both grants are load-bearing — and no more:
+  # this job needs neither `contents: write` nor any secret.
+  issues: write
+  pull-requests: write
+
+concurrency:
+  # Per thread, never cancelled: a add and a removal queued behind each other on one thread must
+  # both run, and the last writer decides the label. Cancelling would drop the removal and leave
+  # the label claiming a mention that is no longer there.
+  group: mention-queue-${{ github.event.issue.number || github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  label:
+    name: keep needs-agent-reply true
+    # pinned OS: ubuntu-latest is migrating to Ubuntu 26 during 2026
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # One step, because there is one action: label or unlabel. Nothing here writes a comment.
+      #
+      # The payload is passed through `env:` rather than interpolated into `run:` — a comment body
+      # is untrusted text, and `${{ }}` inside a shell script is how a `$( )` in a comment becomes a
+      # command on the runner. Every value below is data, never code. The `||` chains pick the
+      # field the triggering event actually carries.
+      - name: Apply or clear needs-agent-reply
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          THREAD_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          ACTOR: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.review.user.login || github.event.pull_request.user.login }}
+          BODY: ${{ github.event.comment.body || github.event.issue.body || github.event.review.body || github.event.pull_request.body }}
+          LABEL: needs-agent-reply
+          LABEL_COLOR: "5319e7"
+          LABEL_DESCRIPTION: An @alignsynch mention is waiting on the lead
+          # Kept in one place: the expression the header explains, and the one the re-scan reuses.
+          MENTION_RE: "(^|[^[:alnum:]_@])@alignsynch([^[:alnum:]_-]|$)"
+        run: |
+          set -euo pipefail
+
+          if [ -z "${THREAD_NUMBER:-}" ]; then
+            echo "::error::${EVENT_NAME:-?} payload carries no thread number — refusing to guess."
+            exit 1
+          fi
+
+          echo "event=${EVENT_NAME:-?}.${EVENT_ACTION:-?} thread=#${THREAD_NUMBER} actor=${ACTOR:-unknown}"
+
+          # A here-string, never a pipe: `grep -q` exits at the first match, and under `pipefail`
+          # the writer's SIGPIPE would turn a match into a non-zero status — a false "no mention"
+          # on the path that decides whether a founder's question is queued.
+          mentions() {
+            local text="${1:-}"
+            [ -n "${text}" ] || return 1
+            grep -qiE -- "${MENTION_RE}" <<<"${text}"
+          }
+
+          label_present() {
+            local names
+            names="$(gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}/labels" --jq '.[].name')"
+            grep -qxF -- "${LABEL}" <<<"${names}"
+          }
+
+          add_label() {
+            if label_present; then
+              echo "#${THREAD_NUMBER} already carries ${LABEL} — nothing to do."
+              return 0
+            fi
+
+            # Created once, on the first mention the repository ever sees, so a fresh clone needs no
+            # manual setup and this job owns the label's colour and description. Two runs racing to
+            # create it are harmless: the second answers 422 `already_exists` and the add below
+            # still succeeds.
+            if ! gh api --silent "repos/${GH_REPO}/labels/${LABEL}" >/dev/null 2>&1; then
+              echo "creating the ${LABEL} label"
+              gh api -X POST "repos/${GH_REPO}/labels" \
+                -f "name=${LABEL}" \
+                -f "color=${LABEL_COLOR}" \
+                -f "description=${LABEL_DESCRIPTION}" >/dev/null
+            fi
+
+            # Idempotent on GitHub's side: adding a label the thread already carries is a no-op.
+            gh api -X POST "repos/${GH_REPO}/issues/${THREAD_NUMBER}/labels" \
+              -f "labels[]=${LABEL}" >/dev/null
+            echo "#${THREAD_NUMBER} labelled ${LABEL} — queued for the lead."
+          }
+
+          remove_label() {
+            if ! label_present; then
+              echo "#${THREAD_NUMBER} does not carry ${LABEL} — nothing to remove."
+              return 0
+            fi
+            gh api -X DELETE "repos/${GH_REPO}/issues/${THREAD_NUMBER}/labels/${LABEL}" >/dev/null
+            echo "#${THREAD_NUMBER} no longer mentions a reply — ${LABEL} removed."
+          }
+
+          # Everything a mention can live in on this thread, one read per source.
+          thread_text() {
+            gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}" --jq '.body // ""'
+            gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}/comments" --paginate \
+              --jq '.[] | .body // ""'
+            if [ "$(gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}" \
+                     --jq 'if .pull_request then "pr" else "issue" end')" = "pr" ]; then
+              gh api "repos/${GH_REPO}/pulls/${THREAD_NUMBER}/reviews" --paginate \
+                --jq '.[] | .body // ""'
+              gh api "repos/${GH_REPO}/pulls/${THREAD_NUMBER}/comments" --paginate \
+                --jq '.[] | .body // ""'
+            fi
+          }
+
+          # A closed thread is closed whatever account closed it, and clearing a stale label can
+          # never loop — so this runs before the actor guard, not after it.
+          if [ "${EVENT_ACTION}" = "closed" ]; then
+            remove_label
+            exit 0
+          fi
+
+          actor="$(printf '%s' "${ACTOR:-}" | tr '[:upper:]' '[:lower:]')"
+          case "${actor}" in
+            *"[bot]"|alignsynch)
+              echo "raised by ${actor} — an automation does not queue a mention of itself."
+              exit 0
+              ;;
+          esac
+
+          if mentions "${BODY:-}"; then
+            add_label
+            exit 0
+          fi
+
+          # No mention in this event's own body. Only an edit can have taken one away, and even then
+          # the label stays while any other mention on the thread survives.
+          if [ "${EVENT_ACTION}" != "edited" ]; then
+            echo "no @alignsynch mention in this ${EVENT_NAME:-event} — nothing to do."
+            exit 0
+          fi
+
+          surviving="$(thread_text)"
+          if mentions "${surviving}"; then
+            echo "an edit took one mention off #${THREAD_NUMBER}, another stands — ${LABEL} stays."
+            add_label
+            exit 0
+          fi
+
+          remove_label

@@ -158,6 +158,17 @@ export const pageCopyBudget: PageCopyBudget = zPageCopyBudget.parse({
     fixture: "data/pages/admin-review",
     budget: 0,
   },
+  // #1374 — the read-only admin landing. Budget 0 from the first commit: the kicker, the heading,
+  // the intro, the four tiles' labels and notes, the failure panel and the read-only band are
+  // `data/pages/admin-start.ts`, and the directory is `data/admin/start-surfaces.ts`, so the next
+  // literal written in `start-view.tsx` is a red build. Attribution is the subdirectory: the rows
+  // above already own `components/admin`.
+  "/admin/start": {
+    page: "app/(mainlayout)/admin/start/page.tsx",
+    dirs: ["components/admin/start"],
+    fixture: "data/pages/admin-start",
+    budget: 0,
+  },
   // #892 — the documentation home. Budget 0: the filter's placeholder, the two singular/plural counts,
   // the empty-filter sentence and the unreadable panel are `data/pages/admin-docs.ts`, so the next
   // literal written in `docs-hub.tsx` is a red build. Attribution is the subdirectory, not the whole

@@ -23,7 +23,7 @@ import { accountProfileHref } from "@/lib/auth/profile-href";
 import { endSession } from "@/lib/auth/sign-out";
 import type { ShellAccount } from "@/lib/auth/shell-account";
 import type { BrandMark } from "@/lib/brand-mark";
-import { type NavViewer, seesQuizProduct } from "@/lib/nav";
+import { type NavViewer, sees, seesQuizProduct } from "@/lib/nav";
 import { fillLabel, itemLabel, itemLabelOr, sectionOf } from "@/lib/page-copy";
 import { accountMenu, type AccountMenuRowId } from "@/lib/shell/account-menu";
 import { accountSignOutFor } from "@/lib/shell/account-sign-out";
@@ -33,6 +33,7 @@ import {
   ChevronLeft,
   FileQuestion,
   FileText,
+  LayoutDashboard,
   LogOut,
   Menu,
   MessageCircleQuestion,
@@ -65,6 +66,7 @@ import { Badge } from "../ui/badge";
  * `settings.html` measures a flat row, and a row is what the build draws.
  */
 const ACCOUNT_ROW_ICON: Readonly<Record<AccountMenuRowId, typeof User>> = {
+  "admin-start": LayoutDashboard,
   "sign-in": User,
   "sign-up": UserPlus,
   profile: User,
@@ -228,6 +230,13 @@ export function Header({
     account,
     quizRows: seesQuizProduct(brandId, viewer),
     profileHref,
+    /*
+      The console's landing row (#1374). The **capability**, not the role: `navViewer()` grants
+      `admin-console` to `admin` and above and withholds it from a member, a `support` seat and a
+      visitor — so this is the same answer the rail's operator rows and the page's own gate give,
+      read from the one viewer the server resolved for this request.
+    */
+    adminConsole: sees(viewer, "admin-console"),
   });
 
   /**

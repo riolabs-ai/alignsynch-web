@@ -645,6 +645,14 @@ export function shellCopy(brand: Brand): PageCopy {
            */
           { id: "quizzes", label: "My Quizzes" },
           { id: "quizzes-hint", label: "Your created quizzes" },
+          /**
+           * The console's landing row (#1374) — drawn only for a session carrying `admin-console`,
+           * so it is the one row here whose reader is an operator (`lib/shell/account-menu.ts`
+           * decides, from the capability set the server resolved). "Admin start" and not "Admin":
+           * the destination is a page that starts a shift, and the word "admin" alone would read as
+           * the console itself, which `/admin/console` already is.
+           */
+          { id: "admin-start", label: "Admin start" },
           { id: "settings", label: "Settings" },
           { id: "settings-hint", label: "Preferences" },
           { id: "logout", label: "Log out" },
@@ -684,6 +692,7 @@ export function shellCopy(brand: Brand): PageCopy {
           { id: "profile", label: "My Profile" },
           { id: "dashboard", label: "Dashboard" },
           { id: "quizzes", label: "My Quizzes" },
+          { id: "admin-start", label: "Admin start" },
           { id: "settings", label: "Account Settings" },
           { id: "logout", label: "Sign Out" },
           /**

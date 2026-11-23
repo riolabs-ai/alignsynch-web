@@ -1,0 +1,9 @@
+{
+  "pr": 1375,
+  "date": "2026-11-23",
+  "area": "ci",
+  "summary": "A GitHub-hosted workflow labels a thread `needs-agent-reply` the moment `@alignsynch` appears in a comment, an issue body or a review, and removes it when the thread closes or the mention is edited away.",
+  "reader_impact": "Someone who addresses `@alignsynch` sees the thread marked within seconds even when the laptop that polls mentions is off, instead of the question sitting unanswered until they paste the link.",
+  "specs": ["docs/operations/issue-intake.md"],
+  "risk": "low"
+}
