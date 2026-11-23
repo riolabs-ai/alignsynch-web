@@ -1,0 +1,9 @@
+{
+  "pr": 1378,
+  "date": "2026-11-23",
+  "area": "admin",
+  "summary": "A shared admin submenu: one pill row of sibling admin routes on `/admin/start` and `/admin/console`, with `aria-current` decided server-side from the route each page knows, and the rows in `data/admin/submenu.ts`.",
+  "reader_impact": "An operator can now move between the admin landing and the console it points at without the header menu; both screens keep their gates, no page changed, and `/admin` still answers 404.",
+  "specs": ["docs/specs/ux-reference-patterns.md"],
+  "risk": "low"
+}

@@ -91,6 +91,7 @@ Hero 30 + lede 16, **320px search centred below**, then a 3-col grid of **260px 
 6. Meta 12 muted with `·`; numbers right-align in label/value lists and tables.
 7. Empty data gets an explicit bordered or grey-media block plus one action — never blank.
 8. Sentence case, no exclamation marks in headings, `$`/`%` inline.
+9. **A switch between routes is a `nav` of links, never `Tabs`.** Tabs are in-page state: a tab set drawn over real routes cannot be deep-linked, opened in a new tab or reached by a crawler, and it re-implements the router in a component. Sibling screens share one row of links with `aria-current="page"` on the one the reader is on, and the current row is derived from the route the page already knows — a `usePathname` hook makes a row of links a client component for one boolean, which a server-rendered screen should not pay. The reference is `components/admin/submenu/admin-submenu.tsx` (items in `data/admin/submenu.ts`), shaped after `components/admin/spec/spec-submenu.tsx`.
 
 **Mobile: no evidence.** All captures are 1440×900 with no responsive state, so how the rail or sidebar collapses is
 unproven. Proposed: off-canvas sidebar, single column, rail full width with `Step 1/3`, option rows 48px.
