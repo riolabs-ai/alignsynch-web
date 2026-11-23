@@ -53,8 +53,18 @@ import { USER_ROLES } from "./role-ladder";
  * the inventory finds under the shell must be one or the other, and `data:check` **E43** fails the
  * build on the remainder. A v3 document has no `unlisted` list and a v4 build reads that as "none",
  * so the bump is a statement of intent as much as a schema change — the same reason v3 was one.
+ *
+ * **5 (2026-11-23)** — the five-section rail, and the end of the title-less group. v3 introduced the
+ * group that could omit a heading to carry one row above the first title; v5 removes its reason to
+ * exist, because a section header over a single link was a heading doing no work and the row now
+ * lives beside the family it belongs to (Specs & docs). The schema did not change again — a group
+ * may still omit `label`, and a document that does now draws a group with no heading — but the
+ * arrangement is a new taxonomy (Start · Operations · Content & configuration · Specs & docs ·
+ * Member), the group ids are words a reader can recognise rather than `group-admin`/`group-app`,
+ * and no route moved. The version says the rail is a different rail, so an older build reading it
+ * refuses rather than drawing half of it.
  */
-export const NAV_DOCUMENT_VERSION = 4;
+export const NAV_DOCUMENT_VERSION = 5;
 
 /**
  * Every glyph a rail row may draw. A name, not a component: the descriptor holds no JSX, and the

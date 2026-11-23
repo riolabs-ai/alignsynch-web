@@ -375,30 +375,47 @@ export function shellCopy(brand: Brand): PageCopy {
            * name a *thing* rather than a verb: "Project Spec" is the bundle's own title (AS-05) and
            * renaming it here would be the screen disagreeing with its card.
            *
-           * Since 2026-11-19 the row leads the rail in its own group, above the Admin heading. That
-           * group has **no label item here on purpose**: it sits above the first heading, holds one
-           * row, and any heading would repeat this row's own word. `data/nav-menu.json` omits the
-           * group's `label` key, `content/nav.ts` allows the omission, and the rail draws no heading
-           * for it — so a word for that group is not missing from this list, it does not exist.
+           * Since 2026-11-19 the row led the rail in a title-less group of its own above the Admin
+           * heading; the 2026-11-23 reorganisation dissolved that one-row group and the row now opens
+           * **Specs & docs**, beside the docs home and the three docs/spec sub-surfaces. So there is a
+           * heading for its section again, and it is `group-specs` below, not this row's own word.
            */
           { id: "admin-spec", label: "Project Spec" },
           /**
-           * The rail's group labels (#539 item 10, re-cut by #542 phase 2). The rail draws
-           * the member's own work under `group-app`, the help/contact pair under
-           * `group-support`, and the operator's rows under `group-admin` — "the reader's work,
-           * then help, then the staff group" as a structure rather than a sort order the next
-           * person can undo by adding a row. The words live here with every other label: a
-           * heading typed in `nav-menus.tsx` would be a literal E23 cannot see.
+           * The five words that are the 2026-11-23 reorganisation (#nav evaluation, `data/nav-menu.json`
+           * v5). The rail's sections are the taxonomy the `unlisted` reasons used to bury, and each one
+           * is a heading a reader can point at: **Start** (the admin landing), **Operations** (the six
+           * surfaces one operator uses together), **Content & configuration** (what a change to a
+           * setting looks like), **Specs & docs** (the spec and the docs tree, one family), and
+           * **Member** (the reader's own work plus the help pair).
            *
-           * Three words for four groups: `group-project-spec` is title-less on purpose (see
-           * `admin-spec` above), so it is the one group that names nothing here.
-           *
-           * `group-admin` reads "Admin" (it was "Administration" under #539): the group is the
-           * staff group, and #542 phase 2 names it that way.
+           * The words live here rather than in `nav-menus.tsx` because a heading typed there would be a
+           * literal E23 cannot see — the same reason the old three lived here. `Start` is a heading
+           * *and* the member's first row's word; the ids differ (`group-start` / `start`) and that is
+           * the point: the section is named for the landing an operator opens on, and the member row
+           * keeps the word #1129 gave it.
            */
-          { id: "group-app", label: "Workspace" },
-          { id: "group-support", label: "Support" },
-          { id: "group-admin", label: "Admin" },
+          { id: "group-start", label: "Start" },
+          { id: "group-operations", label: "Operations" },
+          { id: "group-content", label: "Content & configuration" },
+          { id: "group-specs", label: "Specs & docs" },
+          { id: "group-member", label: "Member" },
+          /**
+           * The five rows the same change surfaced, each named the way the page names itself:
+           *
+           *   admin-start          the admin landing — the account menu's own word (#1376), kept so
+           *                        one surface has one name in both doors.
+           *   admin-brand          the brand and audience profile (#906), whose CTA is the notice bar's.
+           *   admin-spec-validation the spec's validation page (#1252), a row of the same family as
+           *                        `admin-spec` that the submenu used to be the only way to.
+           *   admin-docs-updates   the per-PR update ledger.
+           *   admin-docs-releases  the release notes — the ledger's other half.
+           */
+          { id: "admin-start", label: "Admin start" },
+          { id: "admin-brand", label: "Brand & audience" },
+          { id: "admin-spec-validation", label: "Spec validation" },
+          { id: "admin-docs-updates", label: "Docs updates" },
+          { id: "admin-docs-releases", label: "Releases" },
           /**
            * #862 — the reconciler's group. It is not in the document: the reconciler appends it, and
            * it is drawn **only for `owner`**, only when something is in it, and never as a row a

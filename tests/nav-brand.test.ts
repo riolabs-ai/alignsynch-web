@@ -160,59 +160,61 @@ const ALIGNMENT_MENU = [
 ];
 
 /**
- * The operator's group, in the owner's order restored by #929: the inbox first (the one queue a
- * support seat works, now the group's lead row), then the console hub — the row that had no home
- * anywhere in the UI before #542 phase 2 — then the console's destinations and the docs home, and
- * the audit log last.
+ * The five sections of the 2026-11-23 rail, in the order the document writes them. The block is one
+ * constant per section because three cases assert the same rows, and a second copy is how a menu
+ * edit lands in one expectation and not the others.
  *
- * #1095 removed the growth row this group used to carry between the Gap and Billing: the page
- * charts a *modelled* business, so the owner kept the screen and made it URL-only.
- *
- * The review shelf and the health page are **not** here: #929 put them inside Support, and they are
- * asserted there, in `ADMIN_RAIL` below.
+ * **Operations** is the six surfaces one operator uses together — the console hub, its two sibling
+ * reads (instances, gaps), the support seat's one queue, and the two rows #929 had parked inside the
+ * member's Support group (`/admin/review`, `/admin/health`). **Content & configuration** is a change
+ * to a setting: billing, broadcast, the mail overrides, the CRUD matrix, the audit log, and the brand
+ * profile this card surfaced. **Specs & docs** is the spec and the docs tree as one family — the
+ * one-row title-less group is gone, and its validation page and the two docs sub-surfaces the rail
+ * used to leave to a submenu joined it.
  */
-const ADMIN_GROUP = [
-  "/admin/inbox",
+const START = ["/admin/start"];
+
+const OPERATIONS = [
   "/admin/console",
   "/admin/instances",
   "/admin/gaps",
-  // #1095 — no growth row between the Gap and Billing: the page charts a simulated business, so
-  // the owner kept the screen and made it URL-only.
+  "/admin/inbox",
+  "/admin/review",
+  "/admin/health",
+];
+
+const CONTENT = [
   "/admin/billing",
   "/admin/broadcast",
-  // #901 — the docs home, after Broadcast and before the log.
-  "/admin/docs",
-  // #1126 — the CRUD & Permissions matrix, directly after Docs: the second reference row.
-  "/admin/permissions",
-  // #1138 — the transactional-mail override editor, the third reference row.
   "/admin/email-templates",
+  "/admin/permissions",
   "/admin/audit",
+  "/admin/brand",
+];
+
+const SPECS = [
+  "/admin/spec",
+  "/admin/docs",
+  "/admin/spec/validation",
+  "/admin/docs/updates",
+  "/admin/docs/releases",
 ];
 
 /**
- * The project spec, in the title-less group above the Admin heading (owner request, 2026-11-19).
- * It is not in `ADMIN_GROUP` any more: a row above a group's title cannot live in that group, and
- * one row drawn twice is the defect that move exists to avoid.
- */
-const PROJECT_SPEC_GROUP = ["/admin/spec"];
-
-/**
- * What an admin's rail draws, start to finish: the project spec above the Admin heading (#929's
- * operator group), then the member's four Workspace rows, then Support — where `review` and
- * `admin-health` are admin-gated rows drawn among the help pair. One order for every role; a seat
- * that cannot reach a row loses that row and nothing else moves.
+ * What an admin's rail draws, start to finish: the five sections and their twenty-four rows. One
+ * order for every role; a seat that cannot reach a row loses that row and nothing else moves.
  */
 const ADMIN_RAIL = [
-  ...PROJECT_SPEC_GROUP,
-  ...ADMIN_GROUP,
-  // #1129 — the member's three rows, Start first; the admin sees the same sequence.
+  ...START,
+  ...OPERATIONS,
+  ...CONTENT,
+  ...SPECS,
+  // #1129 — the member's rows, Start first; the admin sees the same sequence.
   "/dashboard",
   "/dashboard/relationships",
   "/dashboard/templates",
   "/dashboard/chat",
-  "/admin/review",
   "/dashboard/help",
-  "/admin/health",
   "/dashboard/support",
 ];
 
@@ -346,26 +348,30 @@ describe("the console's own rows are a member's, the operator's rows are not", (
     expect(member).toContain(`>${itemLabelOf("my-relationships")}<`);
   });
 
-  it("draws the operator group first, then the member's rows, then Support", () => {
+  it("draws the five sections in order, then the member's rows in their own section", () => {
     /**
-     * #929 restored the owner's standard menu for every role: the operator group leads. What did
-     * not change is that every operator row is drawn for an admin, and that the whole rail is one
-     * document order — the member's rows keep their place inside it.
+     * 2026-11-23 — the rail reads Start · Operations · Content & configuration · Specs & docs ·
+     * Member, for every role that can see them. What did not change is that every operator row is
+     * drawn for an admin, and that the whole rail is one document order — the member's rows keep
+     * their place inside it, at the end.
      */
     expect(adminHrefs).toEqual(ADMIN_RAIL);
     const admin = navHtml("alignsynch", navViewer("admin"));
-    for (const href of [...ADMIN_GROUP, "/admin/review", "/admin/health"]) {
+    for (const href of [...START, ...OPERATIONS, ...CONTENT, ...SPECS]) {
       expect(admin).toContain(`href="${href}"`);
     }
-    // The three group labels, from the fixture, in the owner's order: admin, workspace, support.
-    // (The project-spec row above them draws no heading — `tests/nav-menu.test.ts` reads that off
-    // the markup.)
-    const staff = admin.indexOf(itemLabelOf("group-admin"));
-    const workspace = admin.indexOf(itemLabelOf("group-app"));
-    const support = admin.indexOf(itemLabelOf("group-support"));
-    expect(staff).toBeGreaterThan(-1);
-    expect(staff).toBeLessThan(workspace);
-    expect(workspace).toBeLessThan(support);
+    // The five section labels, from the fixture, in the order the document writes them: Start,
+    // Operations, Content & configuration, Specs & docs, Member. `&` ships escaped in the markup.
+    const words = [
+      "group-start",
+      "group-operations",
+      "group-content",
+      "group-specs",
+      "group-member",
+    ].map((id) => itemLabelOf(id).replace(/&/g, "&amp;"));
+    const positions = words.map((word) => admin.indexOf(`data-nav-group="${word}"`));
+    for (const at of positions) expect(at).toBeGreaterThan(-1);
+    expect(positions).toEqual([...positions].sort((left, right) => left - right));
   });
 
   it("keeps the member's rows in the admin's rail, in the same order — one menu, one sequence", () => {
@@ -375,7 +381,8 @@ describe("the console's own rows are a member's, the operator's rows are not", (
     const memberRows = adminHrefs.filter((href) => memberHrefs.includes(href));
     expect(memberRows).toEqual(memberHrefs);
     expect(memberHrefs[0]).toBe("/dashboard");
-    expect(adminHrefs[0]).toBe("/admin/spec");
+    // The admin's rail opens on the admin landing, which is the row this change surfaced.
+    expect(adminHrefs[0]).toBe("/admin/start");
   });
 
   it("draws the console hub for an owner too — above an admin is not outside it", () => {

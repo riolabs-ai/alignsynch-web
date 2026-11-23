@@ -1,0 +1,9 @@
+{
+  "pr": 1380,
+  "date": "2026-11-23",
+  "area": "nav",
+  "summary": "The AlignSynch rail is five sections — Start, Operations, Content & configuration, Specs & docs, Member — with the admin landing and four docs/spec surfaces as rows; no route was added, removed, renamed or redirected.",
+  "reader_impact": "An administrator's rail now opens on the admin landing and groups the six surfaces one operator uses together, while a member still sees the same six `/dashboard/*` rows under one section instead of two.",
+  "specs": ["docs/reference/env-spec.md"],
+  "risk": "low"
+}

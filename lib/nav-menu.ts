@@ -151,52 +151,44 @@ function toItem(row: NavRowRecord): NavItem {
 }
 
 /**
- * The alignment rail, in the order the owner's review set — **one order for every role** (#929):
- * the project spec, then the operator's group, then the reader's own work, then the support
- * surfaces.
+ * The alignment rail, in the order the 2026-11-23 reorganisation set — **one order for every role**
+ * (#929): **Start · Operations · Content & configuration · Specs & docs · Member**.
  *
- * **The project spec leads, and it is the one group with no heading.** The owner asked for the row
- * *above the Admin group title* (2026-11-19), and a row above a group's heading cannot live in that
- * group — so it has one of its own, ordered first, with `label` omitted: between the top of the rail
- * and the Admin heading there is nothing to name, and a heading reading "Project Spec" over a row
- * reading "Project Spec" is the same word twice. A group that omits `label` draws no heading
- * (`components/layout/nav-menus.tsx::NavGroup`), and `menuFor` drops it whole for the rungs that
- * cannot read the spec, exactly as it drops any empty group.
+ * **The sections are the taxonomy, not the code.** Until v5 the groups were `group-project-spec`,
+ * `group-admin`, `group-app` and `group-support`: a one-row group with no heading, then every
+ * operator surface in one list regardless of whether it was a queue, a setting or a log, then the
+ * member's own work split across two headings by *audience* rather than by family. The nav
+ * evaluation recorded the result (F2/F5/F6/F8): a group whose label meant nothing, operations and
+ * configuration interleaved, and the family each surface belonged to written down in the `unlisted`
+ * reasons instead of in the shape. v5 moves the shape to say it, and the group ids are the words a
+ * reader sees.
+ *
+ * **No group is title-less any more.** v3 introduced the group that could omit `label` so that one
+ * row could sit above the first heading; v5 dissolved that group, because a header over a single
+ * link is a heading doing no work — `/admin/spec` now opens **Specs & docs** beside the docs home it
+ * belongs with. The schema still allows the omission (a group may draw without a heading), and no
+ * group in this document uses it.
  *
  * `needs` gates a row's **visibility only**. A role that cannot reach a row does not see it, and
- * the rows they can see keep the document's order — nobody gets a re-sorted menu. That is why the
- * review shelf and the health page sit inside `group-support` on the document's own terms rather
- * than being moved back to `group-admin` for the roles that can see them: two staff rows inside
- * the Support group is the owner's arrangement, drawn as written, and a later change is a version
- * bump plus a diff, never a second document or a per-role fork.
+ * the rows they can see keep the document's order — nobody gets a re-sorted menu. A group draws only
+ * when at least one of its rows survives (`menuFor`), so a member sees Member and nothing above it,
+ * a `support` seat sees Operations (the inbox, the one queue it works) then Member, and a
+ * stakeholder sees the two spec rows then Member.
  *
- * **The Workspace group is three rows — #620 merged four, #877 added one back.** `My
- * Relationships` is `/dashboard/relationships` (the relationship *and* its assessment, in one
- * list), `My Assessments` is `/assessments` (the sessions the member is a party to), and
- * `Templates` is `/dashboard/templates` (one destination, two tabs: the catalogue and what this
- * member owns). The rows #620 replaced were `/dashboard` (the Overview), `My Templates` and
- * `Library`; the last two named three shelves a person had to tell apart, and the third —
- * `/dashboard/library` — is a 308 to the Templates tab that absorbed it (`next.config.mjs`). The
- * Overview keeps answering at `/dashboard`; it is no longer a rail row.
+ * **Member is one section of six rows.** The four the Workspace group carried (#620, #1129, #1131) —
+ * `/dashboard`, `/dashboard/relationships`, `/dashboard/templates`, `/dashboard/chat` — and the
+ * help/contact pair (`/dashboard/help`, `/dashboard/support`) the Support group carried. #620 had
+ * merged `/dashboard` (the Overview), `My Templates` and `Library` away, and `/dashboard/library` is
+ * still a 308 to the Templates tab; the Overview keeps answering at `/dashboard`, and since #1129 it
+ * is the Start row again.
  *
- * **Admin leads with the inbox.** The console is the hub for its own subtree (users, templates,
- * relationships) and it had no entry anywhere in the UI before #542 phase 2, so it stays the
- * second row; `/admin/audit` is last, because the log is where an operator checks what the rows
- * above it did. The review shelf and the health page have moved to `group-support` (#929) and are
- * drawn there for the roles that can reach them.
- *
- * **A staff row may live in Support.** `/admin/review` and `/admin/health` are `needs: "admin"`
- * rows inside `group-support` — the owner's arrangement, and the reason the rule below is about
- * *one named group*, not "no `/admin` href outside `group-admin`".
- *
- * **The group's floor is `support`, and each row carries its own.** A `support` seat sees the one
- * row they work — the inbox — and no page they would be refused. A group draws only when at least
- * one of its rows survives (`menuFor`), so a member sees no Admin heading at all.
- *
- * **No `/admin` destination is outside the document's staff groups.** The five were once a second,
- * separately gated list above the member's rows; one document is what makes "an operator row is in
- * `group-admin` or one of the two staff rows named in `group-support`" a fact a test asserts by
- * looking at one array.
+ * **Operations is the six surfaces one operator uses together**, and it is the section the move
+ * exists for: the console hub, its two sibling reads (`/admin/instances`, `/admin/gaps`), the
+ * support seat's inbox, and
+ * the review shelf and the health page — the two `needs: "admin"` rows #929 had parked inside the
+ * member's Support group. A staff row under a heading that named a member surface was the defect
+ * (F2), so `tests/nav-menu.test.ts` now holds the stronger rule: no `/admin` destination appears in
+ * Member, and every one of them sits in a staff section.
  *
  * **A `hidden` row is in the document and not in this array.** It is the operator's way to take a
  * row off the rail without losing its place, its note and the fact that it exists — the reason it
