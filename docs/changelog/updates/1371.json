@@ -1,0 +1,9 @@
+{
+  "pr": 1371,
+  "date": "2026-11-23",
+  "area": "triage",
+  "summary": "pnpm triage:founder classifies a founder issue from an ordered keyword table — area label, class, milestone, rewritten title and an appended triage block — with no model in the loop and no write that is not an append.",
+  "reader_impact": "The founder's twelve freeform issues stop being untitled, unlabelled duplicates: each carries an area, a class and a milestone, the original title is kept verbatim, and a standing ledger lists them.",
+  "specs": ["docs/operations/issue-intake.md"],
+  "risk": "low"
+}
