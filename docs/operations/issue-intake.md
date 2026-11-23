@@ -55,6 +55,55 @@ cannot write the label fails loudly, because intake that quietly stopped classif
 like intake that works. The workflow's whole grant is `permissions: issues: write`; it needs no
 checkout, no Node, no secret and no third-party action.
 
+## Triage — the repair pass, and it is a table
+
+`draft` is where intake stops. `pnpm triage:founder` (`scripts/triage-founder-issues.mjs`) is what
+turns a `draft` — or any of the twelve already filed — into something the board can schedule. It is
+**fully deterministic**: an ordered keyword table, no model in the loop, because this is the one path
+that writes to someone else's issue.
+
+```bash
+pnpm triage:founder                      # the plan, as a table. Writes nothing, needs no token
+pnpm triage:founder --json               # the same plan as JSON
+pnpm triage:founder --issue 1363         # one issue
+pnpm triage:founder --apply --issue 1363 # write that one issue
+```
+
+What a row decides, in this order:
+
+| Question      | Answer                                                                                  |
+| ------------- | --------------------------------------------------------------------------------------- |
+| **Area**      | the first row of `AREA_TABLE` that matches: billing → flow → ui → product               |
+| **Class**     | the first row of `CLASS_RULES` that matches: `?` → enhancement → bug                    |
+| **Milestone** | the area's (`#28 v2.0.0`), `#25 v2.deferred` when a parked term matched, otherwise none |
+| **Title**     | `area/<x>: <claim>`, the claim stripped of the founder's `… Questions -` prefix         |
+
+Anything the table cannot place is `needs-info` with **no milestone** — an honest miss, never a guess.
+Two issues that normalise to the same claim are _named_ as possible duplicates
+(`Possible duplicate of #N — …`) and get their own number as a title suffix; `duplicate` is applied to
+neither, and nothing is closed. The original title is preserved verbatim in the appended block, because
+the title is the one field this tool rewrites.
+
+**The body is append-only.** The write is `original + "\n\n---\n\n" + block`, and the block goes on
+the end carrying the marker `<!-- hermes-triage:v1 -->`, the class/area/surface line, whether a
+decision is needed, a proposed acceptance line and the original title. `composeBody` asserts the
+original prefix byte for byte before anything is written; `tests/founder-triage.test.ts` pins it. The
+marker is also what makes the pass idempotent: an issue whose newest marker comment is not older than
+its last edit is skipped, with a minute of grace for the write that created the marker.
+
+**Identity.** Reads use the ambient `gh` session with `GH_TOKEN` removed from the environment; every
+write goes through `~/.hermes/profiles/alignsynch/bin/gh-id.sh app …`, so comments and label changes
+are attributable to the project's own identity, `alignsynch-fleet[bot]` (a GitHub App installation
+token — there is no `alignsynch` PAT). Note the argument shape: `gh-id.sh` **execs `gh` itself**,
+so it is `gh-id.sh app issue edit 1363 …` — adding a second `gh` runs `gh gh issue edit`, which prints
+help, exits 0 and writes nothing. The identity is proved once before the first write, and the login
+comes from the wrapper rather than from `gh api user`: GitHub answers `/user` with `403 Resource not
+accessible by integration` for installation tokens, so that probe would refuse a credential that works.
+
+**It never removes a label**, so a `draft` the intake workflow added is cleared by hand once triage
+has classified the issue. That is deliberate: `--remove-label` on someone else's issue is not a repair
+this tool is allowed to make unattended.
+
 ## Changing it
 
 **The form's first field label and the workflow's heading check are one mechanism.** GitHub renders
@@ -62,8 +111,14 @@ an issue form's answers as `### <field label>`, so `### Surface` is a consequenc
 being exactly `Surface`. Renaming the field silently turns form filings into "freeform" and the
 workflow starts replying to them. Change both files or neither.
 
-Two things this deliberately does not do: it does not classify beyond `draft`, and it never edits,
+Two things intake deliberately does not do: it does not classify beyond `draft`, and it never edits,
 closes or re-titles an issue that already exists — that is triage's job, not intake's.
+
+**The triage table is edited, never bypassed.** A founder issue that classifies wrongly is a row that
+is missing a noun or a keyword, and the fix is a line in `AREA_TABLE`, `CLASS_RULES` or `SURFACE_RULES`
+with a test beside it — not a hand edit to the issue, which the next `--apply` would overwrite with the
+table's answer. Every table is ordered and the order is asserted, because "billing before flow" is a
+decision, not an accident.
 
 <!-- docs-nav:begin -->
 

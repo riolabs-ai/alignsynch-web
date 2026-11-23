@@ -578,6 +578,22 @@ export const OUT_OF_SCOPE: readonly OutOfScopeRow[] = [
     why: "the Neon auth provider holds the Google client config; no app code path reads it",
   },
 
+  // --- Local tooling: `pnpm triage:founder` ---------------------------------------------------
+  // Founder triage runs on a maintainer's machine, against GitHub, and writes nothing a deployment
+  // renders. It is the one place these three are read.
+  {
+    name: "FOUNDER_LOGINS",
+    why: "triage:founder — which GitHub logins count as founders; a local run's scope, not app config",
+  },
+  {
+    name: "GH_REPO",
+    why: "triage:founder — an explicit OWNER/REPO for a run outside a checkout; gh's own convention",
+  },
+  {
+    name: "GH_ID",
+    why: "triage:founder — the per-call identity wrapper's path; a test stubs it, a run never sets it",
+  },
+
   // --- Platform-provided ----------------------------------------------------------------------
   { name: "NODE_ENV", why: "set by node/next, never by a deployment's config file" },
   { name: "NEXT_PHASE", why: "next's own build-phase marker (instrumentation.ts)" },
