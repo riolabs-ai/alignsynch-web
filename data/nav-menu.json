@@ -197,6 +197,10 @@
       "reason": "The project spec's validation page (#1252). The `admin-spec` row opens the spec, and its submenu is how its pages are reached — a rail row per spec page would be the submenu again, in the rail."
     },
     {
+      "href": "/admin/start",
+      "reason": "The read-only admin landing (#1374). Its door is the account menu's admin row — the avatar path the owner asked for — and a rail row beside it would be a second control for one destination, the ruling `/admin/brand` already records."
+    },
+    {
       "href": "/admin/templates",
       "reason": "The operator's template list — the alignment product's authoring tree, alignment-only and admin-gated, reached from the console hub."
     },

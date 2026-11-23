@@ -20,7 +20,15 @@ export default defineConfig({
     alias: { "@": fileURLToPath(new URL(".", import.meta.url)) },
   },
   test: {
-    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+    include: [
+      "tests/**/*.test.ts",
+      "tests/**/*.test.tsx",
+      // The one suite that lives under `scripts/` because its subject does: `scripts/**` is the
+      // config lane, so this test gates without paying for `next build`. It is named here because
+      // everything else under `scripts/__tests__/` is a node:test suite compiled by
+      // `tsconfig.datacheck.json` (which excludes this file for the same reason).
+      "scripts/__tests__/mention-watch.test.ts",
+    ],
     environment: "node",
   },
 });

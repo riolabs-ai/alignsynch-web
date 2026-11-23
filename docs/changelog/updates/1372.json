@@ -1,0 +1,9 @@
+{
+  "pr": 1372,
+  "date": "2026-11-23",
+  "area": "gh",
+  "summary": "`pnpm mentions:watch` polls the four bodies/comments endpoints for an `@alignsynch` mention and prints one JSON alert carrying the thread's labels, tier, milestone and the three comments before it, deduped by comment id.",
+  "reader_impact": "The lead learns of an owner mention on its own, with the steer attached, instead of finding it only when someone pastes the link.",
+  "specs": ["docs/operations/mentions.md"],
+  "risk": "low"
+}
