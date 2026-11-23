@@ -1,0 +1,9 @@
+{
+  "pr": 1374,
+  "date": "2026-11-23",
+  "area": "admin",
+  "summary": "A read-only admin landing at `/admin/start`: four counts the console's shelves already compute, each one a door into the surface that owns it, over a directory of every page under `/admin`.",
+  "reader_impact": "An administrator clicking their avatar now sees what is waiting before picking a shelf; a member, a support seat and a visitor see no new row, and the route answers them the 404.",
+  "specs": ["docs/operations/orchestration.md"],
+  "risk": "low"
+}
