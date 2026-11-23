@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**203 documents in 9 sections.** Every page carries the same nav block, generated
+**204 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -40,7 +40,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Start here](#start-here) — 3 documents
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
-- [Operations](#operations) — 22 documents
+- [Operations](#operations) — 23 documents
 - [Specs & design briefs](#specs-design-briefs) — 86 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
@@ -95,6 +95,7 @@ The gate, releasing, deploying, iteration and the history behind them.
 - [`operations/history/P3-EXIT.md`](operations/history/P3-EXIT.md) — **P3 exit record** — Did bulk generation meet its gate, and with what numbers?
 - [`operations/history/V1-PROTOTYPE.md`](operations/history/V1-PROTOTYPE.md) — **V1 prototype** — What is the clickable `/v1/**` prototype, and who is it for?
 - [`operations/history/V1-RETIREMENT.md`](operations/history/V1-RETIREMENT.md) — **V1 retirement** — What happened to every `/v1` item?
+- [`operations/issue-intake.md`](operations/issue-intake.md) — **Issue intake** — How does founder feedback land classified, and why is it marked `draft`?
 - [`operations/iteration.md`](operations/iteration.md) — **Iteration rhythm** — Which loop do I run for this edit — `check:fast` or the full gate?
 - [`operations/migrations.md`](operations/migrations.md) — **Migrations** — How is a migration numbered, and why can an applied one never be renumbered?
 - [`operations/migration-inventory.md`](operations/migration-inventory.md) — **Migration inventory** — What is applied on each branch, what would replaying it cost, and what is unverified?

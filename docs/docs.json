@@ -173,6 +173,11 @@
           "question": "What happened to every `/v1` item?"
         },
         {
+          "path": "operations/issue-intake.md",
+          "title": "Issue intake",
+          "question": "How does founder feedback land classified, and why is it marked `draft`?"
+        },
+        {
           "path": "operations/iteration.md",
           "title": "Iteration rhythm",
           "question": "Which loop do I run for this edit — `check:fast` or the full gate?"

@@ -1,0 +1,114 @@
+name: Issue intake
+
+# Founder feedback arrives two ways: through `.github/ISSUE_TEMPLATE/founder-feedback.yml`, which
+# carries `labels: ["draft"]` itself, and as freeform text with a screenshot pasted in. The second
+# path is the one this workflow exists for — twelve such issues were filed with no label, no
+# milestone and no acceptance criteria (#1354–#1365), and two of them carry the same title.
+#
+# **The trigger is `opened` only.** Edits are not re-triaged: a person who fills in the missing
+# surface by hand must not have their label re-applied behind them, and a reopened issue is not a
+# new proposal.
+#
+# **The decision is two tests, and the second one is the load-bearing one.** An issue passes as
+# structured when a maintainer wrote it (`author_association` is OWNER, MEMBER or COLLABORATOR) AND
+# the body carries a `### Surface` heading. Measured before this was written: the founder is a
+# **COLLABORATOR**, so the association test alone labels none of the twelve — every one has
+# `author_association: COLLABORATOR` and no `### Surface` heading. Drop the heading test and this
+# workflow does nothing at all.
+#
+# `### Surface` is not a guess at a convention: GitHub renders an issue form's answers as
+# `### <field label>` headings, so the form's first field is labelled exactly `Surface`
+# (`.github/ISSUE_TEMPLATE/founder-feedback.yml`). The two files are one mechanism — rename the
+# field and this check silently starts treating form filings as freeform.
+#
+# **`continue-on-error` is deliberately absent.** A workflow that cannot write the label fails
+# loudly and shows as a red run; intake that quietly stopped classifying looks exactly like intake
+# that works. `permissions: issues: write` is the whole grant it needs — no checkout, no Node, no
+# secret, and no third-party action (`gh` ships on the runner).
+
+# Quoted, unlike the bare `on:` in this directory's three other workflows. GitHub treats the two
+# spellings identically; the quotes are for YAML 1.1 readers, where an unquoted `on` resolves to the
+# boolean `true` and any script that reads this file by the key `on` raises `KeyError: 'on'` — as
+# `python3 -c "import yaml;yaml.safe_load(open('.github/workflows/ci.yml'))['on']"` does on the
+# untouched tree. The acceptance check for this workflow is exactly that command.
+"on":
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  classify:
+    name: mark a freeform issue as draft
+    # pinned OS: ubuntu-latest is migrating to Ubuntu 26 during 2026
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # The issue body is passed through `env:` rather than interpolated into `run:` — a body is
+      # untrusted text, and `${{ }}` inside a shell script is how a `$( )` in an issue becomes a
+      # command on the runner. An env var is data, never code. The two values the reply embeds
+      # (`GITHUB_SERVER_URL`, `GH_REPO`) are set by GitHub itself, not by the issue.
+      - name: Add draft and point at the form
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ASSOCIATION: ${{ github.event.issue.author_association }}
+          BODY: ${{ github.event.issue.body }}
+          ALREADY_LABELLED: ${{ contains(github.event.issue.labels.*.name, 'draft') }}
+        run: |
+          set -euo pipefail
+
+          # Idempotent: the form labels its own issues at creation, and a re-run of this job must
+          # not post a second comment. The label is the marker, so it is checked before any write.
+          if [ "${ALREADY_LABELLED}" = "true" ]; then
+            echo "Issue #${ISSUE_NUMBER} already carries the draft label — nothing to do."
+            exit 0
+          fi
+
+          maintainer=false
+          case "${ASSOCIATION}" in
+            OWNER|MEMBER|COLLABORATOR) maintainer=true ;;
+          esac
+
+          # The heading GitHub writes for the form's first field. `grep` exits 1 on no match, which
+          # under `set -e` is a negative result rather than a failure — hence the explicit `if`.
+          structured=false
+          if printf '%s\n' "${BODY:-}" | grep -q '^### Surface'; then
+            structured=true
+          fi
+
+          if [ "${maintainer}" = "true" ] && [ "${structured}" = "true" ]; then
+            echo "Issue #${ISSUE_NUMBER} came through the founder feedback form — no labelling needed."
+            exit 0
+          fi
+
+          echo "Freeform issue #${ISSUE_NUMBER} (author_association=${ASSOCIATION}, surface_heading=${structured}) — labelling draft."
+
+          # Label first, then comment: a run that dies between the two leaves a correctly labelled
+          # issue with no reply, which the next triage still finds. The reverse order would leave a
+          # reply and no label, and the label is what every downstream filter reads.
+          gh issue edit "${ISSUE_NUMBER}" --add-label draft
+
+          reply="$(mktemp)"
+          # The heredoc is unquoted so the form URL expands; it interpolates only the two GitHub-set
+          # variables above, never the issue's own text.
+          cat > "${reply}" <<EOF
+          Filed as \`draft\` — a pre-triage proposal, not a work item yet, so nothing is scheduled from it as written.
+
+          The founder feedback form asks for the four things an issue needs before it can be carded, and it files them already classified:
+
+          **${GITHUB_SERVER_URL}/${GH_REPO}/issues/new?template=founder-feedback.yml**
+
+          - **Surface** — the page or screen, e.g. \`/pricing\`
+          - **What it says now** — the current wording or behaviour
+          - **What it should say / do** — what you want instead
+          - **Type** — a question, a requested change, a decision needed, or something broken
+
+          The form cannot upload a file — paste the screenshot into the issue right after submitting.
+
+          If this issue already carries what triage needs, ignore this note; the label is removed when it is classified.
+          EOF
+
+          gh issue comment "${ISSUE_NUMBER}" --body-file "${reply}"

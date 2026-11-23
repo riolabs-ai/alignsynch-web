@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../../README.md) › **Operations** › V1 retirement · prev [V1 prototype](V1-PROTOTYPE.md) · next [Iteration rhythm](../iteration.md)
+[Docs hub](../../README.md) › **Operations** › V1 retirement · prev [V1 prototype](V1-PROTOTYPE.md) · next [Issue intake](../issue-intake.md)
 
 <!-- docs-nav:end -->
 
@@ -326,6 +326,6 @@ Four cards, in this order. The order is not stylistic: three of them break the b
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../../README.md) › **Operations** › V1 retirement · prev [V1 prototype](V1-PROTOTYPE.md) · next [Iteration rhythm](../iteration.md)
+[Docs hub](../../README.md) › **Operations** › V1 retirement · prev [V1 prototype](V1-PROTOTYPE.md) · next [Issue intake](../issue-intake.md)
 
 <!-- docs-nav:end -->
