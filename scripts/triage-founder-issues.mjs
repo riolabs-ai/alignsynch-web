@@ -17,11 +17,12 @@
  * TWO IDENTITIES, AND ONLY ONE OF THEM WRITES
  * Reads go through the ambient `gh` session with `GH_TOKEN`/`GITHUB_TOKEN` *removed* from the
  * environment (`ghEnv`), so an ambient token can never decide who this runs as. Writes go through
- * `~/.hermes/profiles/alignsynch/bin/gh-id.sh bot …`, i.e. the `alignsynch` account — never
- * `jadenblack`, whose PRs and comments must stay distinguishable from the project's own.
+ * `~/.hermes/profiles/alignsynch/bin/gh-id.sh app …`, i.e. the project's GitHub App installation
+ * (`alignsynch-fleet[bot]`) — never `jadenblack`, whose PRs and comments must stay distinguishable
+ * from the project's own.
  *
  * **`gh-id.sh` execs `gh` itself.** The wrapper resolves the token for one call and *replaces itself*
- * with `gh`, so the correct argument list is `gh-id.sh bot issue edit …`. Writing `gh-id.sh bot gh
+ * with `gh`, so the correct argument list is `gh-id.sh app issue edit …`. Writing `gh-id.sh app gh
  * issue edit …` runs `gh gh issue edit`, which prints gh's help text and exits 0 — it looks like a
  * successful write and files nothing. `triageGhArgs` is therefore a one-line function with a test
  * asserting `"gh"` never appears in its output.
@@ -540,16 +541,16 @@ export function ghEnv(env = process.env) {
 }
 
 /**
- * The argument list for a write: `gh-id.sh bot <gh args>`.
+ * The argument list for a write: `gh-id.sh app <gh args>`.
  *
- * **Not** `gh-id.sh bot gh <gh args>` — the wrapper `exec`s `gh` itself, so a second `gh` becomes gh's
+ * **Not** `gh-id.sh app gh <gh args>` — the wrapper `exec`s `gh` itself, so a second `gh` becomes gh's
  * first positional argument, prints help and exits 0. That mistake looks like a successful write.
  *
  * @param {string[]} args
  * @returns {string[]}
  */
 export function triageGhArgs(args) {
-  return ["bot", ...args];
+  return ["app", ...args];
 }
 
 /** Run `gh` and return stdout, or throw with gh's own stderr. Reads never write. */
@@ -577,7 +578,7 @@ export function ghWrite(args) {
   if (result.error) throw result.error;
   if (result.status !== 0) {
     throw new Error(
-      `gh-id.sh bot ${args.join(" ")} failed (exit ${result.status}): ${result.stderr.trim()}`,
+      `gh-id.sh app ${args.join(" ")} failed (exit ${result.status}): ${result.stderr.trim()}`,
     );
   }
   return result.stdout;
@@ -585,13 +586,35 @@ export function ghWrite(args) {
 
 /**
  * The write identity, proved before the first write. `gh-id.sh` answers exit 78 when the vault has no
- * token for `bot`, and a batch pass that discovers that per-issue refuses twelve times and writes
+ * App credentials, and a batch pass that discovers that per-issue refuses twelve times and writes
  * nothing — which looks like twelve broken issues instead of one missing credential. So the identity
  * is resolved once, up front, and `--apply` stops before it touches anything if it cannot.
- * @returns {string} the login the write path resolves to, e.g. `alignsynch`
+ *
+ * **The login comes from the wrapper, never from `GET /user`.** The write identity is a GitHub App
+ * installation token, and GitHub answers that endpoint with 403 `Resource not accessible by
+ * integration` for installation tokens — so a `gh api user` probe fails on a credential that is
+ * perfectly good, which is the exact false negative this function exists to prevent. The wrapper
+ * prints the installation's own login, and the token's repo scope is then proved with one
+ * repo-scoped read.
+ *
+ * @param {string} repo the `OWNER/REPO` slug the writes will land on
+ * @returns {string} the login the write path resolves to, e.g. `alignsynch-fleet[bot]`
  */
-export function assertWriteIdentity() {
-  return ghWrite(["api", "user", "--jq", ".login"]).trim();
+export function assertWriteIdentity(repo) {
+  const whoami = spawnSync(ghIdPath(), ["app", "--whoami"], {
+    encoding: "utf8",
+    env: ghEnv(),
+    timeout: 120_000,
+  });
+  if (whoami.error) throw whoami.error;
+  const login = (whoami.stdout ?? "").trim();
+  if (whoami.status !== 0 || login === "") {
+    throw new Error(
+      `gh-id.sh app --whoami failed (exit ${whoami.status}): ${(whoami.stderr ?? "").trim()}`,
+    );
+  }
+  ghWrite(["api", `repos/${repo}`, "--jq", ".full_name"]);
+  return login;
 }
 
 /** The repo this runs against: `--repo`, else `GH_REPO`, else the remote's slug. */
@@ -789,7 +812,10 @@ export function buildPlan(
     scope: scope.length === 0 ? null : scope,
     founders: FOUNDER_LOGINS,
     marker: MARKER,
-    identity: { read: "ambient gh session, GH_TOKEN removed", write: "gh-id.sh bot (alignsynch)" },
+    identity: {
+      read: "ambient gh session, GH_TOKEN removed",
+      write: "gh-id.sh app (alignsynch-fleet[bot] installation token)",
+    },
     selection: {
       considered: scoped.length,
       open: open.length,
@@ -1058,12 +1084,12 @@ function main(argv) {
   // one gap at the door, not as twelve refused issues.
   let writeLogin;
   try {
-    writeLogin = assertWriteIdentity();
+    writeLogin = assertWriteIdentity(repo);
   } catch (error) {
     process.stderr.write(
       `triage: no write credential for the triage identity — nothing was written.\n${error.message}\n` +
-        "  needed: BWS ALIGNSYNCH_GH_USER_TOKEN (a token for the `alignsynch` account), resolved by\n" +
-        `  ${ghIdPath()} bot\n`,
+        "  needed: BWS ALIGNSYNCH_APP_ID + ALIGNSYNCH_APP_PRIVATE_KEY (+ ALIGNSYNCH_APP_INSTALLATION_ID),\n" +
+        `  resolved by ${ghIdPath()} app\n`,
     );
     return 1;
   }

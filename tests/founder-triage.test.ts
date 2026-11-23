@@ -32,6 +32,7 @@ import {
   PARKED_MILESTONE,
   acceptanceFor,
   applyRow,
+  assertWriteIdentity,
   buildPlan,
   classifyArea,
   classifyClass,
@@ -326,9 +327,9 @@ describe("the body is append-only, and the prefix is proved", () => {
 describe("the write path never guesses an identity and never removes a label", () => {
   test("gh-id.sh execs gh itself, so the argument list carries no second `gh`", () => {
     const args = triageGhArgs(["issue", "edit", "1363", "--add-label", "question"]);
-    expect(args[0]).toBe("bot");
+    expect(args[0]).toBe("app");
     expect(args).not.toContain("gh");
-    expect(args).toEqual(["bot", "issue", "edit", "1363", "--add-label", "question"]);
+    expect(args).toEqual(["app", "issue", "edit", "1363", "--add-label", "question"]);
   });
 
   test("an ambient GH_TOKEN is never inherited by a gh call", () => {
@@ -370,6 +371,47 @@ describe("the write path never guesses an identity and never removes a label", (
     const untitled = writesFor({ ...row, titleChanged: false, labels: ["needs-info"] }, null);
     expect(untitled.args).not.toContain("--title");
     expect(untitled.args).not.toContain("--milestone");
+  });
+
+  test("the write identity is proved through the wrapper, never through `GET /user`", () => {
+    // A GitHub App installation token is answered 403 by /user, so a `gh api user` probe reports a
+    // missing credential for one that works. The login comes from the wrapper; the token is then
+    // proved with a repo-scoped read.
+    const dir = mkdtempSync(join(tmpdir(), "triage-identity-"));
+    const log = join(dir, "gh.log");
+    const gh = join(dir, "gh");
+    writeFileSync(
+      gh,
+      `#!/usr/bin/env bash\nprintf 'gh %s\\n' "$*" >> "$TRIAGE_LOG"\nif [ "$1" = "api" ] && [ "$2" = "user" ]; then exit 1; fi\nexit 0\n`,
+    );
+    chmodSync(gh, 0o755);
+    const wrapper = join(dir, "gh-id.sh");
+    writeFileSync(
+      wrapper,
+      `#!/usr/bin/env bash\nprintf 'gh-id %s\\n' "$*" >> "$TRIAGE_LOG"\nif [ "$1" = "app" ] && [ "$2" = "--whoami" ]; then echo 'alignsynch-fleet[bot]'; exit 0; fi\nshift\nexec gh "$@"\n`,
+    );
+    chmodSync(wrapper, 0o755);
+    writeFileSync(log, "");
+    vi.stubEnv("TRIAGE_LOG", log);
+    vi.stubEnv("GH_ID", wrapper);
+    vi.stubEnv("PATH", `${dir}:${process.env.PATH ?? ""}`);
+
+    expect(assertWriteIdentity("riolabs-ai/alignsynch")).toBe("alignsynch-fleet[bot]");
+
+    const calls = readFileSync(log, "utf8").trim().split("\n");
+    expect(calls).toContain("gh-id app --whoami");
+    expect(calls).toContain("gh api repos/riolabs-ai/alignsynch --jq .full_name");
+    expect(calls.join("\n")).not.toContain("api user");
+  });
+
+  test("an unresolvable identity throws before anything is written", () => {
+    const dir = mkdtempSync(join(tmpdir(), "triage-identity-"));
+    const wrapper = join(dir, "gh-id.sh");
+    writeFileSync(wrapper, "#!/usr/bin/env bash\necho 'gh-id: refusing mode' >&2\nexit 78\n");
+    chmodSync(wrapper, 0o755);
+    vi.stubEnv("GH_ID", wrapper);
+
+    expect(() => assertWriteIdentity("riolabs-ai/alignsynch")).toThrow(/--whoami failed/);
   });
 });
 
@@ -543,7 +585,7 @@ describe("surface and acceptance are derived, never invented", () => {
  *
  * This is the proof that needs no credential: the wrapper stub mirrors the real one exactly — log the
  * arguments, `shift` the mode, `exec gh "$@"` — so an argument list that carried a second `gh` would
- * show up here as `gh-id bot gh issue edit …` and then as gh receiving `gh` as its first word. What it
+ * show up here as `gh-id app gh issue edit …` and then as gh receiving `gh` as its first word. What it
  * establishes is the composition: read the body, compose the append, remember the file, post it, then
  * comment with the marker — and every write routed through the wrapper, never through `gh` directly.
  */
@@ -609,20 +651,20 @@ describe("applyRow, driven against a stub gh and a stub gh-id.sh", () => {
 
     const calls = readFileSync(log, "utf8").trim().split("\n");
     // Three gh invocations, five lines: the wrapper logs its own arguments and then `exec gh`, so each
-    // write appears twice — once as `gh-id bot …` and once as the `gh …` it replaced itself with.
+    // write appears twice — once as `gh-id app …` and once as the `gh …` it replaced itself with.
     expect(calls).toHaveLength(5);
     expect(calls[0]).toMatch(/^gh issue view 1363 /);
     const wrapperCalls = calls.filter((line) => line.startsWith("gh-id "));
     expect(wrapperCalls).toHaveLength(2);
-    expect(wrapperCalls[0]).toMatch(/^gh-id bot issue edit 1363 /);
-    expect(wrapperCalls[1]).toMatch(/^gh-id bot issue comment 1363 /);
+    expect(wrapperCalls[0]).toMatch(/^gh-id app issue edit 1363 /);
+    expect(wrapperCalls[1]).toMatch(/^gh-id app issue comment 1363 /);
     // What gh itself received carries no mode word: the wrapper consumed it before exec.
     expect(calls[2]).toMatch(/^gh issue edit 1363 /);
     expect(calls[4]).toMatch(/^gh issue comment 1363 /);
 
     const edit = wrapperCalls[0];
     // The wrapper is exec'd with gh's own args: a second `gh` here would be gh's first positional word.
-    expect(calls.join("\n")).not.toContain("gh-id bot gh ");
+    expect(calls.join("\n")).not.toContain("gh-id app gh ");
     expect(edit).not.toContain("--remove-label");
     expect(edit).toContain("--add-label area/flow --add-label question");
     expect(edit).toContain("--milestone v2.0.0 — the official release");

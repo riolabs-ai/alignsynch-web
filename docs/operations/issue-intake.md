@@ -92,10 +92,13 @@ marker is also what makes the pass idempotent: an issue whose newest marker comm
 its last edit is skipped, with a minute of grace for the write that created the marker.
 
 **Identity.** Reads use the ambient `gh` session with `GH_TOKEN` removed from the environment; every
-write goes through `~/.hermes/profiles/alignsynch/bin/gh-id.sh bot …`, so comments and label changes
-are attributable to the `alignsynch` account. Note the argument shape: `gh-id.sh` **execs `gh` itself**,
-so it is `gh-id.sh bot issue edit 1363 …` — adding a second `gh` runs `gh gh issue edit`, which prints
-help, exits 0 and writes nothing.
+write goes through `~/.hermes/profiles/alignsynch/bin/gh-id.sh app …`, so comments and label changes
+are attributable to the project's own identity, `alignsynch-fleet[bot]` (a GitHub App installation
+token — there is no `alignsynch` PAT). Note the argument shape: `gh-id.sh` **execs `gh` itself**,
+so it is `gh-id.sh app issue edit 1363 …` — adding a second `gh` runs `gh gh issue edit`, which prints
+help, exits 0 and writes nothing. The identity is proved once before the first write, and the login
+comes from the wrapper rather than from `gh api user`: GitHub answers `/user` with `403 Resource not
+accessible by integration` for installation tokens, so that probe would refuse a credential that works.
 
 **It never removes a label**, so a `draft` the intake workflow added is cleared by hand once triage
 has classified the issue. That is deliberate: `--remove-label` on someone else's issue is not a repair
