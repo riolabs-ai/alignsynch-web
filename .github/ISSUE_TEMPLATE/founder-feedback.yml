@@ -1,0 +1,77 @@
+# Founder feedback — the structured path into the issue tracker.
+#
+# Freeform feedback arrives as a title, a paragraph and a pasted screenshot. That is readable and
+# it is not schedulable: no surface, no "what it should do", no way to tell two issues with the
+# same title apart (#1356 and #1357 are literally the same sentence). This form asks for the four
+# things a card needs and nothing else, so the answer is already the shape downstream wants.
+#
+# **`labels: ["draft"]` is the whole point of the file.** `draft` means "pre-triage proposal, not
+# ready to card" — filing through this form lands the issue classified instead of blank. The
+# workflow beside it (`.github/workflows/issue-intake.yml`) applies the same label to the freeform
+# path, and treats `### Surface` as the mark of a form-filed issue, because GitHub renders each
+# answer under `### <label>`. That is why the first field's label is exactly `Surface`: renaming it
+# breaks the detection, and the check will then re-label form issues as freeform. Change both or
+# neither.
+#
+# The form cannot upload files. Evidence is therefore a textarea that says to paste the screenshot
+# after submitting — the issue editor accepts a paste, the form does not.
+
+name: Founder feedback
+description: Product feedback from the founder collaborator — surface, what it says now, what it should say, and what kind of answer it needs
+labels: ["draft"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks — this lands as `draft` (a proposal awaiting triage) and gets classified from here.
+        Four questions: **where**, **what it says now**, **what it should say**, and **what kind of
+        answer you want**. Anything else can go in Evidence.
+
+  - type: input
+    id: surface
+    attributes:
+      label: Surface
+      description: The page or screen this is about. A route is ideal.
+      placeholder: /pricing — or "Initiator · Aspect 3"
+    validations:
+      required: true
+
+  - type: textarea
+    id: now
+    attributes:
+      label: What it says now
+      description: Quote the current wording, or describe the current behaviour. Paste, do not paraphrase.
+      placeholder: The button says "Start" and it opens the sign-up screen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: should
+    attributes:
+      label: What it should say / do
+      description: The wording you want, or the behaviour you expect instead.
+      placeholder: It should say "Create relationship" and open the first stage.
+    validations:
+      required: true
+
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: A screenshot or a link. This form cannot upload files — paste the screenshot into the issue right after submitting.
+      placeholder: Screenshot of /pricing at 2026-11-23; or a link to the screen.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: What kind of answer this needs — it decides how the issue is triaged.
+      options:
+        - Question about current behaviour
+        - Requested change
+        - Decision needed
+        - Something looks broken
+    validations:
+      required: true

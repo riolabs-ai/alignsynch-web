@@ -1,0 +1,9 @@
+{
+  "pr": 1367,
+  "date": "2026-11-23",
+  "area": "ci",
+  "summary": "Founder feedback filed through a new GitHub issue form lands labelled `draft` with a surface, a before, an after and a type, and a workflow applies the same label to freeform issues whose body carries no `### Surface` heading.",
+  "reader_impact": "Someone filing founder feedback gets a classified issue and a reply naming the form, instead of an unlabelled issue that triage must repair before it can be carded.",
+  "specs": ["docs/operations/issue-intake.md"],
+  "risk": "low"
+}
