@@ -36,6 +36,7 @@ import { StageColumn } from "@/components/assessment-flow/stage-column";
 import type { Metadata } from "next";
 
 import { AdminStartView } from "@/components/admin/start/start-view";
+import { AdminSubmenu } from "@/components/admin/submenu/admin-submenu";
 import { ADMIN_START_SURFACES } from "@/data/admin/start-surfaces";
 import { adminStartPageCopy } from "@/data/pages/admin-start";
 import { requireAdmin } from "@/lib/auth/require-role";
@@ -92,12 +93,21 @@ export default async function AdminStartPage() {
 
   return (
     <StageColumn>
-      <AdminStartView
-        copy={adminStartPageCopy}
-        figures={figures}
-        unreadable={read ? null : [...new Set(reasons)].join(" · ")}
-        surfaces={ADMIN_START_SURFACES}
-      />
+      <div className="space-y-6">
+        {/**
+         * The shared submenu (#1377), above the page's own bands: `/admin/start` and
+         * `/admin/console` are siblings, and this is the row that says so. `ADMIN_START_PATH` is
+         * the route this module *is*, handed in so the row can mark it `aria-current` without a
+         * pathname hook — see `data/admin/submenu.ts::adminSubmenuCurrent`.
+         */}
+        <AdminSubmenu pathname={ADMIN_START_PATH} />
+        <AdminStartView
+          copy={adminStartPageCopy}
+          figures={figures}
+          unreadable={read ? null : [...new Set(reasons)].join(" · ")}
+          surfaces={ADMIN_START_SURFACES}
+        />
+      </div>
     </StageColumn>
   );
 }
