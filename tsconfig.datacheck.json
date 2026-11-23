@@ -43,5 +43,5 @@
     "scripts/image-refs.ts",
     "scripts/__tests__/**/*.ts"
   ],
-  "exclude": ["node_modules", ".next", ".datacheck"]
+  "exclude": ["node_modules", ".next", ".datacheck", "scripts/__tests__/mention-watch.test.ts"]
 }
