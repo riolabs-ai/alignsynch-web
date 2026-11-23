@@ -42,6 +42,8 @@ import { adminSpecPageCopy } from "./admin-spec";
 import { adminRelationshipPageCopy } from "./admin-relationship";
 // #665 — the review shelf: artifacts grouped by release, with to-dos and feedback.
 import { adminReviewPageCopy } from "./admin-review";
+// #1374 — the read-only admin landing: four counts, and one door per surface.
+import { adminStartPageCopy } from "./admin-start";
 import { adminTemplateEditorPageCopy } from "./admin-template-editor";
 import { adminTemplatesPageCopy } from "./admin-templates";
 import { adminReportPageCopy } from "./admin-report";
@@ -139,6 +141,8 @@ export const pageCopies: PageCopyTable = zPageCopyTable.parse({
   "/admin/instances/[id]": adminRelationshipPageCopy,
   // #665 — the review shelf, grouped by release; the manifest is the catalogue.
   "/admin/review": adminReviewPageCopy,
+  // #1374 — the admin landing: the four counts and the directory of surfaces.
+  "/admin/start": adminStartPageCopy,
   "/admin/templates": adminTemplatesPageCopy,
   "/admin/templates/[id]": adminTemplateEditorPageCopy,
   "/admin/instances/[id]/report": adminReportPageCopy,

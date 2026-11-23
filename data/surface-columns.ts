@@ -134,6 +134,9 @@ const rows: readonly SurfaceColumn[] = [
   { path: "/admin/spec/validation", mode: "column" },
   { path: "/admin/spec/[group]", mode: "column" },
   { path: "/admin/review", mode: "column" },
+  // #1374 — the read-only landing. `StageColumn` like every other console page: a KPI row and a
+  // directory of rows, both read at the console's measure rather than a board's.
+  { path: "/admin/start", mode: "column" },
   { path: "/admin/templates", mode: "column" },
   { path: "/admin/templates/[id]", mode: "column" },
 

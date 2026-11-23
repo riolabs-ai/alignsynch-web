@@ -77,12 +77,16 @@ function hrefsOf(html: string): string[] {
   return [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1]);
 }
 
-function menuFor(account: ShellAccount | null, options?: { quizRows?: boolean }) {
+function menuFor(
+  account: ShellAccount | null,
+  options?: { quizRows?: boolean; adminConsole?: boolean },
+) {
   return accountMenu({
     copy: accountCopy,
     account,
     quizRows: options?.quizRows ?? true,
     profileHref: accountProfileHref(account),
+    adminConsole: options?.adminConsole ?? false,
   });
 }
 
@@ -136,10 +140,52 @@ describe("accountMenu — which rows exist, per session", () => {
       account: { name: "Rowan", handle: "", email: "rowan@example.test" },
       quizRows: true,
       profileHref: null,
+      adminConsole: false,
     });
     expect(menu.rows.map((row) => row.id)).not.toContain("profile");
     // Still a member: the menu says so, and it still ends with log out.
     expect(menu.signOut).not.toBeNull();
+  });
+});
+
+/**
+ * The console's landing row (#1374): a capability decides its presence, never a role string.
+ *
+ * The defect it closes is a "first thing an admin sees" door that did not exist, and the defect it
+ * must not introduce is the mirror of #979 — a row drawn for a session that cannot open it. So the
+ * row is asserted both ways here, and again in the render below, because the render is the half a
+ * unit test cannot see.
+ */
+describe("accountMenu — the console's landing row, per capability", () => {
+  it("is the first row for a session carrying admin-console, and points at /admin/start", () => {
+    const menu = menuFor(MEMBER_ACCOUNT, { adminConsole: true });
+    expect(menu.rows[0]?.id).toBe("admin-start");
+    expect(menu.rows[0]?.href).toBe("/admin/start");
+    expect(menu.rows[0]?.label).toBe("Admin start");
+    // And the member's own rows are still all there, in order, after it.
+    expect(menu.rows.map((row) => row.id)).toEqual([
+      "admin-start",
+      "profile",
+      "dashboard",
+      "quizzes",
+      "settings",
+    ]);
+  });
+
+  it("is absent for a member without the capability, and absent for a visitor", () => {
+    expect(
+      menuFor(MEMBER_ACCOUNT, { adminConsole: false }).rows.map((row) => row.id),
+    ).not.toContain("admin-start");
+    // A visitor's menu is two doors and nothing else; a capability on a session that does not exist
+    // must not add a third.
+    const visitor = accountMenu({
+      copy: accountCopy,
+      account: null,
+      quizRows: true,
+      profileHref: null,
+      adminConsole: true,
+    });
+    expect(visitor.rows.map((row) => row.id)).toEqual(["sign-in", "sign-up"]);
   });
 });
 
@@ -192,5 +238,45 @@ describe("the account menu, rendered", () => {
     const html = renderHeader({ account, brandId: "quizhub" });
     expect(html).not.toContain("demo-initiator");
     expect(html).toContain("Sign In");
+  });
+
+  /**
+   * The avatar path (#1374) — on both brands, and only for a session that can open the console.
+   *
+   * The row's words come from that brand's account section (`Admin start` in both), so the assertion
+   * is the href *and* the label: a row the fixture forgot to pair fails here rather than rendering
+   * as a blank line under an icon.
+   */
+  it("draws the admin start row for a viewer carrying admin-console, on both brands", () => {
+    for (const brandId of ["quizhub", "alignsynch"] as const) {
+      const html = renderHeader({
+        account: MEMBER_ACCOUNT,
+        brandId,
+        viewer: viewerWith("admin-console"),
+      });
+      expect(hrefsOf(html), brandId).toContain("/admin/start");
+      expect(html, brandId).toContain(
+        itemLabel(accountCopyFor(shellPageCopy, brandId), "admin-start"),
+      );
+    }
+  });
+
+  it("draws no admin start row for a member, and none for a signed-out visitor", () => {
+    // A member's viewer carries no capability at all — the shell's own answer for a signed-in
+    // person without the role.
+    const member = renderHeader({
+      account: MEMBER_ACCOUNT,
+      brandId: "alignsynch",
+      viewer: viewerWith(),
+    });
+    expect(hrefsOf(member)).not.toContain("/admin/start");
+    expect(member).not.toContain("Admin start");
+
+    const visitor = renderHeader({
+      account: null,
+      brandId: "alignsynch",
+      viewer: viewerWith("admin-console"),
+    });
+    expect(hrefsOf(visitor)).not.toContain("/admin/start");
   });
 });

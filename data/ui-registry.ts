@@ -401,6 +401,16 @@ export const uiRegistry: readonly UiEntry[] = zUiRegistry.parse([
   },
   {
     kind: "route",
+    surface: "/admin/start",
+    status: "db",
+    templates: ["quizhub", "alignsynch"],
+    capability:
+      "The read-only admin landing (#1374): four KPI tiles — inbox messages, open review to-dos, relationships, audit actions — each one a count a shelf below already prints and each one a door into that shelf, then a directory of every surface under /admin with one sentence each, and a band saying the page writes nothing.",
+    notes:
+      "The owner's mock is a delivery-history dashboard whose figures are GitHub measurements (commits, merged PRs, CI runs, tags); the app queries none of that and this lane adds no integration, so the page keeps the mock's **layout** — kicker, H1, intro, a KPI row, then cards with a heading, a muted help line and rows — and fills it from the shelves that exist. The four numbers are the reads `/admin/inbox` (`readInbox()`), `/admin/review` (`listReviewArtifacts()`), `/admin/instances` (`listAdminSessions()`) and `/admin/audit` (`readAuditLog(NO_AUDIT_FILTER)`) already make, folded by `lib/admin/start.ts::startFigures()` (pure, `tests/admin-start-figures.test.ts`); the inbox's total is the newest page plus the rows the read withheld, because that read is capped. No query, table, column or migration is added, and nothing writes — there is no form and no server action in the closure. Two gates in the console's order (`requireAdminProduct()` then `requireAdmin()`, `ADMIN_START_PATH` from `lib/admin/paths.ts`); a read that fails draws the fixture's `unreadable` panel with the database's own reason rather than four zeroes. Its door is the account menu's `admin-start` row (`lib/shell/account-menu.ts`, gated on `admin-console`, first row, absent for a member, a `support` seat and a visitor) — the avatar path the issue names — and the rail does not owe it (`data/nav-menu.json`'s `unlisted`). `data/pages/admin-start.ts` holds every word (E23 budget 0) and `data/admin/start-surfaces.ts` the directory; `/admin/brand` is deliberately absent from it because that page is gated by the alignment product too and 404s on a quiz-only build.",
+  },
+  {
+    kind: "route",
     surface: "/admin/templates",
     status: "db",
     templates: ["alignsynch"],
