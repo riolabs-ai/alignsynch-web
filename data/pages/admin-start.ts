@@ -1,5 +1,5 @@
 /**
- * `/admin/start` — the read-only landing's copy (#1374).
+ * `/admin/dashboard` — the read-only landing's copy (#1374).
  *
  * **The page's shape is the owner's mock's, the numbers are this product's.** The mock draws a
  * kicker, an H1, an intro, a KPI row, then cards that each carry a heading, a muted help line and
@@ -24,7 +24,7 @@ import { zPageCopy, type PageCopy } from "../../content/pages";
 
 export const adminStartPageCopy: PageCopy = zPageCopy.parse({
   eyebrow: "Admin · signed-in landing",
-  heading: "Start here",
+  heading: "Dashboard",
   subtitle:
     "The state of the product at a glance, and one door into every surface this console already has. This page reads; it has no control that writes.",
   sections: [

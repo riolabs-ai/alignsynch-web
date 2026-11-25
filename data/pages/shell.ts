@@ -327,8 +327,16 @@ export function shellCopy(brand: Brand): PageCopy {
            * #542 phase 2 — the console hub, first in the operator group. `/admin/console` is where
            * the console's own subtree (users, templates, relationships) hangs off, and until this
            * card it had **no row anywhere in the UI**: the only way in was typing the URL.
+           *
+           * **`Admin Console` since #1382** — the owner's word for the *sidebar* item, so an
+           * operator reading the rail can tell the console apart from the member's dashboard at a
+           * glance. The **words** here are the rail's; the page's own name is
+           * `data/admin/start-surfaces.ts`'s console row, and #1382 moved it to `Admin Console` too,
+           * so the pill row (`data/admin/submenu.ts`) and this row agree byte for byte — the
+           * invariant `tests/admin-submenu.test.tsx` holds. The route (`/admin/console`), the page
+           * and the `console` id are untouched.
            */
-          { id: "console", label: "Console" },
+          { id: "console", label: "Admin Console" },
           /**
            * The two staff surfaces that were also unreachable from the rail: the support inbox
            * (a `support` row, the one queue that rung works) and platform health. The hub page
@@ -403,15 +411,20 @@ export function shellCopy(brand: Brand): PageCopy {
           /**
            * The five rows the same change surfaced, each named the way the page names itself:
            *
-           *   admin-start          the admin landing — the account menu's own word (#1376), kept so
-           *                        one surface has one name in both doors.
+           *   admin-start          the admin landing. **`Dashboard` at `/admin/dashboard` since
+           *                        #1382** — the owner's word for the item, replacing `Admin start` at
+           *                        `/admin/start`. The rail's row and the account menu's row (both
+           *                        sections below) carry it, so one surface still has one name in both
+           *                        doors; the `admin-start` id and the `data/pages/admin-start.ts`
+           *                        fixture name are unchanged, and the old address is a 308 in
+           *                        `next.config.mjs`.
            *   admin-brand          the brand and audience profile (#906), whose CTA is the notice bar's.
            *   admin-spec-validation the spec's validation page (#1252), a row of the same family as
            *                        `admin-spec` that the submenu used to be the only way to.
            *   admin-docs-updates   the per-PR update ledger.
            *   admin-docs-releases  the release notes — the ledger's other half.
            */
-          { id: "admin-start", label: "Admin start" },
+          { id: "admin-start", label: "Dashboard" },
           { id: "admin-brand", label: "Brand & audience" },
           { id: "admin-spec-validation", label: "Spec validation" },
           { id: "admin-docs-updates", label: "Docs updates" },
@@ -665,11 +678,18 @@ export function shellCopy(brand: Brand): PageCopy {
           /**
            * The console's landing row (#1374) — drawn only for a session carrying `admin-console`,
            * so it is the one row here whose reader is an operator (`lib/shell/account-menu.ts`
-           * decides, from the capability set the server resolved). "Admin start" and not "Admin":
-           * the destination is a page that starts a shift, and the word "admin" alone would read as
-           * the console itself, which `/admin/console` already is.
+           * decides, from the capability set the server resolved).
+           *
+           * **`Dashboard` since #1382**, paired with the rail's row above: the owner asked for that
+           * word, and the fixture's long-standing rule is one surface, one name in every door.
+           *
+           * **It collides with the member's own `Dashboard` row** (id `dashboard`, drawn directly
+           * below this one), so an operator's menu shows the word twice and a member's once. That is
+           * the approved wording rather than an oversight; if the two ever need to be
+           * distinguishable the admin row becomes `Admin dashboard`, and because the word lives in
+           * this one fixture row that is a one-line follow-up.
            */
-          { id: "admin-start", label: "Admin start" },
+          { id: "admin-start", label: "Dashboard" },
           { id: "settings", label: "Settings" },
           { id: "settings-hint", label: "Preferences" },
           { id: "logout", label: "Log out" },
@@ -709,7 +729,8 @@ export function shellCopy(brand: Brand): PageCopy {
           { id: "profile", label: "My Profile" },
           { id: "dashboard", label: "Dashboard" },
           { id: "quizzes", label: "My Quizzes" },
-          { id: "admin-start", label: "Admin start" },
+          // #1382 — the admin landing, the same word the rail gives it (`Admin start` until then).
+          { id: "admin-start", label: "Dashboard" },
           { id: "settings", label: "Account Settings" },
           { id: "logout", label: "Sign Out" },
           /**

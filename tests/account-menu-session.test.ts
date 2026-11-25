@@ -157,11 +157,11 @@ describe("accountMenu — which rows exist, per session", () => {
  * unit test cannot see.
  */
 describe("accountMenu — the console's landing row, per capability", () => {
-  it("is the first row for a session carrying admin-console, and points at /admin/start", () => {
+  it("is the first row for a session carrying admin-console, and points at /admin/dashboard", () => {
     const menu = menuFor(MEMBER_ACCOUNT, { adminConsole: true });
     expect(menu.rows[0]?.id).toBe("admin-start");
-    expect(menu.rows[0]?.href).toBe("/admin/start");
-    expect(menu.rows[0]?.label).toBe("Admin start");
+    expect(menu.rows[0]?.href).toBe("/admin/dashboard");
+    expect(menu.rows[0]?.label).toBe("Dashboard");
     // And the member's own rows are still all there, in order, after it.
     expect(menu.rows.map((row) => row.id)).toEqual([
       "admin-start",
@@ -243,9 +243,9 @@ describe("the account menu, rendered", () => {
   /**
    * The avatar path (#1374) — on both brands, and only for a session that can open the console.
    *
-   * The row's words come from that brand's account section (`Admin start` in both), so the assertion
-   * is the href *and* the label: a row the fixture forgot to pair fails here rather than rendering
-   * as a blank line under an icon.
+   * The row's words come from that brand's account section (`Dashboard` in both since #1382), so
+   * the assertion is the href *and* the label: a row the fixture forgot to pair fails here rather
+   * than rendering as a blank line under an icon.
    */
   it("draws the admin start row for a viewer carrying admin-console, on both brands", () => {
     for (const brandId of ["quizhub", "alignsynch"] as const) {
@@ -254,7 +254,7 @@ describe("the account menu, rendered", () => {
         brandId,
         viewer: viewerWith("admin-console"),
       });
-      expect(hrefsOf(html), brandId).toContain("/admin/start");
+      expect(hrefsOf(html), brandId).toContain("/admin/dashboard");
       expect(html, brandId).toContain(
         itemLabel(accountCopyFor(shellPageCopy, brandId), "admin-start"),
       );
@@ -269,14 +269,27 @@ describe("the account menu, rendered", () => {
       brandId: "alignsynch",
       viewer: viewerWith(),
     });
-    expect(hrefsOf(member)).not.toContain("/admin/start");
-    expect(member).not.toContain("Admin start");
+    expect(hrefsOf(member)).not.toContain("/admin/dashboard");
+    // The word can no longer carry this claim: since #1382 the admin landing reads `Dashboard`, the
+    // same word the member's own row uses, so a rendered "does not contain" would be answered by the
+    // member's row. The absence is the address above; the collision is pinned on the descriptor —
+    // a member's menu carries one `Dashboard` row, an operator's two.
+    expect(
+      menuFor(MEMBER_ACCOUNT, { adminConsole: false }).rows.filter(
+        (row) => row.label === "Dashboard",
+      ),
+    ).toHaveLength(1);
+    expect(
+      menuFor(MEMBER_ACCOUNT, { adminConsole: true }).rows.filter(
+        (row) => row.label === "Dashboard",
+      ),
+    ).toHaveLength(2);
 
     const visitor = renderHeader({
       account: null,
       brandId: "alignsynch",
       viewer: viewerWith("admin-console"),
     });
-    expect(hrefsOf(visitor)).not.toContain("/admin/start");
+    expect(hrefsOf(visitor)).not.toContain("/admin/dashboard");
   });
 });

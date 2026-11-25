@@ -51,7 +51,7 @@ export function adminInboxMessagePath(messageId: string): string {
 }
 
 /**
- * `/admin/start` — the read-only admin landing (#1374).
+ * `/admin/dashboard` — the read-only admin landing (#1374).
  *
  * Here rather than in `lib/admin/start.ts` for the reason this file gives above: the account menu's
  * admin row (`lib/shell/account-menu.ts`) is reachable from the `"use client"` header and needs this
@@ -59,10 +59,10 @@ export function adminInboxMessagePath(messageId: string): string {
  * boundary, and E10 only reads literal `href`s — the manifest entry in `content/routes.ts` is what
  * makes a path built from this constant safe.
  */
-export const ADMIN_START_PATH = "/admin/start";
+export const ADMIN_START_PATH = "/admin/dashboard";
 
 /**
- * `/admin/console` — the console's overview, and the pair `/admin/start` points at.
+ * `/admin/console` — the console's overview, and the pair `/admin/dashboard` points at.
  *
  * The route has been spelled in `data/admin/start-surfaces.ts` (as a directory row) since #1374;
  * this constant is the half a *page* needs, because `/admin/console` now renders the shared

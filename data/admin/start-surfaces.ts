@@ -1,5 +1,5 @@
 /**
- * The admin surfaces `/admin/start` links into — the landing page's directory, as data.
+ * The admin surfaces `/admin/dashboard` links into — the landing page's directory, as data.
  *
  * **Why a fixture and not markup.** Every row is a title, an address and one sentence, and E23's
  * rule is that reader-visible copy lives in `data/`, never in a component. A list the component
@@ -74,7 +74,7 @@ export const ADMIN_START_SURFACES: readonly AdminStartSurface[] = [
   {
     id: "console",
     href: "/admin/console",
-    title: "Console",
+    title: "Admin Console",
     note: "The operator's overview of the store the console screens read.",
   },
   {

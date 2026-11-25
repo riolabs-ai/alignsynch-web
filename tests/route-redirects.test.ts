@@ -154,6 +154,41 @@ describe("the legacy redirects", () => {
   });
 
   /**
+   * #1382 — the admin landing's two old addresses, each a permanent 308 to the page that moved.
+   *
+   * The rules above answer "does this list shadow a page" and "does every destination resolve". A
+   * dropped row passes both, and so does a row pointed one segment short. So the move is written
+   * out: `/admin/start` (the address the rail row, the account menu's admin door and every bookmark
+   * named) and the bare `/admin` (never a page in this tree — a 404 while every console screen
+   * lives under it) both answer **308 → `/admin/dashboard`**, and neither row catches a console
+   * route: a `:path*` source would swallow `/admin/inbox` and the rest of the subtree.
+   */
+  it("moves both admin landing addresses to /admin/dashboard, and catches nothing else", () => {
+    const firstHit = (path: string) =>
+      redirects.filter((entry) => matcherFor(entry.source)(path) !== false).slice(0, 1);
+
+    for (const oldPath of ["/admin/start", "/admin"]) {
+      const [entry] = firstHit(oldPath);
+      expect(entry, `${oldPath} → no row matches`).toBeDefined();
+      if (!entry) continue;
+      const matched = matcherFor(entry.source)(oldPath);
+      const params = matched === false ? {} : matched.params;
+      expect(statusOf(entry), `${oldPath} is not a permanent move`).toBe(308);
+      expect(destinationOf(entry, params), `${oldPath} lands one segment short`).toBe(
+        "/admin/dashboard",
+      );
+    }
+
+    // Exact sources: every other console screen is the tree's, not a redirect's.
+    for (const live of ["/admin/console", "/admin/inbox", "/admin/audit", "/admin/instances"]) {
+      expect(
+        firstHit(live).map((entry) => entry.source),
+        `${live} is redirected`,
+      ).toEqual([]);
+    }
+  });
+
+  /**
    * The same rule, for the rows the static check above cannot see.
    *
    * A **dynamic** source is not exempt from shadowing a page — it is exempt from being *caught* by

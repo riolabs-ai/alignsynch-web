@@ -172,7 +172,7 @@ const ALIGNMENT_MENU = [
  * one-row title-less group is gone, and its validation page and the two docs sub-surfaces the rail
  * used to leave to a submenu joined it.
  */
-const START = ["/admin/start"];
+const START = ["/admin/dashboard"];
 
 const OPERATIONS = [
   "/admin/console",
@@ -382,7 +382,7 @@ describe("the console's own rows are a member's, the operator's rows are not", (
     expect(memberRows).toEqual(memberHrefs);
     expect(memberHrefs[0]).toBe("/dashboard");
     // The admin's rail opens on the admin landing, which is the row this change surfaced.
-    expect(adminHrefs[0]).toBe("/admin/start");
+    expect(adminHrefs[0]).toBe("/admin/dashboard");
   });
 
   it("draws the console hub for an owner too — above an admin is not outside it", () => {

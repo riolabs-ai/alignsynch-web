@@ -12,7 +12,7 @@
  *      — the derivation both pages hand in, instead of a `usePathname` that would make a row of
  *      links a client component. Start marks Start, console marks Console, a query string selects
  *      a state rather than a route, and a path that names no row marks nothing at all.
- *   3. **both routes render it, with the right pill current.** `/admin/start` is driven through
+ *   3. **both routes render it, with the right pill current.** `/admin/dashboard` is driven through
  *      its real page module with its four reads stubbed (the same shape `admin-start-page.test.tsx`
  *      uses); `/admin/console` is driven through its page with the overview's client component
  *      stubbed, because what this file is asserting is the row above it and not the store's
@@ -49,7 +49,7 @@ vi.mock("@/lib/db/admin-sessions", () => ({ listAdminSessions: vi.fn(async () =>
 vi.mock("@/lib/db/admin-audit", () => ({ readAuditLog: vi.fn(async () => []) }));
 
 import AdminConsolePage from "@/app/(mainlayout)/admin/console/page";
-import AdminStartPage from "@/app/(mainlayout)/admin/start/page";
+import AdminStartPage from "@/app/(mainlayout)/admin/dashboard/page";
 import { AdminSubmenu } from "@/components/admin/submenu/admin-submenu";
 import { ADMIN_START_SURFACES } from "@/data/admin/start-surfaces";
 import { ADMIN_SUBMENU_LINKS, adminSubmenuCurrent } from "@/data/admin/submenu";
@@ -153,7 +153,7 @@ describe("<AdminSubmenu />", () => {
 });
 
 describe("both routes carry it", () => {
-  it("/admin/start renders the row with Start current", async () => {
+  it("/admin/dashboard renders the row with Start current", async () => {
     const html = renderToStaticMarkup(await AdminStartPage());
     expect(html).toContain('data-admin-submenu="start"');
     expect(currentAnchor(html)).toContain(`href="${ADMIN_START_PATH}"`);
