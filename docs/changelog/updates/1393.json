@@ -1,5 +1,5 @@
 {
-  "pr": 1392,
+  "pr": 1393,
   "date": "2026-11-25",
   "area": "web",
   "summary": "`/glossary` publishes `docs/glossary.md` as a public page: a term index, one definition per term with the schema file it came from, and the term count derived from the document itself.",
