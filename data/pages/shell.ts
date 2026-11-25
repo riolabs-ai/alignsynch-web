@@ -330,10 +330,11 @@ export function shellCopy(brand: Brand): PageCopy {
            *
            * **`Admin Console` since #1382** — the owner's word for the *sidebar* item, so an
            * operator reading the rail can tell the console apart from the member's dashboard at a
-           * glance. It is a label change only: the route, the page and the id are untouched. The
-           * pill row on `/admin/start` and `/admin/console` still says `Console`, because that
-           * fixture's labels are each page's own name (`data/admin/submenu.ts`), and the issue
-           * named the sidebar rather than the console page's title.
+           * glance. The **words** here are the rail's; the page's own name is
+           * `data/admin/start-surfaces.ts`'s console row, and #1382 moved it to `Admin Console` too,
+           * so the pill row (`data/admin/submenu.ts`) and this row agree byte for byte — the
+           * invariant `tests/admin-submenu.test.tsx` holds. The route (`/admin/console`), the page
+           * and the `console` id are untouched.
            */
           { id: "console", label: "Admin Console" },
           /**
@@ -410,11 +411,13 @@ export function shellCopy(brand: Brand): PageCopy {
           /**
            * The five rows the same change surfaced, each named the way the page names itself:
            *
-           *   admin-start          the admin landing. **`Dashboard` since #1382** — the owner's word
-           *                        for the sidebar item, replacing `Admin start`. The rail's row and
-           *                        the account menu's row (both sections below) carry it, so one
-           *                        surface still has one name in both doors; the `admin-start` id is
-           *                        unchanged, and so is `/admin/start`.
+           *   admin-start          the admin landing. **`Dashboard` at `/admin/dashboard` since
+           *                        #1382** — the owner's word for the item, replacing `Admin start` at
+           *                        `/admin/start`. The rail's row and the account menu's row (both
+           *                        sections below) carry it, so one surface still has one name in both
+           *                        doors; the `admin-start` id and the `data/pages/admin-start.ts`
+           *                        fixture name are unchanged, and the old address is a 308 in
+           *                        `next.config.mjs`.
            *   admin-brand          the brand and audience profile (#906), whose CTA is the notice bar's.
            *   admin-spec-validation the spec's validation page (#1252), a row of the same family as
            *                        `admin-spec` that the submenu used to be the only way to.

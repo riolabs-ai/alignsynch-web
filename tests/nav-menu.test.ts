@@ -94,7 +94,7 @@ function unlistedHrefs(): string[] {
  * docs tree as one family) and `Member` (the reader's own work plus the help pair — the old
  * `group-app` and `group-support`, folded into one section because both are the member's).
  */
-const START = ["/admin/start"];
+const START = ["/admin/dashboard"];
 
 const OPERATIONS = [
   "/admin/console",
@@ -194,17 +194,17 @@ describe("the menu descriptor", () => {
   it("opens the rail on Start, in a titled one-row section", () => {
     expect(ALIGN_MENU[0]?.id).toBe("group-start");
     expect(ALIGN_MENU[0]?.label).toBe("group-start");
-    expect(ALIGN_MENU[0]?.items.map((item) => item.href)).toEqual(["/admin/start"]);
+    expect(ALIGN_MENU[0]?.items.map((item) => item.href)).toEqual(["/admin/dashboard"]);
     // …and Operations follows it, so the landing is above the operator's surfaces and nowhere else.
     expect(ALIGN_MENU[1]?.id).toBe("group-operations");
     // One row, one href — the defect two rows pointing at a destination would be.
     const drawn = (navDocument as unknown as { groups: { items: { href: string }[] }[] }).groups
       .flatMap((group) => group.items)
-      .filter((row) => row.href === "/admin/start");
+      .filter((row) => row.href === "/admin/dashboard");
     expect(drawn).toHaveLength(1);
-    expect(allItems().filter((item) => item.href === "/admin/start")).toHaveLength(1);
+    expect(allItems().filter((item) => item.href === "/admin/dashboard")).toHaveLength(1);
     // It is no longer accounted for as `unlisted` — one statement, one door (nav:menu --check's rule).
-    expect(unlistedHrefs()).not.toContain("/admin/start");
+    expect(unlistedHrefs()).not.toContain("/admin/dashboard");
   });
 
   /**
@@ -307,7 +307,7 @@ describe("the menu descriptor", () => {
    */
   it("surfaces the five rows it names, and stops calling them unlisted", () => {
     const SURFACED = [
-      "/admin/start",
+      "/admin/dashboard",
       "/admin/brand",
       "/admin/spec/validation",
       "/admin/docs/updates",
@@ -431,7 +431,7 @@ describe("the ladder decides the rows", () => {
     expect(MENUS.admin).toContain("/admin/health");
     // The five surfaces that left `unlisted` this change are drawn for an admin…
     for (const href of [
-      "/admin/start",
+      "/admin/dashboard",
       "/admin/brand",
       "/admin/spec/validation",
       "/admin/docs/updates",
@@ -487,7 +487,7 @@ describe("the ladder decides the rows", () => {
     // check: a member keeps 6 (Member, which now carries the help pair); a stakeholder has 8 (the
     // two spec rows plus Member); a support seat has 7 (the inbox plus Member); a staff rung has 24
     // (START 1 + OPERATIONS 6 + CONTENT 6 + SPECS 5 + MEMBER 6), because four rows left `unlisted`
-    // and one (`/admin/start`) joined the rail.
+    // and one (`/admin/dashboard`) joined the rail.
     expect(counts).toEqual([6, 8, 7, 24, 24]);
     // Not decoration: the first two rungs differ by exactly the rows the second exists for.
     expect(counts[1]).toBe(counts[0] + 2);
@@ -544,8 +544,8 @@ describe("the rendered rail", () => {
    * opens on the spec — the rungs did not change, only the sections the rows sit in.
    */
   it("draws Start first for a staff rung, and opens on the member's work for a member", () => {
-    expect(railHrefs("admin")[0]).toBe("/admin/start");
-    expect(railHrefs("owner")[0]).toBe("/admin/start");
+    expect(railHrefs("admin")[0]).toBe("/admin/dashboard");
+    expect(railHrefs("owner")[0]).toBe("/admin/dashboard");
     expect(railHrefs("admin")[1]).toBe("/admin/console");
     expect(railHrefs("support")[0]).toBe("/admin/inbox");
     expect(railHrefs("stakeholder")[0]).toBe("/admin/spec");

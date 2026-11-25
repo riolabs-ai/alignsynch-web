@@ -8,7 +8,7 @@
       "items": [
         {
           "id": "admin-start",
-          "href": "/admin/start",
+          "href": "/admin/dashboard",
           "icon": "dashboard",
           "needs": "admin",
           "note": "The admin landing, surfaced 2026-11-23 (nav evaluation F1). It was `unlisted` on the ruling that the account menu's admin door was enough; the rail's job is to name destinations, and a landing no rail row names is the one surface an operator cannot see from the rail. The account-menu door (#1376) stays — this is a second door to one destination, not a replacement, which is the one place that ruling read wrong rather than the ruling itself. `dashboard` is the glyph the member's Start row draws: both rows open a landing."

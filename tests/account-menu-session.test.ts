@@ -157,10 +157,10 @@ describe("accountMenu — which rows exist, per session", () => {
  * unit test cannot see.
  */
 describe("accountMenu — the console's landing row, per capability", () => {
-  it("is the first row for a session carrying admin-console, and points at /admin/start", () => {
+  it("is the first row for a session carrying admin-console, and points at /admin/dashboard", () => {
     const menu = menuFor(MEMBER_ACCOUNT, { adminConsole: true });
     expect(menu.rows[0]?.id).toBe("admin-start");
-    expect(menu.rows[0]?.href).toBe("/admin/start");
+    expect(menu.rows[0]?.href).toBe("/admin/dashboard");
     expect(menu.rows[0]?.label).toBe("Dashboard");
     // And the member's own rows are still all there, in order, after it.
     expect(menu.rows.map((row) => row.id)).toEqual([
@@ -254,7 +254,7 @@ describe("the account menu, rendered", () => {
         brandId,
         viewer: viewerWith("admin-console"),
       });
-      expect(hrefsOf(html), brandId).toContain("/admin/start");
+      expect(hrefsOf(html), brandId).toContain("/admin/dashboard");
       expect(html, brandId).toContain(
         itemLabel(accountCopyFor(shellPageCopy, brandId), "admin-start"),
       );
@@ -269,7 +269,7 @@ describe("the account menu, rendered", () => {
       brandId: "alignsynch",
       viewer: viewerWith(),
     });
-    expect(hrefsOf(member)).not.toContain("/admin/start");
+    expect(hrefsOf(member)).not.toContain("/admin/dashboard");
     // The word can no longer carry this claim: since #1382 the admin landing reads `Dashboard`, the
     // same word the member's own row uses, so a rendered "does not contain" would be answered by the
     // member's row. The absence is the address above; the collision is pinned on the descriptor —
@@ -290,6 +290,6 @@ describe("the account menu, rendered", () => {
       brandId: "alignsynch",
       viewer: viewerWith("admin-console"),
     });
-    expect(hrefsOf(visitor)).not.toContain("/admin/start");
+    expect(hrefsOf(visitor)).not.toContain("/admin/dashboard");
   });
 });

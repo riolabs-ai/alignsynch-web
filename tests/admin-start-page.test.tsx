@@ -1,5 +1,5 @@
 /**
- * `/admin/start`'s page module, driven with the gates and the four reads stubbed (#1374).
+ * `/admin/dashboard`'s page module, driven with the gates and the four reads stubbed (#1374).
  *
  * The route's last mile is a session: `pnpm start` answers a session-less request with the gate's
  * 307 (proved by curl in the PR), and an admin's own session cannot be minted by a headless worker.
@@ -44,7 +44,7 @@ vi.mock("@/lib/db/admin-audit", () => ({
   readAuditLog: (filter: unknown) => readAuditLog(filter),
 }));
 
-import AdminStartPage from "@/app/(mainlayout)/admin/start/page";
+import AdminStartPage from "@/app/(mainlayout)/admin/dashboard/page";
 import { ADMIN_START_SURFACES } from "@/data/admin/start-surfaces";
 import { adminStartPageCopy } from "@/data/pages/admin-start";
 
@@ -63,12 +63,12 @@ beforeEach(() => {
   readAuditLog.mockResolvedValue(Array.from({ length: 13 }, () => ({})));
 });
 
-describe("/admin/start — an admin's request", () => {
+describe("/admin/dashboard — an admin's request", () => {
   it("gates on the console's pair and renders the four counts the shelves answered", async () => {
     const html = renderToStaticMarkup(await AdminStartPage());
 
     expect(requireAdminProduct).toHaveBeenCalledTimes(1);
-    expect(requireAdmin).toHaveBeenCalledWith({ next: "/admin/start" });
+    expect(requireAdmin).toHaveBeenCalledWith({ next: "/admin/dashboard" });
     expect(html).toContain(adminStartPageCopy.heading);
 
     // The inbox is the newest page plus what the read withheld: 3 + 7.
@@ -78,12 +78,12 @@ describe("/admin/start — an admin's request", () => {
     expect(html).toContain(">2</span>"); // relationships
     expect(html).toContain(">13</span>"); // the audit log's newest page
     expect(html).toContain("2 artifacts · 4 issues still open.");
-    // The page's own door is not in its directory — /admin/start links to surfaces, not to itself.
+    // The page's own door is not in its directory — /admin/dashboard links to surfaces, not to itself.
     // It *does* now carry its own address once, in the shared submenu's current pill (#1377), which
     // is why this asserts the directory fixture rather than the absence of the string: one link to
     // itself, marked `aria-current="page"`, is the row saying where you are, not a door back here.
-    expect(ADMIN_START_SURFACES.map((surface) => surface.href)).not.toContain("/admin/start");
-    expect(html.match(/href="\/admin\/start"/g)).toHaveLength(1);
+    expect(ADMIN_START_SURFACES.map((surface) => surface.href)).not.toContain("/admin/dashboard");
+    expect(html.match(/href="\/admin\/dashboard"/g)).toHaveLength(1);
   });
 
   it("reads all four shelves, and no fifth query", async () => {

@@ -1,5 +1,5 @@
 /**
- * `/admin/start`'s four figures, as arithmetic (#1374).
+ * `/admin/dashboard`'s four figures, as arithmetic (#1374).
  *
  * The page itself needs a session, a database and four shelves, so the derivation is proved here on
  * its own: what the inbox's total is, how a review shelf's open to-dos are counted, and what happens
