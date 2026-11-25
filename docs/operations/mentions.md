@@ -75,6 +75,25 @@ The cron line a wrapper should run — hourly, and only the alert is delivered:
 17 * * * * cd /home/jadenblack/Desktop/dev.local/alignsynch/quizhub/quizhub && pnpm mentions:watch --apply-cursor --json 2>>/tmp/mentions-watch.log
 ```
 
+## The thread label — who may queue one
+
+`.github/workflows/mention-queue.yml` is the durable half: it runs on GitHub's runners, so a
+`@alignsynch` comment labels the thread `needs-agent-reply` even when the machine running this poller
+is off. The label means _unanswered_, and that word is the whole rule: **an answer does not queue a
+thread**, because an answer has to name the handle to be an answer. Measured on #1382 — replied at
+2026-11-25T04:21:21Z, label cleared six seconds later, and put back by run `45546210272` — because
+the labeller read the body and never the author.
+
+The guard is a named function in `scripts/mention-queue.mjs`, and the workflow calls it rather than
+carrying a copy of the rule in YAML. It skips an answering identity (`jadenblack`), any `[bot]`
+account and `@alignsynch` itself, and queues everyone else: the founder asking, the reviewer asking,
+any human whose comment names the handle. **The repository owner is not skipped implicitly** — the
+owner account here is the founder's, and it is the one that writes the mentions, so skipping it would
+leave the queue permanently empty. Where the owner _is_ the answerer, that install declares it on the
+script's `--answering` line. Clearing is never behind the guard: an answerer may not queue a thread
+and must still be able to clear one, so the verdict gates `add_label` and nothing else, and a guard
+that cannot decide fails the run instead of skipping it silently.
+
 ## Two rules that are not negotiable
 
 **It never answers.** There is no model anywhere on this path: the script extracts and reports, and
@@ -95,6 +114,7 @@ of being invisible; `--identity` pins it when a wrapper knows better.
 
 ```bash
 pnpm exec vitest run scripts/__tests__/mention-watch.test.ts   # the regex, the skips, the cursor, `since` on every source
+pnpm exec vitest run tests/mention-queue.test.ts               # who may queue a thread, and the CLI contract the workflow reads
 bash scripts/verify.sh                                         # the gate
 ```
 
