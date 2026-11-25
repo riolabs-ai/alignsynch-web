@@ -36,6 +36,8 @@ import {
   type CheckoutSession,
   DEFAULT_BILLING_PROVIDER,
   type Entitlement,
+  type InvoicePortal,
+  type InvoicePortalRequest,
   type Subscription,
   type WebhookOutcome,
   type WebhookRequest,
@@ -178,4 +180,15 @@ export async function readAccountSubscription(userId: string): Promise<Subscript
 /** Apply a provider event, at most once. */
 export async function handleWebhook(request: WebhookRequest): Promise<WebhookOutcome> {
   return (await billing()).handleWebhook(request);
+}
+
+/**
+ * Where the signed-in customer reads their own invoices and receipts (#1282, APP-46).
+ *
+ * A `url` to the provider's own page, or a reason there is none. This module is the seam every
+ * caller uses, so the Payment tab's action never learns which adapter answered and the mock's
+ * refusal is indistinguishable, at the call site, from the hosted adapter's.
+ */
+export async function openInvoicePortal(request: InvoicePortalRequest): Promise<InvoicePortal> {
+  return (await billing()).invoicePortal(request);
 }

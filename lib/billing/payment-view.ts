@@ -150,6 +150,19 @@ export interface BillingView {
   readonly coverage: readonly CoverageBand[];
   /** Does the account hold a card? Read from the subscription's own provider, never guessed. */
   readonly cardOnFile: boolean;
+  /**
+   * Where the invoices and receipts live for this account (#1282, APP-46).
+   *
+   * `provider` — a provider subscription exists, so the provider holds the member's invoices and
+   *   the Billing History card draws the one control that opens them.
+   * `offline` — the live row is the offline adapter's; no provider object was ever created, so
+   *   there is no page to open and none is drawn.
+   * `none` — no live subscription at all: nothing has been charged.
+   *
+   * The component renders one of these three and decides nothing itself; the *action* re-asks the
+   * server, which is where the URL is minted.
+   */
+  readonly invoiceAccess: InvoiceAccess;
   /** A viewer with nothing to bill — the Memberships list's one sentence. */
   readonly empty: boolean;
 }
@@ -238,6 +251,26 @@ function trialOf(subscription: Subscription | null, now: Date): TrialState {
  */
 export function cardOnFileOf(subscription: Subscription | null): boolean {
   return subscription !== null && subscription.provider !== "mock";
+}
+
+/** The three answers the invoices card can have. See `BillingView["invoiceAccess"]`. */
+export const INVOICE_ACCESS = ["provider", "none", "offline"] as const;
+
+export type InvoiceAccess = (typeof INVOICE_ACCESS)[number];
+
+/**
+ * Where this account's invoices and receipts are (#1282, APP-46).
+ *
+ * **Derived from the row's provider, and from nothing else.** A `mock` subscription is the
+ * card-free demo path: the adapter wrote a real row through the same functions the hosted one uses,
+ * but no provider object exists behind it, so there is no page to open — the Billing History card
+ * says there are no charges rather than offering a button into nothing. A hosted provider's row is
+ * the only case that draws the control, and even then the URL is minted server-side on the click,
+ * because a portal session is single-use and must not be baked into HTML.
+ */
+export function invoiceAccessOf(subscription: Subscription | null): InvoiceAccess {
+  if (subscription === null) return "none";
+  return subscription.provider === "mock" ? "offline" : "provider";
 }
 
 /* ------------------------------------------------------------------ *
@@ -541,6 +574,7 @@ export function billingViewOf(facts: BillingFacts): BillingView {
     panels,
     coverage,
     cardOnFile: cardOnFileOf(facts.subscription),
+    invoiceAccess: invoiceAccessOf(facts.subscription),
     empty: panels.length === 0,
   };
 }

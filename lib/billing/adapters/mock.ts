@@ -30,6 +30,8 @@ import type {
   CheckoutRequest,
   CheckoutSession,
   Entitlement,
+  InvoicePortal,
+  InvoicePortalRequest,
   Subscription,
   SubscriptionStatus,
   WebhookOutcome,
@@ -231,5 +233,30 @@ export class MockBillingAdapter implements BillingPort {
 
   async entitlementFor(userId: string): Promise<Entitlement> {
     return entitlementOf(await this.readSubscription(userId));
+  }
+
+  /**
+   * There is no provider page behind a mock subscription (#1282, APP-46).
+   *
+   * The mock writes a real `billing_subscription` row through the same functions the hosted
+   * adapter uses, and no money and no provider object ever existed behind it. So the honest answer
+   * for one of its rows is `no-provider-surface` — a reason, not a link, and specifically not an
+   * empty invoice list dressed as a billing page. That is the whole point of the refusal being part
+   * of the port: a demo account is not a paying customer, and the screen says so.
+   */
+  async invoicePortal(request: InvoicePortalRequest): Promise<InvoicePortal> {
+    const subscription = await this.readSubscription(request.userId);
+    if (subscription === null) {
+      return {
+        available: false,
+        reason: "no-subscription",
+        detail: "the account holds no live subscription, so nothing has been charged",
+      };
+    }
+    return {
+      available: false,
+      reason: "no-provider-surface",
+      detail: `subscription ${subscription.providerSubscriptionId} belongs to the offline adapter — there is no provider page behind it`,
+    };
   }
 }

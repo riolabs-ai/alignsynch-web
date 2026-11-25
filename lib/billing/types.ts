@@ -174,6 +174,54 @@ export type WebhookOutcome =
       readonly detail: string;
     };
 
+/**
+ * What a "see my invoices" click asks the port for (#1282, APP-46).
+ *
+ * The account is resolved from the session by the caller, never from a body, and `returnUrl` is
+ * this deployment's own Payment tab — the provider's page sends the browser back there, so the
+ * member is not stranded on a hosted page after reading a receipt.
+ */
+export interface InvoicePortalRequest {
+  readonly userId: string;
+  /** Absolute, and built from the deployment's own base rather than the request's. */
+  readonly returnUrl: string;
+}
+
+/**
+ * Why an account has no provider page to open.
+ *
+ * `no-subscription` — nothing is live, so no provider holds a charge for this account.
+ * `no-provider-surface` — the subscription is the offline adapter's own row; it never touched a
+ *   provider, so there is no hosted page behind it and none is invented for it.
+ * `unavailable` — a provider subscription exists and the provider would not mint a page (its
+ *   billing portal is not activated on that account, or it is unreachable). The `detail` sentence
+ *   is for the operator's log, never for the screen.
+ */
+export const INVOICE_PORTAL_REFUSALS = [
+  "no-subscription",
+  "no-provider-surface",
+  "unavailable",
+] as const;
+
+export type InvoicePortalRefusal = (typeof INVOICE_PORTAL_REFUSALS)[number];
+
+/**
+ * Where the customer manages their own invoices and receipts — or why there is nothing to open.
+ *
+ * **The app never draws an invoice.** No amount, date or PDF crosses this port: the provider owns
+ * the list, the receipts and the download, and this answers one URL to its own page. That is the
+ * whole reason the port answers a `url` and not a collection — a second copy of a billing document
+ * in our tree would be a copy that can disagree with the provider's, and card data never enters
+ * this app at all.
+ */
+export type InvoicePortal =
+  | { readonly available: true; readonly url: string; readonly provider: BillingProvider }
+  | {
+      readonly available: false;
+      readonly reason: InvoicePortalRefusal;
+      readonly detail: string;
+    };
+
 /** What the server allows an account — computed from its plan, never stored as a column. */
 export interface Entitlement {
   readonly planId: BillingPlanId;

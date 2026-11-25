@@ -30,6 +30,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import type { PageCopy, PageCopySection } from "@/content/pages";
+import type { InvoicePortalOutcome } from "@/app/(mainlayout)/dashboard/payment/actions";
 import {
   initialsOf,
   type BillingPanel,
@@ -193,11 +194,13 @@ export function PaymentView({
   view,
   unreadable,
   onClaimExtension,
+  onOpenInvoices,
 }: {
   copy: PageCopy;
   view: BillingView;
   unreadable: string | null;
   onClaimExtension: (payload: { relationshipId: string }) => Promise<ExtensionOutcome>;
+  onOpenInvoices: () => Promise<InvoicePortalOutcome>;
 }) {
   const router = useRouter();
   const memberships = sectionOf(copy, "memberships");
@@ -207,6 +210,28 @@ export function PaymentView({
   const coverage = sectionOf(copy, "coverage");
   const [claiming, setClaiming] = useState<string | null>(null);
   const [claimRefusal, setClaimRefusal] = useState<{ id: string; message: string } | null>(null);
+  const [openingInvoices, setOpeningInvoices] = useState(false);
+  const [invoiceRefusal, setInvoiceRefusal] = useState<string | null>(null);
+
+  /**
+   * Open the provider's own invoice and receipt surface (#1282, APP-46).
+   *
+   * The URL is minted by the server on the click — a billing-portal session is single-use, so there
+   * is nothing to render as an `href` — and this handler's whole job is to follow it or say the one
+   * sentence the fixture carries. `window.location.assign` rather than a new tab: the session's
+   * `return_url` brings the member back to this page, which a second tab would leave behind.
+   */
+  async function openInvoices() {
+    setOpeningInvoices(true);
+    setInvoiceRefusal(null);
+    const answer = await onOpenInvoices();
+    setOpeningInvoices(false);
+    if (answer.ok) {
+      window.location.assign(answer.url);
+      return;
+    }
+    setInvoiceRefusal(itemLabel(history, "open-failed"));
+  }
 
   /**
    * Take the one free week.
@@ -327,7 +352,34 @@ export function PaymentView({
               <h2 id="history-title" className="text-base font-semibold text-primary">
                 {history.heading}
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">{sectionBody(history)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {view.invoiceAccess === "provider"
+                  ? itemLabel(history, "provider-body")
+                  : sectionBody(history)}
+              </p>
+              {/* The provider's own page, never a list of ours: no amount, date or PDF is drawn
+                  here (APP-46's MUST NOT). The URL is minted on the click, so there is no href to
+                  render. */}
+              {view.invoiceAccess === "provider" ? (
+                <button
+                  type="button"
+                  className={`${SECONDARY} mt-3`}
+                  data-payment-action="open-invoices"
+                  disabled={openingInvoices}
+                  onClick={() => {
+                    void openInvoices();
+                  }}
+                >
+                  {openingInvoices
+                    ? itemLabel(history, "open-pending")
+                    : itemLabel(history, "open")}
+                </button>
+              ) : null}
+              {invoiceRefusal === null ? null : (
+                <p className="mt-2 text-sm text-muted-foreground" data-payment-refusal="">
+                  {invoiceRefusal}
+                </p>
+              )}
             </section>
 
             <section className="rounded-lg border border-status-line bg-status p-4">
