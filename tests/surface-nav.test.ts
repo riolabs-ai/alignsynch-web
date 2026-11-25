@@ -110,7 +110,7 @@ describe("the shell's menus", () => {
     expect(hrefsOf(navHtml("admin"))).toEqual([
       // 2026-11-23 — the five-section rail: Start (the admin landing), Operations, Content &
       // configuration, Specs & docs, then the member's own rows under Member.
-      "/admin/start",
+      "/admin/dashboard",
       "/admin/console",
       "/admin/instances",
       "/admin/gaps",

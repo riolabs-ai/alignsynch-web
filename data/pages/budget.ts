@@ -163,8 +163,8 @@ export const pageCopyBudget: PageCopyBudget = zPageCopyBudget.parse({
   // `data/pages/admin-start.ts`, and the directory is `data/admin/start-surfaces.ts`, so the next
   // literal written in `start-view.tsx` is a red build. Attribution is the subdirectory: the rows
   // above already own `components/admin`.
-  "/admin/start": {
-    page: "app/(mainlayout)/admin/start/page.tsx",
+  "/admin/dashboard": {
+    page: "app/(mainlayout)/admin/dashboard/page.tsx",
     dirs: ["components/admin/start"],
     fixture: "data/pages/admin-start",
     budget: 0,

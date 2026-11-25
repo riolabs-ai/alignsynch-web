@@ -142,7 +142,7 @@ export const pageCopies: PageCopyTable = zPageCopyTable.parse({
   // #665 — the review shelf, grouped by release; the manifest is the catalogue.
   "/admin/review": adminReviewPageCopy,
   // #1374 — the admin landing: the four counts and the directory of surfaces.
-  "/admin/start": adminStartPageCopy,
+  "/admin/dashboard": adminStartPageCopy,
   "/admin/templates": adminTemplatesPageCopy,
   "/admin/templates/[id]": adminTemplateEditorPageCopy,
   "/admin/instances/[id]/report": adminReportPageCopy,

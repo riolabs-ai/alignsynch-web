@@ -1,5 +1,5 @@
 /**
- * `/admin/start`'s render (#1374) — the half the pure fold cannot see.
+ * `/admin/dashboard`'s render (#1374) — the half the pure fold cannot see.
  *
  * `tests/admin-start-figures.test.ts` proves the arithmetic; this file proves the screen: four tiles
  * carrying the numbers it was handed, a door per tile, the directory of surfaces, and the two states
@@ -49,7 +49,7 @@ function hrefsOf(html: string): string[] {
   return [...html.matchAll(/href="([^"]*)"/g)].map((match) => match[1]);
 }
 
-describe("/admin/start, rendered", () => {
+describe("/admin/dashboard, rendered", () => {
   it("draws the page's own heading and one tile per figure, each a door into its shelf", () => {
     const html = render(FIGURES, null);
     expect(html).toContain(adminStartPageCopy.heading);

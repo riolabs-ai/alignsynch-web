@@ -76,6 +76,14 @@
       "roleFloor": null
     },
     {
+      "href": "/admin/dashboard",
+      "file": "app/(mainlayout)/admin/dashboard/page.tsx",
+      "group": "(mainlayout)",
+      "boundary": "any",
+      "console": true,
+      "roleFloor": "admin"
+    },
+    {
       "href": "/admin/docs",
       "file": "app/(mainlayout)/admin/docs/page.tsx",
       "group": "(mainlayout)",
@@ -186,14 +194,6 @@
       "boundary": "any",
       "console": true,
       "roleFloor": "spec-reader"
-    },
-    {
-      "href": "/admin/start",
-      "file": "app/(mainlayout)/admin/start/page.tsx",
-      "group": "(mainlayout)",
-      "boundary": "any",
-      "console": true,
-      "roleFloor": "admin"
     },
     {
       "href": "/admin/templates",

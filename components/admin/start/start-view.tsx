@@ -1,7 +1,7 @@
 /**
  * template-ancestor: components/admin/platform-health.tsx   (variation: four read-only stat cards become a landing page's KPI row — the same `label / value / source` triple, plus the directory of surfaces underneath that turns each number into a door)
  *
- * `/admin/start` — the read-only landing (#1374).
+ * `/admin/dashboard` — the read-only landing (#1374).
  *
  * **The mock, and where this page keeps it.** The owner's mock draws a kicker, an H1, an intro, a
  * four-tile KPI row, then cards that each carry a heading, a muted help line and rows. Its figures

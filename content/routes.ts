@@ -69,7 +69,7 @@ const STATIC_ROUTES = [
   "/admin/inbox",
   // #1374 — the read-only landing: four counts the shelves above already compute, and one door
   // into each. Reached from the account menu's admin row; gated by the console's own pair.
-  "/admin/start",
+  "/admin/dashboard",
   "/affiliate",
   "/assessment",
   // #877 — the member's assessment-session listing, a sibling of `/dashboard/relationships`. It

@@ -290,6 +290,19 @@ const nextConfig = {
       { source: "/analytics", destination: "/dashboard/user?tab=my-quizzes", permanent: true },
       { source: "/signup", destination: "/register", permanent: true },
       /**
+       * #1382 — the read-only admin landing moved from `/admin/start` to `/admin/dashboard`, so its
+       * address and its name agree ("the same page, at a new address, under a new name"). Two rows,
+       * both exact, both `permanent: true`: the moved page (`/admin/start` — the rail row, the
+       * account menu's admin door and every bookmark that named it) and the bare `/admin`, which
+       * was never a page in this tree and answered 404 while the console's whole subtree is
+       * `/admin/**`. Neither source is a route pattern in `content/routes.ts`: the page left
+       * `/admin/start` in the same commit, and there is no `app/(mainlayout)/admin/page.tsx` —
+       * `tests/route-redirects.test.ts` fails a `permanent: true` source that is still a live route,
+       * because a redirect runs before the filesystem route and would make the page unreachable.
+       */
+      { source: "/admin/start", destination: "/admin/dashboard", permanent: true },
+      { source: "/admin", destination: "/admin/dashboard", permanent: true },
+      /**
        * #620 — the member's menu went from four rows to two, and `Library` was one of the three
        * "templates" doors that became the second tab of `/dashboard/templates`. The page is gone
        * (not hidden behind this redirect: a `permanent: true` source runs before the filesystem

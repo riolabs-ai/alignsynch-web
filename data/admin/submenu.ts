@@ -1,5 +1,5 @@
 /**
- * The shared admin submenu's rows — the pill row `/admin/start` and `/admin/console` both carry.
+ * The shared admin submenu's rows — the pill row `/admin/dashboard` and `/admin/console` both carry.
  *
  * **Why a fixture and not markup.** Every row is an address and the words that page already
  * prints, so the rows live here beside `data/admin/start-surfaces.ts` for the reason that file
@@ -13,7 +13,7 @@
  * whole directory: that list is a page's job (`ADMIN_START_SURFACES`, sixteen doors), and a
  * submenu that repeated all sixteen would be a second navigation the shell already draws.
  *
- * **Labels are each page's own name**, byte for byte: `Start here` is `/admin/start`'s own H1
+ * **Labels are each page's own name**, byte for byte: `Dashboard` is `/admin/dashboard`'s own H1
  * (`data/pages/admin-start.ts`), and the other four are the titles `data/admin/start-surfaces.ts`
  * gives the same pages. `tests/admin-submenu.test.tsx` holds the two fixtures equal, so a rename
  * upstream is one edit here rather than a pill that calls a screen something it no longer says.
@@ -47,8 +47,8 @@ export const ADMIN_SUBMENU_NAME = "Admin sections";
  * shelves the landing's own counts are read from.
  */
 export const ADMIN_SUBMENU_LINKS: readonly AdminSubmenuLink[] = [
-  { id: "start", href: "/admin/start", label: "Start here" },
-  { id: "console", href: "/admin/console", label: "Console" },
+  { id: "start", href: "/admin/dashboard", label: "Dashboard" },
+  { id: "console", href: "/admin/console", label: "Admin Console" },
   { id: "instances", href: "/admin/instances", label: "Relationships" },
   { id: "health", href: "/admin/health", label: "Platform health" },
   { id: "audit", href: "/admin/audit", label: "Audit log" },

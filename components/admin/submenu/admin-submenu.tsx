@@ -9,7 +9,7 @@
  * `components/admin/spec/spec-submenu.tsx` draws, at one row instead of a column.
  *
  * **The items are data and the component is item-agnostic.** Every address and every word comes
- * from `data/admin/submenu.ts`; nothing in this file names `/admin/start`, `/admin/console` or any
+ * from `data/admin/submenu.ts`; nothing in this file names `/admin/dashboard`, `/admin/console` or any
  * other route. A second row over a different sibling set is a prop change, not a second component,
  * which is the point of keeping it generic (§ template doctrine, question 2).
  *

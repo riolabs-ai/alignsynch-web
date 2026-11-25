@@ -1,0 +1,9 @@
+{
+  "pr": 1382,
+  "date": "2026-11-25",
+  "area": "admin",
+  "summary": "The admin landing is `/admin/dashboard` and is called `Dashboard`: the page moved with `git mv` and its internals untouched, and `/admin/start` plus the bare `/admin` answer a permanent 308 to it.",
+  "reader_impact": "An operator's rail row, account menu and pill row now say `Dashboard` and `Admin Console`, while every old bookmark still lands on the same page with the same four counts.",
+  "specs": ["docs/specs/ux-reference-patterns.md"],
+  "risk": "low"
+}

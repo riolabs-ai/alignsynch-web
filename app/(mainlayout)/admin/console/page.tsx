@@ -8,7 +8,7 @@ import { requireAdminProduct } from "@/lib/brand-boundary";
 /**
  * `/admin/console` — the admin console's overview.
  *
- * **The shared submenu is at the top of it.** `/admin/start` and this page are the pair an operator
+ * **The shared submenu is at the top of it.** `/admin/dashboard` and this page are the pair an operator
  * moves between, so both render `AdminSubmenu` with their own route handed in: the row is a `nav`
  * of links, not `Tabs`, and the current pill is derived from the path — no `usePathname`, so the
  * page stays server-rendered and the row ships no JavaScript. Items and words live in
@@ -37,7 +37,7 @@ export default function AdminConsolePage() {
       <div className="space-y-6">
         {/**
          * The shared submenu (#1377). This page is one of the two siblings the row exists for —
-         * the other is `/admin/start` — and `ADMIN_CONSOLE_PATH` is the route this module is,
+         * the other is `/admin/dashboard` — and `ADMIN_CONSOLE_PATH` is the route this module is,
          * handed in so the row marks it `aria-current` with no pathname hook.
          */}
         <AdminSubmenu pathname={ADMIN_CONSOLE_PATH} />
