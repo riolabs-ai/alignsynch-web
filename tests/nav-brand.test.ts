@@ -487,6 +487,9 @@ describe("the footer columns follow the same rule as the sidebar rows", () => {
       "/relationship-templates#how",
       "/pricing",
       "/help",
+      // #1289 — the glossary row the public menu gained, appended below Help. Pricing still stands
+      // directly above Help (owner comment), which is why this row is last rather than inserted.
+      "/glossary",
       // The contact band's one link, to the form (owner, 2026-11-02): the band no longer prints
       // a mailbox, so the destination is the same public page the column's Help row opens.
       "/help",

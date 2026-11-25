@@ -45,6 +45,12 @@ function publicRowsFor(brandId: BrandId, copy: PageCopy): readonly PublicNavRow[
         },
         { id: "pricing", label: itemLabel(nav, "pricing"), href: PRICING_PATH },
         { id: "help", label: itemLabel(nav, "help"), href: "/help" },
+        /**
+         * #1289 (register row WEB-07) — the glossary. Below Help, and mirrored by the footer's
+         * AlignSynch column from `footer-links-alignsynch`'s `glossary` row; the owner's *"before
+         * help add Pricing"* is why nothing is inserted above Help.
+         */
+        { id: "glossary", label: itemLabel(nav, "glossary"), href: "/glossary" },
       ];
     }
     case "quizhub": {

@@ -381,6 +381,8 @@ describe("the real tree", () => {
   it("derives the public routes from the marketing group", () => {
     assert.deepEqual(routes, [
       "/",
+      // #1289 — the glossary, published from docs/glossary.md.
+      "/glossary",
       "/help",
       "/pricing",
       "/privacy",

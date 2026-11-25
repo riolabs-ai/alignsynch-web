@@ -14,6 +14,7 @@
  */
 export const LEAVING_ROUTES: readonly string[] = [
   "/",
+  "/glossary",
   "/help",
   "/pricing",
   "/privacy",

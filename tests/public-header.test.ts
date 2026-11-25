@@ -102,6 +102,8 @@ describe("signed out", () => {
       { href: "/relationship-templates#how", text: "How It Works" },
       { href: "/pricing", text: "Pricing" },
       { href: "/help", text: "Help" },
+      // #1289 — the glossary, last row of the public menu; the footer column mirrors it.
+      { href: "/glossary", text: "Glossary" },
     ]);
   });
 });

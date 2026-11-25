@@ -114,6 +114,9 @@ const STATIC_ROUTES = [
   "/explore",
   "/explore/featured",
   "/forgot-password",
+  // #1289 (register row WEB-07) — the product glossary, published from docs/glossary.md. A public
+  // page in `(marketing)`: no session, no record, one committed document.
+  "/glossary",
   "/help",
   "/how-it-works",
   "/leaderboard",

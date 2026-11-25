@@ -83,6 +83,7 @@ import { exploreFeaturedPageCopy } from "./explore-featured";
 import { explorePageCopy } from "./explore";
 import { homePageCopy } from "./home";
 import { helpPageCopy } from "./help";
+import { glossaryPageCopy } from "./glossary";
 import { howItWorksPageCopy } from "./how-it-works";
 import { invitePageCopy } from "./invite";
 import { legalPages } from "./legal";
@@ -208,6 +209,9 @@ export const pageCopies: PageCopyTable = zPageCopyTable.parse({
   "/explore": explorePageCopy,
   "/explore/featured": exploreFeaturedPageCopy,
   "/forgot-password": resetRequestPageCopy,
+  // #1289 (register row WEB-07) — the product glossary, published from `docs/glossary.md`. The
+  // fixture holds the page's furniture only; the terms are the document.
+  "/glossary": glossaryPageCopy,
   "/help": helpPageCopy,
   "/how-it-works": howItWorksPageCopy,
   "/invite/[token]": invitePageCopy,

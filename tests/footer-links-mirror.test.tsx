@@ -12,8 +12,8 @@
  * So this case renders both surfaces with the harness `tests/marketing-header.test.ts` uses
  * (`renderToStaticMarkup`, `next/link` mocked to an `<a>`), reads the anchors out of the header's
  * `<nav>` and out of the footer's link column (headed `Website Links` — owner comment 823), and
- * asserts they are **equal** — hrefs, words and order. It fails on a sixth header row with no
- * footer twin, on a footer row that points somewhere else, and on a reordering on either side.
+ * asserts they are **equal** — hrefs, words and order. It fails on a header row with no footer
+ * twin, on a footer row that points somewhere else, and on a reordering on either side.
  *
  * It also pins the two headings, one per brand: the AlignSynch column reads `Website Links`, the
  * quiz brand's reads `Quick Links`. Neither is derived from the other, so a rename that travels
@@ -140,7 +140,7 @@ describe("the AlignSynch footer column is the public header menu", () => {
     expect(footerHeadings(footerHtml("alignsynch"))).not.toContain("Quick Links");
   });
 
-  it("draws the five public rows of the header, in the header's order", () => {
+  it("draws the six public rows of the header, in the header's order", () => {
     expect(menu.map((anchor) => anchor.href)).toEqual([
       "/",
       "/relationship-templates",
@@ -149,6 +149,9 @@ describe("the AlignSynch footer column is the public header menu", () => {
       "/relationship-templates#how",
       "/pricing",
       "/help",
+      // #1289 — the glossary, appended below Help; the owner's "Pricing directly above Help" is
+      // why it is last rather than inserted between them.
+      "/glossary",
     ]);
   });
 
@@ -165,6 +168,8 @@ describe("the AlignSynch footer column is the public header menu", () => {
       "How It Works",
       "Pricing",
       "Help",
+      // #1289 — the glossary row the header gained, mirrored here.
+      "Glossary",
     ]);
   });
 });
