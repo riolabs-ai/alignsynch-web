@@ -1,0 +1,9 @@
+{
+  "pr": 1383,
+  "date": "2026-11-25",
+  "area": "ci",
+  "summary": "The mention labeller skips an answering identity, any `[bot]` account and the handle's own account, so answering a thread no longer puts `needs-agent-reply` back on it.",
+  "reader_impact": "A founder's question stays labelled until it is answered and the label is cleared, instead of the label returning six seconds after the reply.",
+  "specs": ["docs/operations/mentions.md"],
+  "risk": "low"
+}
