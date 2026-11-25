@@ -2,11 +2,11 @@
  * `/admin/start` — the read-only admin landing (#1374): what the operator sees first, and the
  * directory of every surface the console already has.
  *
- * **Two gates, in the order every console screen uses.** `requireAdminProduct()` first (#509): the
+ * **Three gates, in the order every console screen uses.** `requireAdminProduct()` first (#509): the
  * console is a template capability, so a template that does not claim `product.admin` answers the
  * 404 an unknown URL gets before a session is read. Then `requireAdmin({ next: ADMIN_START_PATH })`,
  * which sends a signed-out visitor to `/login?next=/admin/start` and answers a signed-in **member**
- * the same 404. No new gate and no new capability: this is the pair `/admin/audit`, `/admin/inbox`
+ * the same 404. No new gate and no new capability of its own: this is the opening `/admin/audit`, `/admin/inbox`
  * and `/admin/health` each open with, and the role itself is read from `user_profile` for this
  * request — an allowlist entry, never a form field.
  *
@@ -40,7 +40,7 @@ import { AdminSubmenu } from "@/components/admin/submenu/admin-submenu";
 import { ADMIN_START_SURFACES } from "@/data/admin/start-surfaces";
 import { adminStartPageCopy } from "@/data/pages/admin-start";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { ADMIN_START_PATH } from "@/lib/admin/paths";
 import { startFigures } from "@/lib/admin/start";
 import { NO_AUDIT_FILTER } from "@/lib/admin/audit-log";
@@ -76,6 +76,7 @@ export default async function AdminStartPage() {
   // The capability before the role (#509), then the role: a template without a console answers the
   // unknown-URL 404 before any session is read.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_START_PATH });
 
   const reasons: string[] = [];

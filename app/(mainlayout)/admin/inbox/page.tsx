@@ -5,7 +5,7 @@
  *
  * `/admin/inbox` — the support inbox (#506, epic #500).
  *
- * **The gate is `support`, and it answers like every admin surface.** `requireAdminProduct()`
+ * **The role gate is `support`, and it answers like every admin surface.** `requireAdminProduct()`
  * runs first (#509): a template that does not claim `product.admin` has no console at all and
  * answers the 404 an unknown URL gets, with no session read. Then `requireRole("support")`, which
  * sends a signed-out visitor to `/login?next=/admin/inbox` and answers a **`member`** with the
@@ -39,7 +39,7 @@ import { SupportInbox } from "@/components/admin/support-inbox";
 import { adminInboxPageCopy } from "@/data/pages/admin-inbox";
 import { ADMIN_INBOX_PATH } from "@/lib/admin/paths";
 import { requireRole } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { readInbox, readThread } from "@/lib/db/admin-inbox";
 
@@ -58,6 +58,7 @@ export default async function AdminInboxPage({
   searchParams: Promise<{ message?: string | string[] }>;
 }) {
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const grant = await requireRole("support", { next: ADMIN_INBOX_PATH });
   const params = await searchParams;
   const requested = Array.isArray(params.message) ? params.message[0] : params.message;

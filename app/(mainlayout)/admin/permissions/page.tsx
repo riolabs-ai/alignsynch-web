@@ -1,7 +1,7 @@
 /**
  * `/admin/permissions` — the CRUD & Permissions reference (#1126).
  *
- * **Two gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
+ * **Three gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
  * capability, so a template that does not claim `product.admin` answers the 404 an unknown URL
  * gets before a session is read. Then `requireAdmin({ next })` (`lib/auth/require-role.ts`): a
  * signed-out visitor is sent to `/login?next=/admin/permissions`, a member — a `support` seat
@@ -49,7 +49,7 @@ import {
 } from "@/lib/admin/crud-matrix";
 import { readCrudMatrix } from "@/lib/admin/crud-matrix-file";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 
 export const dynamic = "force-dynamic";
 
@@ -66,6 +66,7 @@ export default async function AdminPermissionsPage({
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no file read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_PERMISSIONS_PATH });
 
   const filter = parseCrudFilter((await searchParams) ?? {});

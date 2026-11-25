@@ -1,12 +1,14 @@
 /**
  * `/admin/spec` — the project spec's Overview, and a stakeholder's landing page (#1252).
  *
- * **Two gates, in this order, and the order is the policy.**
+ * **Three gates, in this order, and the order is the policy.**
  *
  *   1. `requireAdminProduct()` (#509) — the spec is a surface inside the console template, so a
  *      build that does not claim `product.admin` answers the 404 an unknown URL gets, before a
  *      session is read.
- *   2. `requireSpecReader()` (`lib/auth/require-role.ts`) — the *capability*, not the rung:
+ *   2. `requireOperator()` (#1391) — this build ships the operator tooling; a template that
+ *      claims the console without it answers the same unknown-URL 404, before a session is read.
+ *   3. `requireSpecReader()` (`lib/auth/require-role.ts`) — the *capability*, not the rung:
  *      `stakeholder`, `admin` and `owner` read the spec, `support` does not even though it ranks
  *      above a stakeholder. A member or a support seat gets `notFound()` — byte for byte the
  *      unknown-URL 404, never a 403 and never a redirect, because either of those tells the reader
@@ -34,7 +36,7 @@ import { StageColumn } from "@/components/assessment-flow/stage-column";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { ADMIN_SPEC_PATH } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { readSpecValidationSafe, SPEC_VALIDATION_SOURCE } from "@/lib/spec/file";
 
 export const dynamic = "force-dynamic";
@@ -46,6 +48,7 @@ export const metadata: Metadata = {
 
 export default async function AdminSpecPage() {
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const { user } = await requireSpecReader({ next: ADMIN_SPEC_PATH });
   const { doc, reason } = readSpecValidationSafe();
 

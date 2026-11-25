@@ -33,7 +33,7 @@ import { RelationshipEditPanel } from "@/components/relationship/relationship-ed
 import { adminRelationshipPageCopy } from "@/data/pages/admin-relationship";
 import { ADMIN_SESSIONS_PATH } from "@/lib/admin/session-registry";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { readAdminRelationship } from "@/lib/db/admin-relationship";
 import { readRelationshipEditState } from "@/lib/member/relationship-edit";
@@ -53,6 +53,7 @@ export default async function AdminRelationshipPage({
   params: Promise<{ id: string }>;
 }) {
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const { user } = await requireAdmin({ next: `${ADMIN_SESSIONS_PATH}/[id]` });
 
   const { id } = await params;

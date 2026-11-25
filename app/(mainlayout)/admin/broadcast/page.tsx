@@ -7,7 +7,7 @@
  * them. `email_event` (0027) now records what the provider said happened to a delivery, and the two
  * marks it writes are what a send has to read first. This screen is the only writer.
  *
- * **Three gates, in the console's order.** `requireAdminProduct()` first (#509): a template that does
+ * **Four gates, in the console's order.** `requireAdminProduct()` first (#509): a template that does
  * not claim `product.admin` answers the 404 an unknown URL gets, before a session is read. Then
  * `requireAdmin()` — a signed-out visitor goes to `/login?next=/admin/broadcast`, a **`support`**
  * session gets `notFound()` (the same 404 an unknown URL returns, never a 403 that confirms the page
@@ -41,7 +41,7 @@ import { adminBroadcastPageCopy } from "@/data/pages/admin-broadcast";
 import { ADMIN_AUDIT_PATH, ADMIN_BROADCAST_PATH } from "@/lib/admin/paths";
 import { requirementFor } from "@/lib/admin/roles";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { readBroadcastConsole, type BroadcastConsoleRead } from "@/lib/db/news-signups";
 import { mailKeyMode } from "@/lib/email/key-mode";
@@ -74,6 +74,7 @@ export default async function AdminBroadcastPage() {
   // The capability before the role (#509), then the rung. A `support` session never reaches the
   // read below — `notFound()` is thrown, not returned.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const { role } = await requireAdmin({ next: ADMIN_BROADCAST_PATH });
 
   // One instant for this render: the list's cooldown count and the composer's window are the same

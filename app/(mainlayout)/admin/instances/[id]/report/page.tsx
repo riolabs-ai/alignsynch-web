@@ -36,7 +36,7 @@ import { adminReportPageCopy } from "@/data/pages/admin-report";
 import { adminReportExportPath, adminRelationshipPath } from "@/lib/admin/paths";
 import { atLeast } from "@/lib/admin/roles";
 import { requireRole } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { reportDocument } from "@/lib/report/document";
 import { readReportSource } from "@/lib/db/admin-report";
@@ -52,6 +52,7 @@ export const metadata: Metadata = {
 
 export default async function AdminReportPage({ params }: { params: Promise<{ id: string }> }) {
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const { id } = await params;
   const grant = await requireRole("support", { next: `/admin/instances/${id}/report` });
 

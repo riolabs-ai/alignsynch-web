@@ -8,16 +8,19 @@
  * somebody's downloads folder. It is a **reference page**: no form, no save, no edit affordance and
  * no server action. Editing the words happens in the canon, never here.
  *
- * **Three gates, in this order, before any read.**
+ * **Four gates, in this order, before any read.**
  *
  *   1. `requireAdminProduct()` — the console is a template capability (`product.admin`), so a
  *      template that sells no console answers the 404 an unknown URL gets, with no session read
  *      behind it (`lib/brand-boundary.ts`).
- *   2. `requireAlignmentProduct()` — **the "never on QuizHub" rule, and it is a capability, not a
+ *   2. `requireOperator()` (#1391) — the operator tooling is a capability of its own, so a build
+ *      that ships the console without it answers the same unknown-URL 404 here
+ *      (`lib/brand-boundary.ts`), still with no session read.
+ *   3. `requireAlignmentProduct()` — **the "never on QuizHub" rule, and it is a capability, not a
  *      brand name.** The brand story is the alignment product's; a quiz-only build answering 200
  *      for it is the "fifty-two wrong statements" failure `product.quiz-surfaces` exists to stop,
  *      read from the side that does not ship the quiz catalogue so the two answers cannot disagree.
- *   3. `requireAdmin({ next })` — signed out → `redirect("/login?next=/admin/brand")`, a member →
+ *   4. `requireAdmin({ next })` — signed out → `redirect("/login?next=/admin/brand")`, a member →
  *      `notFound()` (the same 404 an unknown URL returns; a 403 would confirm the page exists), an
  *      admin or owner → render. The order is documented on `/admin/health` and pinned for this page
  *      by `tests/admin-brand.test.tsx`, which drives a `member` through the real policy.
@@ -41,7 +44,11 @@ import { BrandProfile } from "@/components/admin/brand-profile";
 import { StageColumn } from "@/components/assessment-flow/stage-column";
 import { adminBrandPageCopy } from "@/data/pages/admin-brand";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct, requireAlignmentProduct } from "@/lib/brand-boundary";
+import {
+  requireAdminProduct,
+  requireAlignmentProduct,
+  requireOperator,
+} from "@/lib/brand-boundary";
 import { ADMIN_BRAND_PATH } from "@/lib/shell/admin-notice";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +62,7 @@ export default async function AdminBrandPage() {
   // The capability before the role: a template that does not claim the console answers the 404 an
   // unknown URL gets, and only then does a session get read.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   // …and the alignment product before the role too: a quiz-only build sells no brand story.
   requireAlignmentProduct();
   await requireAdmin({ next: ADMIN_BRAND_PATH });

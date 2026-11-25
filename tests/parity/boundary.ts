@@ -29,16 +29,28 @@
 import AffiliatePage from "@/app/(mainlayout)/affiliate/page";
 import AdminAuditPage from "@/app/(mainlayout)/admin/audit/page";
 import AdminBillingPage from "@/app/(mainlayout)/admin/billing/page";
+import AdminBrandPage from "@/app/(mainlayout)/admin/brand/page";
 import AdminBroadcastPage from "@/app/(mainlayout)/admin/broadcast/page";
 import AdminConsolePage from "@/app/(mainlayout)/admin/console/page";
+import AdminStartPage from "@/app/(mainlayout)/admin/dashboard/page";
 import AdminDocsPage from "@/app/(mainlayout)/admin/docs/page";
 import AdminDocsFeaturesPage from "@/app/(mainlayout)/admin/docs/features/page";
 import AdminDocsReleasesPage from "@/app/(mainlayout)/admin/docs/releases/page";
 import AdminDocsUpdatesPage from "@/app/(mainlayout)/admin/docs/updates/page";
+import AdminEmailTemplatePage from "@/app/(mainlayout)/admin/email-templates/[id]/page";
+import AdminEmailTemplatesPage from "@/app/(mainlayout)/admin/email-templates/page";
 import AdminGapsPage from "@/app/(mainlayout)/admin/gaps/page";
+import AdminGrowthPage from "@/app/(mainlayout)/admin/growth/page";
 import AdminHealthPage from "@/app/(mainlayout)/admin/health/page";
+import AdminInboxPage from "@/app/(mainlayout)/admin/inbox/page";
+import AdminRelationshipPage from "@/app/(mainlayout)/admin/instances/[id]/page";
+import AdminReportPage from "@/app/(mainlayout)/admin/instances/[id]/report/page";
 import AdminSessionsPage from "@/app/(mainlayout)/admin/instances/page";
+import AdminPermissionsPage from "@/app/(mainlayout)/admin/permissions/page";
 import AdminReviewPage from "@/app/(mainlayout)/admin/review/page";
+import AdminSpecPage from "@/app/(mainlayout)/admin/spec/page";
+import AdminSpecGroupPage from "@/app/(mainlayout)/admin/spec/[group]/page";
+import AdminSpecValidationPage from "@/app/(mainlayout)/admin/spec/validation/page";
 import BattlePage from "@/app/(mainlayout)/battle/page";
 import CategoriesPage from "@/app/(mainlayout)/categories/page";
 import CategoryPage from "@/app/(mainlayout)/categories/[slug]/page";
@@ -318,6 +330,131 @@ export const adminProductRoutes: readonly AdminProductRoute[] = [
 export const ADMIN_PRODUCT_PATTERNS: readonly string[] = adminProductRoutes.map(
   (route) => route.route,
 );
+
+/* ------------------------------------------------------------------ *
+ * The operator tooling's capability boundary (#1391)
+ * ------------------------------------------------------------------ */
+
+/**
+ * One route the operator tooling owns, and the page module the router resolves for it.
+ *
+ * The same status question as the two lists above, for the capability that sits *beside*
+ * `product.admin`: a build can have a console and no back office. The table is the issue's §2.2 set
+ * (23 page modules) and it is the one machine-readable home for it — the parity block below reads
+ * it, and the phase-1 PR's `curl` table was generated from it, so the list cannot drift from what
+ * was proven.
+ *
+ * **What is deliberately absent, because the list is an allowlist of call sites:**
+ * `/admin/docs/[...slug]` (the documentation pages stay readable — only the hub closes),
+ * `/admin/templates` and `/admin/templates/[id]` (product authoring), `/admin/console` and its
+ * subtree including `/admin/console/templates` (one layout, one surface, and the owner named only
+ * the console's template registry), and every `/dashboard/**` route. `OPERATOR_EXCLUDED_PATTERNS`
+ * below asserts that absence rather than trusting a reader to notice it.
+ */
+export type OperatorRoute = {
+  /** The route pattern, as `content/routes.ts` spells it and a `curl` would address it. */
+  route: string;
+  /** The page module the router would resolve. Imported statically, so `tsc` sees a rename. */
+  page: ParityPage;
+  /**
+   * The concrete URL this route is exercised with; empty for a static route.
+   *
+   * The values are never read by the assertion: `requireOperator()` is the second statement of each
+   * page, so a closed gate throws before `await params`. They exist so the entry is a legal address
+   * for the route a reviewer checks with `curl`.
+   */
+  params: Record<string, string>;
+};
+
+/**
+ * The twenty-three routes, in the order the issue's §2.2 table names them.
+ *
+ * `/admin/brand` is here even though it answers 404 on `quizhub` for an unrelated reason
+ * (`requireAlignmentProduct()`, #906) — it belongs to the operator set and closes with it; the two
+ * gates are independent, and the brand rule is asserted in `tests/admin-brand.test.tsx`.
+ */
+export const operatorRoutes: readonly OperatorRoute[] = [
+  { route: "/admin/dashboard", page: AdminStartPage as unknown as ParityPage, params: {} },
+  { route: "/admin/audit", page: AdminAuditPage as unknown as ParityPage, params: {} },
+  { route: "/admin/billing", page: AdminBillingPage as unknown as ParityPage, params: {} },
+  { route: "/admin/brand", page: AdminBrandPage as unknown as ParityPage, params: {} },
+  { route: "/admin/broadcast", page: AdminBroadcastPage as unknown as ParityPage, params: {} },
+  // The hub only. `/admin/docs/[...slug]` is not in this table on purpose: the documentation pages
+  // are product documentation and stay readable to any console admin.
+  { route: "/admin/docs", page: AdminDocsPage as unknown as ParityPage, params: {} },
+  {
+    route: "/admin/docs/features",
+    page: AdminDocsFeaturesPage as unknown as ParityPage,
+    params: {},
+  },
+  {
+    route: "/admin/docs/releases",
+    page: AdminDocsReleasesPage as unknown as ParityPage,
+    params: {},
+  },
+  { route: "/admin/docs/updates", page: AdminDocsUpdatesPage as unknown as ParityPage, params: {} },
+  {
+    route: "/admin/email-templates",
+    page: AdminEmailTemplatesPage as unknown as ParityPage,
+    params: {},
+  },
+  {
+    route: "/admin/email-templates/[id]",
+    page: AdminEmailTemplatePage as unknown as ParityPage,
+    params: { id: "member-invite" },
+  },
+  { route: "/admin/gaps", page: AdminGapsPage as unknown as ParityPage, params: {} },
+  { route: "/admin/growth", page: AdminGrowthPage as unknown as ParityPage, params: {} },
+  { route: "/admin/health", page: AdminHealthPage as unknown as ParityPage, params: {} },
+  { route: "/admin/inbox", page: AdminInboxPage as unknown as ParityPage, params: {} },
+  { route: "/admin/instances", page: AdminSessionsPage as unknown as ParityPage, params: {} },
+  {
+    route: "/admin/instances/[id]",
+    page: AdminRelationshipPage as unknown as ParityPage,
+    params: { id: "relationship-1" },
+  },
+  {
+    route: "/admin/instances/[id]/report",
+    page: AdminReportPage as unknown as ParityPage,
+    params: { id: "relationship-1" },
+  },
+  { route: "/admin/permissions", page: AdminPermissionsPage as unknown as ParityPage, params: {} },
+  { route: "/admin/review", page: AdminReviewPage as unknown as ParityPage, params: {} },
+  { route: "/admin/spec", page: AdminSpecPage as unknown as ParityPage, params: {} },
+  {
+    route: "/admin/spec/[group]",
+    page: AdminSpecGroupPage as unknown as ParityPage,
+    params: { group: "01-play-with-aspects" },
+  },
+  {
+    route: "/admin/spec/validation",
+    page: AdminSpecValidationPage as unknown as ParityPage,
+    params: {},
+  },
+] as const;
+
+/** The patterns alone — what a reviewer (or a second list) matches a route against. */
+export const OPERATOR_PATTERNS: readonly string[] = operatorRoutes.map((route) => route.route);
+
+/**
+ * The surfaces a reader would expect in `operatorRoutes` and must not find there — the issue's §4
+ * exclusions, by name.
+ *
+ * A `page.tsx` that is not gated is the failure this asserts: each of these calls
+ * `requireAdminProduct()` and stops, so an implementer who widened the set by judgement turns this
+ * red instead of shipping a gate the owner excluded.
+ */
+export const OPERATOR_EXCLUDED_PATTERNS: readonly string[] = [
+  "/admin/docs/[...slug]",
+  "/admin/templates",
+  "/admin/templates/[id]",
+  "/admin/console",
+  "/admin/console/relationships",
+  "/admin/console/templates",
+  "/admin/console/templates/[id]",
+  "/admin/console/users",
+  "/dashboard/templates",
+];
 
 /**
  * The fixture brand, and the whole of it: a **template id the flag record does not carry**.
