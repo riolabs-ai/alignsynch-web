@@ -77,6 +77,7 @@
   "docs/specs/flow-reinvite.md": "4cda746559a10671",
   "docs/specs/flow-stages.md": "a4452295ac2d15ca",
   "docs/specs/maintenance-fields.md": "c6f32f282e0a4dee",
+  "docs/specs/operator-separation-adr.md": "feb4f231e6a69a81",
   "docs/specs/pay-to-complete/ADR.md": "57b92343be868056",
   "docs/specs/pay-to-complete/COPY-INVENTORY.md": "8fe404bfe216d311",
   "docs/specs/pay-to-complete/PAYER-PRESENT.md": "3443bbcedf0229b7",

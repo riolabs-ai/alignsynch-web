@@ -45,8 +45,9 @@ is the same costly migration.
 
 ## 2. Inventory — the eleven routes (measured on `89900d3d0`)
 
-Every row was read out of the tree, not from memory. "Capability today" is the actual call sequence
-at the top of each page module.
+This table is the gate's list, measured in this tree. Its durable home is `t_31d3662a` →
+`docs/specs/operator-surfaces.md`; the two must agree row for row. "Capability today" is the actual
+call sequence at the top of each page module.
 
 | #   | Route                       | Page module(s)                                                                                                                                                                                                                          | Capability today                                                 | Audience an initiator/counterparty needs it         | Disposition                                              |
 | --- | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- | --------------------------------------------------- | -------------------------------------------------------- |
@@ -89,6 +90,28 @@ The gate is not real if the landing still offers a door to a 404. Measured doors
 `lib/flags.ts::hiddenNavHrefs()` is the existing single answer for "do not draw this href"
 (`navSurfaces`, one href → one flag). Phase 1 extends that map with the operator hrefs and filters
 the two `data/admin/*` fixtures through it, so the landing and the routes cannot disagree.
+
+### 2.2 The documentation side — cited, not re-derived
+
+The routes above are the gate. The **documentation** half is a different question and already has a
+durable inventory: `t_4a5361a2`'s manifest — `docs-manifest.md` (206 per-page rows) and
+`docs-manifest.json` (1,330 entries), kept under
+`~/.hermes/profiles/ase-github/deliverables/t_4a5361a2/`. It is cited here rather than reproduced:
+
+| Fact                                  | Value                                                                                                                                                                         | Source                 |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Files inventoried                     | 1,330 (1,272 under `docs/`; 206 markdown pages)                                                                                                                               | manifest census        |
+| Classification                        | (a) user/product 15 · (b) admin/ops 790 · (c) developer 458 · (d) mixed 67                                                                                                    | manifest `by_category` |
+| Uncategorised / broken links          | 0 / 0                                                                                                                                                                         | manifest census        |
+| End-user documentation inside `docs/` | **none** — product docs live in `data/knowledge-base-*.ts` (9 QuizHub + 3 AlignSynch), 12 `lib/email/templates`, and the in-app `/support`, `/help`, `/dashboard/help` routes | manifest key findings  |
+| Rendered docs surface                 | admin-only at `/admin/docs*`                                                                                                                                                  | manifest key findings  |
+
+It cannot settle this ADR's subject, and that is exactly the distinction worth keeping: the manifest
+is **file-scoped** — a page can exist with no document, and a document with no page. A route gate
+needs the route list, so the durable home for that list is `t_31d3662a`
+(`docs/specs/operator-surfaces.md`); §2 is this ADR's measured reading and must agree with it row for
+row. The manifest's per-file detail is what a later docs-content decision reads; the eleven rows here
+are what phase 1 wires.
 
 ## 3. Decision, phase 1 — one capability, per-route gate, 404
 
