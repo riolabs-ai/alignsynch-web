@@ -32,7 +32,11 @@ vi.mock("next/link", () => ({
 }));
 
 const requireAdminProduct = vi.fn(() => undefined);
-vi.mock("@/lib/brand-boundary", () => ({ requireAdminProduct: () => requireAdminProduct() }));
+const requireOperator = vi.fn(() => undefined);
+vi.mock("@/lib/brand-boundary", () => ({
+  requireAdminProduct: () => requireAdminProduct(),
+  requireOperator: () => requireOperator(),
+}));
 vi.mock("@/components/v1/admin-console-overview", () => ({
   AdminConsoleOverview: () => require("react").createElement("div", { "data-console": "" }),
 }));
@@ -159,6 +163,10 @@ describe("both routes carry it", () => {
     expect(currentAnchor(html)).toContain(`href="${ADMIN_START_PATH}"`);
     // Still the landing behind the row: the four reads ran and the page rendered.
     expect(requireAdmin).toHaveBeenCalledWith({ next: ADMIN_START_PATH });
+    // Both capability gates ran, in the console's order (#509, #1391) — the row is drawn by a page
+    // a build without the back office answers 404 to.
+    expect(requireAdminProduct).toHaveBeenCalled();
+    expect(requireOperator).toHaveBeenCalled();
     expect(html).toContain(adminStartPageCopy.heading);
   });
 

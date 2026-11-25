@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { AdminAuditLog } from "@/components/admin/audit-log";
 import { adminAuditPageCopy } from "@/data/pages/admin-audit";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import {
   ADMIN_AUDIT_PATH,
   type AdminActionRow,
@@ -17,7 +17,7 @@ import { DatabaseUnavailableError } from "@/lib/db/client";
 /**
  * `/admin/audit` — the audit log, for an operator (#501b, completing #501).
  *
- * **Three gates, in this order.** `requireAdminProduct()` first: the console is a template
+ * **Four gates, in this order.** `requireAdminProduct()` first: the console is a template
  * capability (#509), so a template that does not claim `product.admin` answers the 404 an unknown
  * URL gets before a session is read. Then `requireAdmin()` — `lib/auth/require-role.ts` answers
  * three ways and never returns for a refusal: a signed-out visitor is sent to
@@ -69,6 +69,7 @@ export default async function AdminAuditPage({
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no database work behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_AUDIT_PATH });
 
   const filter = parseAuditFilter((await searchParams) ?? {});

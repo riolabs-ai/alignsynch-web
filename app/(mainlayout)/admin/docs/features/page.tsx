@@ -1,7 +1,7 @@
 /**
  * `/admin/docs/features` — what has been built, grouped by area (#893).
  *
- * **Two gates, in the order every console screen uses.** `requireAdminProduct()` first (#509): the
+ * **Three gates, in the order every console screen uses.** `requireAdminProduct()` first (#509): the
  * console is a template capability, so a template that does not claim `product.admin` answers the
  * 404 an unknown URL gets before a session is read. Then `requireAdmin()`, which sends a signed-out
  * visitor to `/login?next=/admin/docs/features` and answers a member with the same 404 — never a 403
@@ -32,7 +32,7 @@ import type { Metadata } from "next";
 import { FeaturesIndex } from "@/components/admin/docs/features-index";
 import { adminDocsFeaturesPageCopy } from "@/data/pages/admin-docs";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { featureAreas, type FeatureArea } from "@/lib/docs/features";
 import { docsSourceProblem } from "@/lib/docs/manifest";
 import { ADMIN_DOCS_FEATURES_PATH } from "@/lib/docs/releases";
@@ -50,6 +50,7 @@ export default async function AdminDocsFeaturesPage() {
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no file read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_DOCS_FEATURES_PATH });
 
   let areas: FeatureArea[] = [];

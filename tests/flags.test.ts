@@ -128,7 +128,7 @@ describe("the environment value", () => {
 });
 
 describe("the record", () => {
-  it("declares the eight deferred surfaces and the two product capabilities, and nothing else", () => {
+  it("declares the eight deferred surfaces and the three product capabilities, and nothing else", () => {
     expect(Object.keys(flags).sort()).toEqual([
       "commerce.affiliate",
       "commerce.pricing",
@@ -139,6 +139,7 @@ describe("the record", () => {
       "create.editor",
       "create.generator",
       "product.admin",
+      "product.operator",
       "product.quiz-surfaces",
     ]);
   });

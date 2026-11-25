@@ -1,7 +1,7 @@
 /**
  * `/admin/spec/validation` — the Validation matrix (#1252).
  *
- * The gate is `/admin/spec`'s, in the same order (`requireAdminProduct()` then the spec-reader
+ * The gate is `/admin/spec`'s, in the same order (`requireAdminProduct()`, `requireOperator()` then the spec-reader
  * gate), and the refusal is the same unknown-URL 404. What this route adds is the reader: the
  * pinned three-column screen — a sticky status box, the four sections in the agreement's order,
  * and every row with its Definition of Done and its release evidence (s02, AS-07).
@@ -22,7 +22,7 @@ import { StageColumn } from "@/components/assessment-flow/stage-column";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { ADMIN_SPEC_VALIDATION_PATH } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { readSpecValidationSafe, SPEC_VALIDATION_SOURCE } from "@/lib/spec/file";
 import { readSpecIssues } from "@/lib/spec/issues-cache";
 
@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 
 export default async function AdminSpecValidationPage() {
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireSpecReader({ next: ADMIN_SPEC_VALIDATION_PATH });
   const { doc, reason } = readSpecValidationSafe();
   /**

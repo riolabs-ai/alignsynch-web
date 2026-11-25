@@ -46,11 +46,20 @@ import { afterAll, describe, expect, it, vi } from "vitest";
 import { freezeClock, normalize, renderRoute } from "./harness";
 import { parityRoutes, type ParityRoute } from "./routes";
 import AdminConsoleLayout from "@/app/(mainlayout)/admin/console/layout";
-import { adminProductRoutes, FIXTURE_TEMPLATE_WITHOUT_ADMIN, quizOnlyRoutes } from "./boundary";
+import {
+  adminProductRoutes,
+  FIXTURE_TEMPLATE_WITHOUT_ADMIN,
+  OPERATOR_EXCLUDED_PATTERNS,
+  OPERATOR_PATTERNS,
+  operatorRoutes,
+  quizOnlyRoutes,
+} from "./boundary";
 import { absentRender, summarize } from "./summary";
 import {
   ADMIN_PRODUCT_FLAG,
   adminProductShipped,
+  OPERATOR_FLAG,
+  operatorShipped,
   QUIZ_PRODUCT_FLAG,
   quizProductShipped,
 } from "@/lib/brand-boundary";
@@ -706,6 +715,78 @@ describe("brand parity", () => {
         `the console's subtree layout did not render on ${brand}, which claims ${adminFlag} — ` +
           "an open capability must fall through to `requireAdmin()` and the provider",
       ).toBe("render");
+    });
+  });
+
+  /**
+   * The operator tooling's capability boundary (#1391) — the third capability, and the same status
+   * question a third time.
+   *
+   * Two claims, split deliberately:
+   *
+   *   open     this template claims `product.operator` (both templates this tree ships do), so
+   *            `operatorShipped()` answers true. Asserted once per run, above the loop.
+   *   closed   `FLAG_PRODUCT_OPERATOR=0` on this same build answers Next's not-found on every one
+   *            of the twenty-three routes. **This is the case that can fail**: drop the call from a
+   *            page and it falls through to `requireAdmin()` — mocked to allow here, as it is for
+   *            the console block above — and renders.
+   *
+   * What this block does **not** assert is the open side's *render*, and the reason is the pages
+   * themselves: every one of them reads a session, a database row or a file, and five of them
+   * answer 404 for a `params` value that does not resolve, so a `render` assertion here would be
+   * measuring the page rather than the gate. The open side is proven where it can be — the phase-1
+   * PR's `curl` table, against a running server, in both states of the flag.
+   */
+  describe("operator capability boundary", () => {
+    const operatorFlag = String(OPERATOR_FLAG);
+
+    it(`this brand claims the operator tooling, through ${operatorFlag}`, () => {
+      expect(
+        operatorShipped(),
+        `${brand} does not ship ${operatorFlag} — data/flags.ts's \`templates\` must name both ` +
+          "templates this tree ships (#1391); the operator routes are in tests/parity/boundary.ts " +
+          "and they answer 404 on a build that does not claim the capability",
+      ).toBe(true);
+    });
+
+    for (const route of operatorRoutes) {
+      it(`${route.route} — ${brand}`, async () => {
+        freezeClock();
+
+        vi.stubEnv(envNameFor(operatorFlag), "0");
+        expect(
+          operatorShipped(),
+          `${envNameFor(operatorFlag)}=0 still resolved ${operatorFlag} on — the env override is ` +
+            "the first step of the resolver, so nothing below this line would prove anything",
+        ).toBe(false);
+
+        const closed = await answerOf(route);
+        vi.unstubAllEnvs();
+
+        expect(
+          closed,
+          `${route.route} answered ${closed} with ${envNameFor(operatorFlag)}=0 — a build that ` +
+            `does not claim ${operatorFlag} must answer 404, which means the page's second ` +
+            "statement is `requireOperator()` (lib/brand-boundary.ts): after " +
+            "`requireAdminProduct()`, before the role gate and before every read",
+        ).toBe("404");
+      });
+    }
+
+    it(`the excluded surfaces stay out of the set — ${brand}`, () => {
+      for (const pattern of OPERATOR_EXCLUDED_PATTERNS) {
+        expect(
+          OPERATOR_PATTERNS,
+          `${pattern} is in the operator set — the issue's §4 excludes it by name (the ` +
+            "documentation pages stay readable; `/admin/templates` and the console are product " +
+            "surfaces)",
+        ).not.toContain(pattern);
+      }
+
+      // The set is the issue's twenty-three, not a number that drifts: a route added here without a
+      // call site is what the loop above catches, and a duplicate is what the size check does.
+      expect(OPERATOR_PATTERNS).toHaveLength(23);
+      expect(new Set(OPERATOR_PATTERNS).size).toBe(23);
     });
   });
 
