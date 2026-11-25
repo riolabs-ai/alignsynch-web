@@ -7,7 +7,7 @@
  * visitor to `/login?next=/admin/docs/updates` and answers a member with the same 404 — never a 403
  * that would confirm the page exists.
  *
- * **The template is `/admin/docs/features`.** A server page behind both gates, a `OperatorFrame`, one
+ * **The template is `/admin/docs/features`.** A server page behind both gates, an `OperatorFrame`, one
  * component whose every string comes from a `data/pages/**` fixture, and a read of the tree on the
  * request. The axis of variation is the data source: the features index reads `CHANGELOG.md` for
  * areas, this reads `docs/changelog/updates/*.json` for entries and joins each `specs[]` path to the

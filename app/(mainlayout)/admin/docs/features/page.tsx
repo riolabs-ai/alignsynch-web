@@ -8,7 +8,7 @@
  * that would confirm the page exists. `/admin/docs`, `/admin/review` and `/admin/health` document
  * the same order.
  *
- * **The template is `/admin/docs` itself.** A server page behind both gates, a `OperatorFrame`, one
+ * **The template is `/admin/docs` itself.** A server page behind both gates, an `OperatorFrame`, one
  * component whose every string comes from a `data/pages/**` fixture, and a read of the tree on the
  * request. The axis of variation is the data source: the hub reads the manifest for a list of
  * documents, this reads `CHANGELOG.md` for a list of *areas*, joined to the manifest rather than
