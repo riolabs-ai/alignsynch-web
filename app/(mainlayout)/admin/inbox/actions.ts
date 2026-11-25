@@ -3,6 +3,10 @@
 /**
  * The support inbox's three operations, as one server action (#506).
  *
+ * **The capability before the session (#1391).** `requireAdminProduct()` and `requireOperator()`
+ * are the first two statements, the same pair in the same order as `/admin/inbox`'s page module:
+ * this function is a POST endpoint with an id of its own, so a 404 on the page leaves it open.
+ *
  * `components/admin/support-thread.tsx` posts one of three names here with a message id.
  * Everything that decides whether the operation may happen is downstream:
  * `lib/admin/inbox-ops.ts` asks `act()`, and `act()` reads the actor's rung out of `user_profile`
@@ -33,6 +37,7 @@ import {
   setMessageStatus,
 } from "@/lib/admin/inbox-ops";
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 
 /** The shapes and the operation names live in `lib/admin/inbox-inputs.ts`: a `"use server"` file
  *  may export only async functions, so a constant or an interface here fails the build. */
@@ -42,6 +47,8 @@ export type { InboxOperationInput, InboxOperationOutcome } from "@/lib/admin/inb
 export async function performInboxOperation(
   input: InboxOperationInput,
 ): Promise<InboxOperationOutcome> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 

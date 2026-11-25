@@ -456,6 +456,32 @@ export const OPERATOR_EXCLUDED_PATTERNS: readonly string[] = [
   "/dashboard/templates",
 ];
 
+/* ------------------------------------------------------------------ *
+ * The write modules behind those routes (#1391)
+ * ------------------------------------------------------------------ */
+
+/**
+ * The `actions.ts` modules beside the twenty-three pages above, re-exported from `./action-modules`.
+ *
+ * A page gate closes an **address**; a server action is a POST endpoint with an id of its own, so
+ * `requireOperator()` in `page.tsx` does not refuse `performComp` — which is the defect `#1391`
+ * phase 1 left open, five modules with no `require*()` at all. The table lives in a sibling file
+ * with no page imports because `tests/admin-action-gates.test.ts` runs it under plain `vitest run`,
+ * where a statically imported page module's `@neon/auth` graph does not resolve; this file was
+ * already the home of the *page* list, so the pointer keeps one surface visible from one page.
+ *
+ * The audit derives each module's expected gates from its sibling `page.tsx` and walks the tree, so
+ * a row cannot go stale and a new `actions.ts` cannot ship ungated. Read `./action-modules` for the
+ * rows and the reason `/admin/templates` is the one module excluded from them.
+ */
+export {
+  ADMIN_ACTION_MODULES,
+  OPERATOR_ACTION_MODULES,
+  PRODUCT_ACTION_MODULES,
+  operatorActionModules,
+  type OperatorActionModule,
+} from "./action-modules";
+
 /**
  * The fixture brand, and the whole of it: a **template id the flag record does not carry**.
  *
