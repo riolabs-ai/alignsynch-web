@@ -33,12 +33,27 @@ name: Mention queue
 # nothing on the thread mentions us. Clearing it because one of two mentions was edited away would
 # manufacture exactly the silent unanswered mention this workflow exists to prevent.
 #
-# **Author identity is deliberately not the loop guard.** Replies are posted by the lead's own
-# account (`jadenblack`, owner decision 2026-11-23), and the lead is also the person who writes the
-# mentions — filtering on that login would drop the case this was built for. A loop is impossible
-# structurally instead: **this workflow posts no comment**, and a label write raises none of the
-# events listed below. What it does skip is an event raised by an automation — any `[bot]` account,
-# or the `alignsynch` account itself — so a machine that mentions us still cannot re-enter here.
+# **The author guard is about who answers, not about ignoring mentions.** Replies are posted by the
+# lead's own account (`jadenblack`, owner decision 2026-11-23), and an answer has to name the handle
+# to be an answer — so the labeller re-armed itself on its own replies: #1382 was answered at
+# 2026-11-25T04:21:21Z (comment 7152767044), the label was removed six seconds later, and run
+# 45546210272 put it back at 04:21:34Z. The answerer therefore never *queues* a thread; the founder
+# who asks does, and so does any other login. A loop is still structurally impossible — **this
+# workflow posts no comment**, and a label write raises none of the events listed below — but the
+# guard is now an identity rule rather than a hope.
+#
+# **The set of answerers is not written in this file.** `scripts/mention-queue.mjs` owns it, this
+# job calls it, and `tests/mention-queue.test.ts` pins it, because a rule that lives only in a shell
+# `case` statement is a rule nobody can exercise. It skips an answering identity, any `[bot]`
+# account, and the `alignsynch` account itself. The **repository owner is not skipped implicitly**:
+# the owner account here (`riolabs-ai`) is the founder's, and it is the one that writes the
+# mentions, so skipping it would leave the queue permanently empty. An install where the owner
+# answers says so with that script's `--answering`, and the suite pins that direction too.
+#
+# **Clearing is never behind the guard.** An answerer may not queue a thread and must still be able
+# to clear one, so the verdict gates `add_label` and nothing else — and the re-scan that runs on an
+# edit drops bodies authored by an answerer, because a reply mentioning us is not evidence of an
+# unanswered mention.
 #
 # **Clearing the label when the reply lands is a human act, and it is the one thing the poller and
 # this file must agree on:** `needs-agent-reply` present means unanswered. The human who answers
@@ -46,8 +61,13 @@ name: Mention queue
 # edited-away mention clear it automatically; nothing else does.
 #
 # **`continue-on-error` is deliberately absent.** Labelling that quietly stopped working looks
-# exactly like a queue with nothing in it — the same failure, with no trace. `permissions:` is the
-# whole grant: no checkout, no Node, no secret, no third-party action (`gh` ships on the runner).
+# exactly like a queue with nothing in it — the same failure, with no trace — so a guard that cannot
+# decide fails the step instead of silently skipping it. `permissions:` is the whole grant: no
+# secret, and `gh` plus `node` ship on the runner. The one action is GitHub's own
+# `actions/checkout`, and it reads `scripts/mention-queue.mjs` from the **default branch**: this job
+# runs on `pull_request_review` and holds `issues: write`, so it must never execute a pull request's
+# own head. (`default_branch` is the repository's setting, never a commenter's — the only untrusted
+# values here stay in `env:`, which is why no body or title is ever interpolated into `run:`.)
 #
 # **Quoted `"on"`, unlike most files in this directory.** A YAML 1.1 reader resolves a bare `on` to
 # the boolean `true`, and the acceptance check for this file reads the trigger list out of the
@@ -87,6 +107,17 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
+      # The guard is a repository policy, so it is read from the default branch — never from the
+      # head of a pull request this job happens to be running for. One file, no credentials, no
+      # install: `node` is preinstalled on the runner, and the script has no dependencies.
+      - name: Read the actor guard
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: scripts/mention-queue.mjs
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
       # One step, because there is one action: label or unlabel. Nothing here writes a comment.
       #
       # The payload is passed through `env:` rather than interpolated into `run:` — a comment body
@@ -101,6 +132,7 @@ jobs:
           EVENT_ACTION: ${{ github.event.action }}
           THREAD_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
           ACTOR: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.review.user.login || github.event.pull_request.user.login }}
+          ACTOR_TYPE: ${{ github.event.comment.user.type || github.event.issue.user.type || github.event.review.user.type || github.event.pull_request.user.type }}
           BODY: ${{ github.event.comment.body || github.event.issue.body || github.event.review.body || github.event.pull_request.body }}
           LABEL: needs-agent-reply
           LABEL_COLOR: "5319e7"
@@ -165,37 +197,66 @@ jobs:
             echo "#${THREAD_NUMBER} no longer mentions a reply — ${LABEL} removed."
           }
 
-          # Everything a mention can live in on this thread, one read per source.
+          # The answering identities have one home — `scripts/mention-queue.mjs` — and the re-scan
+          # filters authors with the predicate that file emits. A reply has to name the handle to
+          # be a reply, so a re-scan that read every body would find the answer and put the label
+          # straight back, which is the same defect on the removal path (#1382).
+          ANSWERING_JQ="$(node scripts/mention-queue.mjs --answering-jq)"
+
+          # Everything a mention can live in on this thread, one read per source, less our own
+          # answers.
           thread_text() {
-            gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}" --jq '.body // ""'
+            gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}" \
+              --jq "${ANSWERING_JQ} | .body // \"\""
             gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}/comments" --paginate \
-              --jq '.[] | .body // ""'
+              --jq ".[] | ${ANSWERING_JQ} | .body // \"\""
             if [ "$(gh api "repos/${GH_REPO}/issues/${THREAD_NUMBER}" \
                      --jq 'if .pull_request then "pr" else "issue" end')" = "pr" ]; then
               gh api "repos/${GH_REPO}/pulls/${THREAD_NUMBER}/reviews" --paginate \
-                --jq '.[] | .body // ""'
+                --jq ".[] | ${ANSWERING_JQ} | .body // \"\""
               gh api "repos/${GH_REPO}/pulls/${THREAD_NUMBER}/comments" --paginate \
-                --jq '.[] | .body // ""'
+                --jq ".[] | ${ANSWERING_JQ} | .body // \"\""
             fi
           }
 
           # A closed thread is closed whatever account closed it, and clearing a stale label can
-          # never loop — so this runs before the actor guard, not after it.
+          # never loop — so this runs before the guard is even asked.
           if [ "${EVENT_ACTION}" = "closed" ]; then
             remove_label
             exit 0
           fi
 
-          actor="$(printf '%s' "${ACTOR:-}" | tr '[:upper:]' '[:lower:]')"
-          case "${actor}" in
-            *"[bot]"|alignsynch)
-              echo "raised by ${actor} — an automation does not queue a mention of itself."
-              exit 0
+          # The guard's verdict, never an early exit: an answerer may not queue a thread but must
+          # still be able to clear one. `scripts/mention-queue.mjs` answers 0 (may queue), 3 (may
+          # not), and anything else means the guard itself is broken — which fails this run rather
+          # than letting a founder's question look answered.
+          set +e
+          guard_out="$(node scripts/mention-queue.mjs --actor "${ACTOR:-}" --type "${ACTOR_TYPE:-}")"
+          guard_rc=$?
+          set -e
+          echo "${guard_out:-the actor guard printed nothing}"
+
+          may_queue=no
+          case "${guard_rc}" in
+            0) may_queue=yes ;;
+            3) ;;
+            *)
+              echo "::error::the actor guard exited ${guard_rc} — refusing to guess whether #${THREAD_NUMBER} queues."
+              exit "${guard_rc}"
               ;;
           esac
 
+          # The one place the verdict is read. Removing the label is never behind it.
+          queue_if_allowed() {
+            if [ "${may_queue}" = "yes" ]; then
+              add_label
+            else
+              echo "#${THREAD_NUMBER} names the handle in a body by ${ACTOR:-an unreadable author}, who does not queue it — ${LABEL} stays off."
+            fi
+          }
+
           if mentions "${BODY:-}"; then
-            add_label
+            queue_if_allowed
             exit 0
           fi
 
@@ -208,8 +269,8 @@ jobs:
 
           surviving="$(thread_text)"
           if mentions "${surviving}"; then
-            echo "an edit took one mention off #${THREAD_NUMBER}, another stands — ${LABEL} stays."
-            add_label
+            echo "an edit took one mention off #${THREAD_NUMBER}, another stands."
+            queue_if_allowed
             exit 0
           fi
 
