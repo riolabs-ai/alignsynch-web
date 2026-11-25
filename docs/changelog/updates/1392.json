@@ -1,0 +1,9 @@
+{
+  "pr": 1392,
+  "date": "2026-11-25",
+  "area": "web",
+  "summary": "`/glossary` publishes `docs/glossary.md` as a public page: a term index, one definition per term with the schema file it came from, and the term count derived from the document itself.",
+  "reader_impact": "A visitor can look up what an Aspect, a Gap or a Template is without an account, and the words are the schema comments the product is built from; Reviews is deliberately not published because no real reviews exist yet.",
+  "specs": ["docs/diagrams/gate.md", "docs/ui-registry.md"],
+  "risk": "low"
+}
