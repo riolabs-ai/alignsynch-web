@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**205 documents in 9 sections.** Every page carries the same nav block, generated
+**206 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -41,7 +41,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
 - [Operations](#operations) — 24 documents
-- [Specs & design briefs](#specs-design-briefs) — 86 documents
+- [Specs & design briefs](#specs-design-briefs) — 87 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
@@ -118,6 +118,7 @@ What the product promises, written down before it was built.
 - [`specs/flow-reinvite.md`](specs/flow-reinvite.md) — **Re-invite** — What happens when an invitation expires — and why not a void?
 - [`specs/flow-stages.md`](specs/flow-stages.md) — **The five flow stages (binding spec)** — What are the stages, which fields does stage 1 carry, and where does the flow end?
 - [`specs/maintenance-fields.md`](specs/maintenance-fields.md) — **Maintenance fields** — Which fields does the relationship-maintenance form carry?
+- [`specs/operator-separation-adr.md`](specs/operator-separation-adr.md) — **ADR — operator surface separation** — Which eleven operator routes are gated, under what capability, and what seam lets the tooling change without the user platform?
 - [`specs/pay-to-complete/ADR.md`](specs/pay-to-complete/ADR.md) — **ADR** — Which choice was made, what alternative did it beat, and what does it cost?
 - [`specs/pay-to-complete/COPY-INVENTORY.md`](specs/pay-to-complete/COPY-INVENTORY.md) — **Payer copy inventory** — Which payer strings already exist, at which line, and which are still unwritten?
 - [`specs/pay-to-complete/PAYER-PRESENT.md`](specs/pay-to-complete/PAYER-PRESENT.md) — **Payer-present state** — What does the spec actually say about a charge that needs the payer, and which of its strings may a mockup quote?

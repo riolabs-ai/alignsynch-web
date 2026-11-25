@@ -270,6 +270,11 @@
           "question": "Which fields does the relationship-maintenance form carry?"
         },
         {
+          "path": "specs/operator-separation-adr.md",
+          "title": "ADR — operator surface separation",
+          "question": "Which eleven operator routes are gated, under what capability, and what seam lets the tooling change without the user platform?"
+        },
+        {
           "path": "specs/pay-to-complete/ADR.md",
           "title": "ADR",
           "question": "Which choice was made, what alternative did it beat, and what does it cost?"
