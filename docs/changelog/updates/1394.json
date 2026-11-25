@@ -1,0 +1,9 @@
+{
+  "pr": 1394,
+  "date": "2026-11-25",
+  "area": "admin",
+  "summary": "The operator back office becomes a capability of its own: `product.operator` beside `product.admin`, mounted as the second statement of the twenty-three operator pages, so a build that does not claim it answers 404.",
+  "reader_impact": "Nothing changes on either template this tree ships, and `FLAG_PRODUCT_OPERATOR=0` closes the twenty-three routes on a build that has them — gated, never moved.",
+  "specs": ["docs/diagrams/brand-boundary.md"],
+  "risk": "low"
+}
