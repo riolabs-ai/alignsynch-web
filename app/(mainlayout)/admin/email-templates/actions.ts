@@ -21,6 +21,7 @@
  */
 import { requireAdmin } from "@/lib/auth/require-role";
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import {
   publishEmailTemplate,
   previewEmailTemplate,
@@ -54,6 +55,8 @@ function fieldsOf(post: EmailTemplatePost): {
 export async function saveEmailTemplateAction(
   post: EmailTemplatePost,
 ): Promise<EmailTemplateOutcome> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: adminEmailTemplatePath(post.templateId) });
@@ -69,6 +72,8 @@ export async function saveEmailTemplateAction(
 export async function publishEmailTemplateAction(post: {
   readonly templateId: string;
 }): Promise<EmailTemplateOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: adminEmailTemplatePath(post.templateId) });
@@ -80,6 +85,8 @@ export async function publishEmailTemplateAction(post: {
 export async function resetEmailTemplateAction(post: {
   readonly templateId: string;
 }): Promise<EmailTemplateOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: adminEmailTemplatePath(post.templateId) });
@@ -97,6 +104,8 @@ export async function resetEmailTemplateAction(post: {
 export async function sendEmailTemplateTestAction(
   post: EmailTemplatePost,
 ): Promise<EmailTemplateTestOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: adminEmailTemplatePath(post.templateId) });
@@ -112,6 +121,8 @@ export async function sendEmailTemplateTestAction(
 export async function previewEmailTemplateAction(
   post: EmailTemplatePost,
 ): Promise<EmailTemplatePreview> {
+  requireAdminProduct();
+  requireOperator();
   await requireAdmin({ next: ADMIN_EMAIL_TEMPLATES_PATH });
   return previewEmailTemplate({ templateId: post.templateId, override: fieldsOf(post) });
 }

@@ -43,6 +43,7 @@ import {
 } from "@/lib/admin/review-ops";
 import type { ReviewActionOutcome } from "@/lib/admin/review-inputs";
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { ADMIN_REVIEW_PATH } from "@/lib/review/paths";
 
 /** Every refusal an action can report: the session's, `act()`'s, and the store's own. */
@@ -93,6 +94,8 @@ export async function toggleReviewTodoAction(input: {
   readonly reason?: unknown;
   readonly body?: unknown;
 }): Promise<ReviewActionOutcome> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   const artifactId = text(input.artifactId);
@@ -126,6 +129,8 @@ export async function openReviewIssueAction(input: {
   readonly labels?: unknown;
   readonly reason?: unknown;
 }): Promise<ReviewActionOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   const artifactId = text(input.artifactId);
@@ -153,6 +158,8 @@ export async function commentOnReviewIssueAction(input: {
   readonly body?: unknown;
   readonly reason?: unknown;
 }): Promise<ReviewActionOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   try {
@@ -177,6 +184,8 @@ export async function setReviewIssueStateAction(input: {
   readonly state?: unknown;
   readonly reason?: unknown;
 }): Promise<ReviewActionOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   try {

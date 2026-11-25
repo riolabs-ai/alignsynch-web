@@ -3,6 +3,11 @@
 /**
  * The five relationship repairs, as one server action (#503).
  *
+ * **The capability before the session, on all three exports (#1391).** `requireAdminProduct()` and
+ * `requireOperator()` open `editRelationshipAsStaff`, `previewRelationshipEditAsStaff` and
+ * `performRepair` — the same pair in the same order as `/admin/instances/[id]`'s page module. An
+ * action id is a POST endpoint of its own, so the page's 404 does not refuse a repair.
+ *
  * `components/admin/relationship-operations.tsx` posts one of five names here, with a reason and —
  * for two of them — a seat or an address. Everything that decides whether the repair may happen is
  * downstream of this function: `lib/admin/relationship-ops.ts` asks `act()`, and `act()` reads the
@@ -29,6 +34,7 @@
  * invitation link. The action returns it once; the component holds it in state and says so.
  */
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { ActRefused } from "@/lib/admin/act";
 import { OpRefused } from "@/lib/admin/relationship-ops";
 import { validateTemplateRecord } from "@/lib/admin/template-draft";
@@ -75,6 +81,8 @@ export async function editRelationshipAsStaff(input: {
   reason?: string;
   confirm?: boolean;
 }): Promise<EditOutcome> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 
@@ -121,6 +129,8 @@ export async function previewRelationshipEditAsStaff(input: {
   counterpartyEmail?: string;
   inviteDays?: number;
 }): Promise<EditPreviewOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 
@@ -233,6 +243,8 @@ function seatOf(value: string | undefined): PartyRole | null {
  * with the code the screen already has a sentence for.
  */
 export async function performRepair(input: RepairInput): Promise<RepairOutcome> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 

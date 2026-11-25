@@ -1,0 +1,9 @@
+{
+  "pr": 1396,
+  "date": "2026-11-25",
+  "area": "admin",
+  "summary": "Every server action under `app/(mainlayout)/admin/**` opens with the page's own gate — `requireAdminProduct()` then `requireOperator()` — so a build that does not claim the operator surface answers 404 to the action id too.",
+  "reader_impact": "Nothing changes on either template this tree ships; `FLAG_PRODUCT_OPERATOR=0` now closes the write path as well as the twenty-three pages, so an action id scraped from an older build cannot be POSTed.",
+  "specs": ["docs/diagrams/brand-boundary.md"],
+  "risk": "low"
+}

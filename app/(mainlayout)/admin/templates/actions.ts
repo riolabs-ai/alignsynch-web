@@ -3,6 +3,13 @@
 /**
  * Template authoring, as four server actions (#502a, #502b).
  *
+ * **`requireAdminProduct()` only, on every action (#1391).** Template authoring is the product
+ * AlignSynch sells, not the back office, so `/admin/templates` is outside the operator set by name
+ * (`tests/parity/action-modules.ts`) and its actions carry the console capability **without**
+ * `requireOperator()` — the same gate, in the same first position, as the page module. Adding the
+ * operator gate here would refuse a save on a build whose page still renders, which is a different
+ * change and not this card's.
+ *
  * Two of them write a **draft** (`createTemplate`, `saveTemplate`); two publish and withdraw it
  * (`publishTemplateVersion`, `unpublishTemplateVersion`). All four reach `act()` and land their own
  * `admin_action` row, but only three name a reason: `createTemplate`, publish and withdraw are
@@ -68,6 +75,7 @@ import {
 import { ADMIN_TEMPLATES_PATH } from "@/lib/admin/paths";
 import { requireAdmin } from "@/lib/auth/require-role";
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct } from "@/lib/brand-boundary";
 import { templateWriteReason } from "@/lib/member/template-reasons";
 
 /** A payload field as a trimmed string; anything else is empty, so zod names the hole. */
@@ -113,6 +121,7 @@ function refusalOf(error: unknown): TemplateSaveOutcome {
 
 /** Create a draft, and answer with its id so the screen can open it. */
 export async function createTemplate(payload: TemplateCreatePayload): Promise<TemplateSaveOutcome> {
+  requireAdminProduct();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   // The gate again, on the action: hiding a form is not enforcement.
@@ -138,6 +147,7 @@ export async function createTemplate(payload: TemplateCreatePayload): Promise<Te
 
 /** Edit a draft or a published template; an archived row is refused. */
 export async function saveTemplate(payload: TemplateFormPayload): Promise<TemplateSaveOutcome> {
+  requireAdminProduct();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: ADMIN_TEMPLATES_PATH });
@@ -193,6 +203,7 @@ function versionRefusalOf(error: unknown): TemplateVersionOutcome {
 export async function publishTemplateVersion(
   payload: TemplateVersionFormPayload,
 ): Promise<TemplateVersionOutcome> {
+  requireAdminProduct();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: ADMIN_TEMPLATES_PATH });
@@ -222,6 +233,7 @@ export async function publishTemplateVersion(
 export async function unpublishTemplateVersion(
   payload: TemplateVersionFormPayload,
 ): Promise<TemplateVersionOutcome> {
+  requireAdminProduct();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: ADMIN_TEMPLATES_PATH });
@@ -255,6 +267,8 @@ export async function unpublishTemplateVersion(
 export async function archiveTemplateVersion(
   payload: TemplateVersionFormPayload,
 ): Promise<TemplateVersionOutcome> {
+  // The capability before the shared body: a delegating action is still an endpoint of its own.
+  requireAdminProduct();
   return versionWrite(payload, archiveTemplate);
 }
 
@@ -262,6 +276,7 @@ export async function archiveTemplateVersion(
 export async function restoreTemplateVersion(
   payload: TemplateVersionFormPayload,
 ): Promise<TemplateVersionOutcome> {
+  requireAdminProduct();
   return versionWrite(payload, restoreTemplate);
 }
 
@@ -275,6 +290,7 @@ export async function restoreTemplateVersion(
 export async function destroyTemplateVersion(
   payload: TemplateVersionFormPayload,
 ): Promise<TemplateVersionOutcome> {
+  requireAdminProduct();
   return versionWrite(payload, deleteTemplate);
 }
 
@@ -290,6 +306,7 @@ async function versionWrite(
     templateId: string;
   }) => Promise<{ actionId: string; after: { version: number | null } }>,
 ): Promise<TemplateVersionOutcome> {
+  requireAdminProduct();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
   await requireAdmin({ next: ADMIN_TEMPLATES_PATH });

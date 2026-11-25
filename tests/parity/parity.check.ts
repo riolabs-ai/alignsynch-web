@@ -51,6 +51,7 @@ import {
   FIXTURE_TEMPLATE_WITHOUT_ADMIN,
   OPERATOR_EXCLUDED_PATTERNS,
   OPERATOR_PATTERNS,
+  operatorActionModules,
   operatorRoutes,
   quizOnlyRoutes,
 } from "./boundary";
@@ -787,6 +788,25 @@ describe("brand parity", () => {
       // call site is what the loop above catches, and a duplicate is what the size check does.
       expect(OPERATOR_PATTERNS).toHaveLength(23);
       expect(new Set(OPERATOR_PATTERNS).size).toBe(23);
+    });
+
+    /**
+     * The write modules, against the page list (#1391).
+     *
+     * The 23 routes above are **addresses** and their actions are **endpoints**: a server action is
+     * a POST with an id of its own, so the page's 404 does not refuse it. `./action-modules` names
+     * the seven modules and the gates each one opens with; the assertion that each action really
+     * opens with them lives in `tests/admin-action-gates.test.ts`, which walks the tree — this case
+     * is the one thing that suite cannot see, because only here is the page list importable.
+     */
+    it(`every write module sits behind an operator route — ${brand}`, () => {
+      for (const row of operatorActionModules) {
+        expect(
+          OPERATOR_PATTERNS,
+          `${row.module} is listed against ${row.route}, which is not an operator route — the ` +
+            "write modules and the page gates are the same surface, one level down",
+        ).toContain(row.route);
+      }
     });
   });
 

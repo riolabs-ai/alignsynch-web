@@ -3,6 +3,12 @@
 /**
  * The broadcast screen's two calls (#507, epic #500): `previewBroadcast` and `sendBroadcast`.
  *
+ * **The capability before the session, on both actions (#1391).** `requireAdminProduct()` and
+ * `requireOperator()` open each function, the same pair in the same order as `/admin/broadcast`'s
+ * page: an action id is a POST endpoint of its own, so the page's 404 does not refuse the send.
+ * The role check stays where it was — third, downstream of the capability — and `act()` still
+ * re-reads the rung inside the transaction.
+ *
  * Everything that decides **whether** a broadcast may happen is downstream of this file:
  * `lib/admin/broadcast.ts::sendBroadcast()` reads the deployment's mail key mode, then asks `act()`,
  * and `act()` reads the actor's role out of `user_profile` inside the transaction it writes. This
@@ -36,6 +42,7 @@ import type {
 import { atLeast } from "@/lib/admin/roles";
 import { currentUser } from "@/lib/auth/session";
 import { roleOfUser } from "@/lib/auth/require-role";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 
 /** Read one string field off a payload that a browser could have posted anything into. */
 function text(value: unknown): string {
@@ -61,6 +68,8 @@ function formOf(input: BroadcastFormInput | undefined): BroadcastFormInput {
 export async function previewBroadcastAction(
   input: BroadcastFormInput,
 ): Promise<BroadcastPreviewResult> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 
@@ -95,6 +104,8 @@ export async function previewBroadcastAction(
  * matters — no row, no send, and a code the screen has a sentence for.
  */
 export async function sendBroadcastAction(input: BroadcastFormInput): Promise<BroadcastSendResult> {
+  requireAdminProduct();
+  requireOperator();
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 

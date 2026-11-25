@@ -3,6 +3,10 @@
 /**
  * The report screen's two operations, as one server action (#504).
  *
+ * **The capability before the session (#1391).** `requireAdminProduct()` and `requireOperator()`
+ * are the first two statements, the same pair in the same order as the report page module — this
+ * function is a POST endpoint of its own, and the page's 404 does not close it.
+ *
  * `components/admin/report-operations.tsx` posts one of two names here, with a reason and — for
  * the submission read — a seat. Everything that decides whether the operation may happen is
  * downstream: `lib/admin/report-ops.ts` asks `act()`, and `act()` reads the actor's role out of
@@ -24,6 +28,7 @@
  * the action has to hand back. A redirect would swallow it.
  */
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { ActRefused } from "@/lib/admin/act";
 import {
   DEFAULT_READ_REASON,
@@ -49,6 +54,8 @@ function seatOf(value: string | undefined): PartyRole | null {
 export async function performReportOperation(
   input: ReportOperationInput,
 ): Promise<ReportOperationOutcome> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 

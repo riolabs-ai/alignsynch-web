@@ -3,6 +3,12 @@
 /**
  * The billing control screen's one write (#505): `performComp`.
  *
+ * **The capability before the session, on the action (#1391).** `requireAdminProduct()` and
+ * `requireOperator()` are the first two statements of `performComp`, the same pair in the same
+ * order as `/admin/billing`'s page module: a server action is a POST endpoint with an id of its
+ * own, so the page's 404 refuses the HTML and not this write. On a build that claims both
+ * capabilities — every template in `data/flags.ts` today — the pair is a no-op.
+ *
  * Everything that decides whether a comp may happen is downstream of this function:
  * `lib/admin/billing-control.ts::compPlan()` asks `act()`, and `act()` reads the actor's role out of
  * `user_profile` inside the transaction it writes. This file resolves **who is asking** and
@@ -29,6 +35,7 @@ import {
 } from "@/lib/admin/billing-control";
 import type { GrantFormInput, GrantFormResult } from "@/lib/admin/grant-input";
 import { currentUser } from "@/lib/auth/session";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 
 function text(value: unknown): string {
   return typeof value === "string" ? value : "";
@@ -36,6 +43,8 @@ function text(value: unknown): string {
 
 /** Run one comp for the signed-in operator. */
 export async function performComp(input: GrantFormInput): Promise<GrantFormResult> {
+  requireAdminProduct();
+  requireOperator(); // #1391 — the page's gate, on the action: a 404 on /admin/billing closes the HTML, not this POST endpoint
   const user = await currentUser();
   if (user === null) return { ok: false, code: "signed-out" };
 
