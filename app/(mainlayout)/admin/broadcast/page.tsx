@@ -32,7 +32,7 @@
  * lists are database reads on every visit, and `pnpm build` must keep passing with no `DATABASE_URL`
  * and no `NEON_AUTH_*`.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { BroadcastComposer } from "@/components/admin/broadcast-composer";
@@ -94,7 +94,7 @@ export default async function AdminBroadcastPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <div className="space-y-6">
         <PageHeader
           title={adminBroadcastPageCopy.heading}
@@ -115,6 +115,6 @@ export default async function AdminBroadcastPage() {
           send={sendBroadcastAction}
         />
       </div>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

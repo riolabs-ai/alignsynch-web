@@ -275,6 +275,11 @@
           "question": "Which fields does the relationship-maintenance form carry?"
         },
         {
+          "path": "specs/operator-seam.md",
+          "title": "Operator seam",
+          "question": "Which files are the operator tooling, what may they read, and how is the arrow enforced?"
+        },
+        {
           "path": "specs/pay-to-complete/ADR.md",
           "title": "ADR",
           "question": "Which choice was made, what alternative did it beat, and what does it cost?"

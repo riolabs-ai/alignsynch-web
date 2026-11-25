@@ -1,0 +1,9 @@
+{
+  "pr": 1395,
+  "date": "2026-11-25",
+  "area": "operator",
+  "summary": "The operator surface gets a seam: one read contract (`lib/operator/read.ts`), one enumeration (`lib/operator/routes.ts`: 23 pages, 7 write modules), and a test that forbids an operator file importing the product shell.",
+  "reader_impact": "No screen changes — the same screens with the same geometry; what moves is that operator tooling can now change without editing the user platform, and a new coupling fails a test.",
+  "specs": ["docs/specs/operator-seam.md"],
+  "risk": "low"
+}

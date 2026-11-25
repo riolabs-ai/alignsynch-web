@@ -15,14 +15,21 @@
  * So the rule this file pins is structural, because a screenshot cannot see an absent class and
  * none of these screens mounts without a database:
  *
- *   1. **Every admin page renders `StageColumn`** — the one container the rest of the app already
- *      uses (`components/console/overview.tsx`, the dashboard, the profile, the flow). The list is
- *      derived from the directory, so a nineteenth admin page inherits the rule instead of the
- *      exemption.
+ *   1. **Every admin page renders the app's one container.** For a product page that is
+ *      `StageColumn` (`components/assessment-flow/stage-column.tsx`), the container the rest of the
+ *      app already uses (`components/console/overview.tsx`, the dashboard, the profile, the flow).
+ *      For an operator page it is `OperatorFrame` (`components/operator/frame.tsx`) — the same
+ *      element, owned by the operator surface, because the operator seam
+ *      (`tests/operator-seam.test.ts`, `docs/specs/operator-separation-adr.md` §4) forbids an
+ *      operator file importing the product flow's component. The split is derived, never guessed:
+ *      `lib/operator/routes.ts::OPERATOR_PAGE_FILES` names the operator pages, and the list of
+ *      pages below is derived from the directory, so a thirty-third admin page inherits the rule
+ *      instead of the exemption.
  *   2. **Nothing under the admin views centres a column of its own** — no `mx-auto` beside the
  *      shared column, and no `container mx-auto` reintroducing one at the view root.
- *   3. **`StageColumn` itself is one max width and no centring**, which is what makes (2) a
- *      measurable rule rather than a preference.
+ *   3. **The two containers are one geometry** — `StageColumn` and `OperatorFrame` render
+ *      **identical markup** for the same child, which is what makes (2) a measurable rule rather
+ *      than a preference: the operator copy buys an import boundary, never a second width.
  */
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -30,6 +37,8 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
+import { OPERATOR_PAGE_FILES } from "@/lib/operator/routes";
 
 const ADMIN_ROOT = "app/(mainlayout)/admin";
 
@@ -95,12 +104,23 @@ describe("the admin console's shared column", () => {
     expect(pages.length).toBe(32);
   });
 
-  it("is what every admin page renders inside", () => {
-    for (const path of adminPages()) {
+  it("is what every admin page renders inside — the product's container or the operator's, by surface", () => {
+    const pages = adminPages();
+    for (const path of pages) {
       const file = code(path);
-      expect(file, `${path} imports the shared column`).toContain("stage-column");
-      expect(file, `${path} renders the shared column`).toContain("<StageColumn>");
-      expect(file, `${path} closes the shared column`).toContain("</StageColumn>");
+      const operator = OPERATOR_PAGE_FILES.includes(path);
+      const column = operator ? "OperatorFrame" : "StageColumn";
+      const specifier = operator ? "@/components/operator/frame" : "stage-column";
+      expect(file, `${path} imports the shared column`).toContain(specifier);
+      expect(file, `${path} renders the shared column`).toContain(`<${column}>`);
+      expect(file, `${path} closes the shared column`).toContain(`</${column}>`);
+    }
+    // The operator list is a subset of the directory walk, never a parallel list: a page named
+    // there that this walk cannot find is a seam that guards nothing.
+    for (const page of OPERATOR_PAGE_FILES) {
+      expect(pages, `${page} is named as an operator page but is not an admin page`).toContain(
+        page,
+      );
     }
   });
 
@@ -131,5 +151,13 @@ describe("the column itself", () => {
     expect(html).toContain("max-w-[1126px]");
     expect(html).toContain("w-full");
     expect(html).not.toContain("mx-auto");
+  });
+
+  it("is the same geometry on the operator side — the copy buys an import, never a second width", () => {
+    // Identical markup for the same child. A change to either width fails here, so the operator
+    // surface cannot drift into a column of its own while the seam test stays green.
+    expect(renderToStaticMarkup(createElement(OperatorFrame, null, "band"))).toBe(
+      renderToStaticMarkup(createElement(StageColumn, null, "band")),
+    );
   });
 });

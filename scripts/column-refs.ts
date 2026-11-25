@@ -5,7 +5,9 @@
  * holds that registry against the tree, in both directions, and checks the two facts the registry
  * cannot see by itself:
  *
- *   1. **A `column` page really is one.** The page module renders `StageColumn`; the modules it
+ *   1. **A `column` page really is one.** The page module renders the column — `StageColumn` for a
+ *      product page, `OperatorFrame` for an operator one (the operator surface's copy of the same
+ *      element, because the seam forbids it importing the product's, #1391 phase 2); the modules it
  *      imports directly do not re-centre the body with `mx-auto` or a bare `container` class.
  *   2. **A `wide`/`bleed` row is a decision.** It carries a reason, and `bleed` carries a `back`
  *      that resolves to another registered route — the way out of a surface that took the shell's
@@ -273,6 +275,23 @@ export const CENTRING_ALLOWANCES: readonly CentringAllowance[] = [
 ];
 
 /**
+ * The two tags that draw the column.
+ *
+ * `StageColumn` is the product's container (`components/assessment-flow/stage-column.tsx`).
+ * `OperatorFrame` is the operator surface's copy of the same element (#1391 phase 2,
+ * `docs/specs/operator-separation-adr.md` §4.2): the seam forbids an operator file importing a
+ * product component, so the 23 operator pages render their own copy. It is **not** a second width —
+ * `tests/admin-column.test.tsx` renders both with the same child and asserts identical markup, so a
+ * drift fails there instead of becoming a second left edge here.
+ */
+const COLUMN_TAGS = ["<StageColumn", "<OperatorFrame"] as const;
+
+/** Does this source draw a page column? */
+function drawsColumn(source: string): boolean {
+  return COLUMN_TAGS.some((tag) => source.includes(tag));
+}
+
+/**
  * Does this page's left edge come from `StageColumn` — its own markup, or a component it renders?
  *
  * Two hops, not one, and the second hop exists for one shape: **the flow's shell** (#979 B). The five
@@ -290,7 +309,7 @@ export function rendersColumn(
   files: ReadonlyMap<string, SourceFile>,
   depth = 3,
 ): boolean {
-  if (pageSource.includes("<StageColumn")) return true;
+  if (drawsColumn(pageSource)) return true;
   let frontier = [...directImports];
   const seen = new Set(frontier);
   for (let hop = 0; hop < depth; hop += 1) {
@@ -298,7 +317,7 @@ export function rendersColumn(
     for (const path of frontier) {
       const file = files.get(path);
       if (file === undefined) continue;
-      if (file.source.includes("<StageColumn")) return true;
+      if (drawsColumn(file.source)) return true;
       for (const specifier of importedModules(file.source)) {
         const resolved = resolveImport(path, specifier, (candidate) => files.has(candidate));
         if (resolved !== null && !seen.has(resolved)) {

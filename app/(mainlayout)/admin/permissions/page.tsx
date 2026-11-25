@@ -31,7 +31,7 @@
  *
  * **No clock in this render.** Nothing here reads one, and the matrix carries no dates.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { PermissionsConsole } from "@/components/admin/permissions/permissions-console";
@@ -85,7 +85,7 @@ export default async function AdminPermissionsPage({
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <PermissionsConsole
         copy={adminPermissionsPageCopy}
         cells={filterCells(cells, filter)}
@@ -97,6 +97,6 @@ export default async function AdminPermissionsPage({
         snapshotPass={snapshotPass}
         unreadable={unreadable}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

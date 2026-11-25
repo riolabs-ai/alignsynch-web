@@ -28,7 +28,7 @@
  * its sentence handed to the view, and any other failure keeps throwing, because a row that fails
  * the model is a defect the gate exists to catch.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { SessionRegistry } from "@/components/admin/session-registry";
@@ -81,8 +81,8 @@ export default async function AdminSessionsPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <SessionRegistry copy={adminSessionsPageCopy} rows={rows} unreadable={unreadable} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

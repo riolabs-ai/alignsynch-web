@@ -27,7 +27,7 @@
  * (`content/core.ts::DEMO_NOW_ISO`), used by the document the export writes — this page renders no
  * "now" at all.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -62,7 +62,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
     if (!(error instanceof DatabaseUnavailableError)) throw error;
     console.error("admin-report: the report could not be read", error);
     return (
-      <StageColumn>
+      <OperatorFrame>
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             {adminReportPageCopy.sections?.find((section) => section.id === "unreadable")
@@ -70,7 +70,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
           </h1>
           <p className="max-w-3xl text-muted-foreground">{error.reason}</p>
         </div>
-      </StageColumn>
+      </OperatorFrame>
     );
   }
 
@@ -88,7 +88,7 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
         );
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <ReportOperations
         copy={adminReportPageCopy}
         source={source}
@@ -101,6 +101,6 @@ export default async function AdminReportPage({ params }: { params: Promise<{ id
         relationshipPath={adminRelationshipPath(id)}
         document={document}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

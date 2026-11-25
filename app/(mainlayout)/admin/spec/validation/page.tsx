@@ -18,7 +18,7 @@ import type { Metadata } from "next";
 import { SpecFrame } from "@/components/admin/spec/spec-frame";
 import { SpecNotice } from "@/components/admin/spec/spec-notice";
 import { ValidationMatrix } from "@/components/admin/spec/validation-matrix";
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { ADMIN_SPEC_VALIDATION_PATH } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
@@ -45,7 +45,7 @@ export default async function AdminSpecValidationPage() {
   const issues = await readSpecIssues();
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <SpecFrame copy={adminSpecPageCopy} doc={doc} current={{ kind: "validation" }}>
         {doc === null ? (
           <SpecNotice copy={adminSpecPageCopy} path={SPEC_VALIDATION_SOURCE} reason={reason} />
@@ -53,6 +53,6 @@ export default async function AdminSpecValidationPage() {
           <ValidationMatrix copy={adminSpecPageCopy} doc={doc} issues={issues} />
         )}
       </SpecFrame>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

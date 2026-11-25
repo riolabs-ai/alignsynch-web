@@ -38,7 +38,7 @@
 import type { Metadata } from "next";
 
 import { BrandProfile } from "@/components/admin/brand-profile";
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import { adminBrandPageCopy } from "@/data/pages/admin-brand";
 import { requireAdmin } from "@/lib/auth/require-role";
 import { requireAdminProduct, requireAlignmentProduct } from "@/lib/brand-boundary";
@@ -60,8 +60,8 @@ export default async function AdminBrandPage() {
   await requireAdmin({ next: ADMIN_BRAND_PATH });
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <BrandProfile copy={adminBrandPageCopy} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

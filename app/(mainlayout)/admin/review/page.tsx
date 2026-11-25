@@ -34,7 +34,7 @@
  * `ADMIN_REVIEW_PATH` through `revalidatePath` and answers a refusal code rather than a silent
  * no-op, which is what keeps the counts above the panes and the row itself from disagreeing.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -144,7 +144,7 @@ export default async function AdminReviewPage({
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <ReviewArtifacts
         copy={adminReviewPageCopy}
         shelf={shelf}
@@ -155,6 +155,6 @@ export default async function AdminReviewPage({
         onCommentOnIssue={commentOnReviewIssueAction}
         onSetIssueState={setReviewIssueStateAction}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

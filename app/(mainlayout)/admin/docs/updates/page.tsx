@@ -7,7 +7,7 @@
  * visitor to `/login?next=/admin/docs/updates` and answers a member with the same 404 — never a 403
  * that would confirm the page exists.
  *
- * **The template is `/admin/docs/features`.** A server page behind both gates, a `StageColumn`, one
+ * **The template is `/admin/docs/features`.** A server page behind both gates, a `OperatorFrame`, one
  * component whose every string comes from a `data/pages/**` fixture, and a read of the tree on the
  * request. The axis of variation is the data source: the features index reads `CHANGELOG.md` for
  * areas, this reads `docs/changelog/updates/*.json` for entries and joins each `specs[]` path to the
@@ -24,7 +24,7 @@
  *
  * **No clock in this render.** Every date is the entry's own, and nothing here reads one.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { UpdatesLedger } from "@/components/admin/docs/updates-ledger";
@@ -68,8 +68,8 @@ export default async function AdminDocsUpdatesPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <UpdatesLedger copy={adminDocsUpdatesPageCopy} rows={rows} unreadable={unreadable} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

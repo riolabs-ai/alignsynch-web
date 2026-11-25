@@ -29,7 +29,7 @@
  * `robots` matters behind the gate: a crawler that somehow held an admin's session must not publish
  * the shape of the business.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { GrowthConsole, GrowthConsoleUnreadable } from "@/components/admin/growth-console";
@@ -54,17 +54,17 @@ export default async function AdminGrowthPage() {
   try {
     const model = readGrowthModel();
     return (
-      <StageColumn>
+      <OperatorFrame>
         <GrowthConsole copy={adminGrowthPageCopy} model={model} />
-      </StageColumn>
+      </OperatorFrame>
     );
   } catch (error) {
     if (!(error instanceof GrowthModelUnreadable)) throw error;
     console.error(`admin-growth: ${GROWTH_MODEL_PATH} could not be read`, error);
     return (
-      <StageColumn>
+      <OperatorFrame>
         <GrowthConsoleUnreadable copy={adminGrowthPageCopy} reason={error.reason} />
-      </StageColumn>
+      </OperatorFrame>
     );
   }
 }

@@ -22,7 +22,7 @@ import type { Metadata } from "next";
 import { SpecFrame } from "@/components/admin/spec/spec-frame";
 import { SpecNotice } from "@/components/admin/spec/spec-notice";
 import { StoryPage } from "@/components/admin/spec/story-page";
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { adminSpecGroupPath } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
@@ -54,7 +54,7 @@ export default async function AdminSpecGroupPage({
   const issues = await readSpecIssues();
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <SpecFrame
         copy={adminSpecPageCopy}
         doc={doc}
@@ -72,6 +72,6 @@ export default async function AdminSpecGroupPage({
           />
         )}
       </SpecFrame>
-    </StageColumn>
+    </OperatorFrame>
   );
 }
