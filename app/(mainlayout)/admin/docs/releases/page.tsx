@@ -1,7 +1,7 @@
 /**
  * `/admin/docs/releases` — the release record, one release at a time (#893).
  *
- * **The same two gates, in the same order**, and both before `?release=` is read:
+ * **The same three gates, in the same order**, and both before `?release=` is read:
  * `requireAdminProduct()` (#509 — a template that does not claim `product.admin` answers the 404 an
  * unknown URL gets), then `requireAdmin()` (`/login?next=/admin/docs/releases` for a signed-out
  * visitor, the same 404 for a member).
@@ -29,7 +29,7 @@ import { notFound } from "next/navigation";
 import { ReleasesShelf } from "@/components/admin/docs/releases-shelf";
 import { adminDocsReleasesPageCopy } from "@/data/pages/admin-docs";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { buildInfo } from "@/lib/build-info";
 import { docsSourceProblem } from "@/lib/docs/manifest";
 import {
@@ -68,6 +68,7 @@ export default async function AdminDocsReleasesPage({
 }) {
   // The capability before the role (#509), and both before the parameter is read.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_DOCS_RELEASES_PATH });
 
   let rows: ReleaseRow[] = [];

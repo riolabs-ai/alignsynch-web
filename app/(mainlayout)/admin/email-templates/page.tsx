@@ -1,7 +1,7 @@
 /**
  * `/admin/email-templates` — the register of transactional mail, and what production sends (#1138).
  *
- * **Two gates, in this order, the same as `/admin/docs`.** `requireAdminProduct()` first (#509): a
+ * **Three gates, in this order, the same as `/admin/docs`.** `requireAdminProduct()` first (#509): a
  * template that does not claim `product.admin` answers the 404 an unknown URL gets, before a session
  * is read. Then `requireAdmin({ next })`, which sends a signed-out visitor to
  * `/login?next=%2Fadmin%2Femail-templates` and answers a member — a `support` seat included — with
@@ -31,7 +31,7 @@ import { adminEmailTemplatesPageCopy } from "@/data/pages/admin-email-templates"
 import { listEmailTemplates, type EmailTemplateListRow } from "@/lib/admin/email-templates";
 import { ADMIN_EMAIL_TEMPLATES_PATH } from "@/lib/admin/paths";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +45,7 @@ export default async function AdminEmailTemplatesPage() {
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no database read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_EMAIL_TEMPLATES_PATH });
 
   let rows: readonly EmailTemplateListRow[] = [];

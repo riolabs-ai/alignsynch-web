@@ -1,7 +1,7 @@
 /**
  * `/admin/docs` — the documentation home (#892).
  *
- * **Two gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
+ * **Three gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
  * capability, so a template that does not claim `product.admin` answers the 404 an unknown URL gets
  * before a session is read. Then `requireAdmin()`, which sends a signed-out visitor to
  * `/login?next=/admin/docs` and answers a member with the same 404 — never a 403 that would confirm
@@ -28,7 +28,7 @@ import type { Metadata } from "next";
 import { DocsHub } from "@/components/admin/docs/docs-hub";
 import { adminDocsPageCopy } from "@/data/pages/admin-docs";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DocsManifestUnreadable } from "@/lib/docs/manifest";
 import {
   ADMIN_DOCS_PATH,
@@ -50,6 +50,7 @@ export default async function AdminDocsPage() {
   // The capability before the role (#509): a template that does not claim the console answers the 404
   // an unknown URL gets, with no session read and no file read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_DOCS_PATH });
 
   let rows: DocsRow[] = [];

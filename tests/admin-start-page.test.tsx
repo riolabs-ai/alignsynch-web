@@ -24,11 +24,15 @@ const requireAdmin = vi.fn(async (_options?: unknown) => ({
   user: { userId: "user-admin", email: "admin@demo.alignsynch.test", name: "Demo Admin" },
 }));
 const requireAdminProduct = vi.fn(() => undefined);
+const requireOperator = vi.fn(() => undefined);
 
 vi.mock("@/lib/auth/require-role", () => ({
   requireAdmin: (options: unknown) => requireAdmin(options),
 }));
-vi.mock("@/lib/brand-boundary", () => ({ requireAdminProduct: () => requireAdminProduct() }));
+vi.mock("@/lib/brand-boundary", () => ({
+  requireAdminProduct: () => requireAdminProduct(),
+  requireOperator: () => requireOperator(),
+}));
 
 const readInbox = vi.fn();
 const listReviewArtifacts = vi.fn();
@@ -68,6 +72,10 @@ describe("/admin/dashboard — an admin's request", () => {
     const html = renderToStaticMarkup(await AdminStartPage());
 
     expect(requireAdminProduct).toHaveBeenCalledTimes(1);
+    // The operator gate is the second statement of the page (#1391): a build that ships the console
+    // without the back office must answer 404 here too, so the call is not optional and not the
+    // console's flag read twice.
+    expect(requireOperator).toHaveBeenCalledTimes(1);
     expect(requireAdmin).toHaveBeenCalledWith({ next: "/admin/dashboard" });
     expect(html).toContain(adminStartPageCopy.heading);
 

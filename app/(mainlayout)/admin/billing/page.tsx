@@ -9,7 +9,7 @@
  * every row on a test-key deployment is a real row and not real money, so the mode is a banner at
  * the top of the list and a badge on every row, never a footnote.
  *
- * **Three gates, in the console's order.** `requireAdminProduct()` first (#509): a template that
+ * **Four gates, in the console's order.** `requireAdminProduct()` first (#509): a template that
  * does not claim `product.admin` answers the 404 an unknown URL gets, with no session read. Then
  * `requireAdmin()` — a signed-out visitor goes to `/login?next=/admin/billing`, a **`support`**
  * session gets `notFound()` (the same 404, never a 403 that confirms the page exists), and an
@@ -40,7 +40,7 @@ import { BILLING_PLAN_IDS, billingPlan, billingPlans } from "@/data/billing-plan
 import { ADMIN_BILLING_PATH } from "@/lib/admin/paths";
 import { requireAdmin } from "@/lib/auth/require-role";
 import { entitlementForPlan } from "@/lib/billing/entitlements";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { countsOf, readAdminBilling, type AdminBillingRow } from "@/lib/db/admin-billing";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 
@@ -76,6 +76,7 @@ export default async function AdminBillingPage() {
   // The capability before the role (#509), then the rung. A `support` session never reaches the
   // read below — `notFound()` is thrown, not returned.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   const { role } = await requireAdmin({ next: ADMIN_BILLING_PATH });
 
   let rows: AdminBillingRow[] | null = null;

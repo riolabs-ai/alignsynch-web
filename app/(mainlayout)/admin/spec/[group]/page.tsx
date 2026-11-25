@@ -1,7 +1,7 @@
 /**
  * `/admin/spec/[group]` — one story page (#1252).
  *
- * The gate is the parent's, in the same order: `requireAdminProduct()` (#509) and then
+ * The gate is the parent's, in the same order: `requireAdminProduct()` and `requireOperator()` (#509, #1391) and then
  * `requireSpecReader()`, so a member or a support seat is answered with the unknown-URL 404 and a
  * signed-out visitor is sent to `/login?next=/admin/spec/<group>`.
  *
@@ -26,7 +26,7 @@ import { OperatorFrame } from "@/components/operator/frame";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { adminSpecGroupPath } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { readSpecValidationSafe, SPEC_VALIDATION_SOURCE } from "@/lib/spec/file";
 import { readSpecIssues } from "@/lib/spec/issues-cache";
 import { specStoryOf } from "@/content/spec";
@@ -46,6 +46,7 @@ export default async function AdminSpecGroupPage({
   const { group } = await params;
 
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireSpecReader({ next: adminSpecGroupPath(group) });
   const { doc, reason } = readSpecValidationSafe();
   const story = specStoryOf(group);

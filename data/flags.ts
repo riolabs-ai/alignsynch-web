@@ -112,6 +112,7 @@ export const zFlags = z
     "create.generator": zFlagDefinition,
     "product.quiz-surfaces": zFlagDefinition,
     "product.admin": zFlagDefinition,
+    "product.operator": zFlagDefinition,
   })
   .strict();
 
@@ -199,6 +200,37 @@ export const flags: Flags = zFlags.parse({
     default: false,
     templates: ["quizhub", "alignsynch"],
     note: "Shipped by both templates this tree has (#509): /admin/console and its subtree, /admin/gaps and /admin/instances answer 404 on a template that does not claim the console, through requireAdminProduct() ahead of the role gate. On for both brands today; off for a derived product until it names itself in `templates`.",
+  },
+  /**
+   * The third capability: the operator tooling, one level below the console (#1391).
+   *
+   * `product.admin` answers "does this build have a console at all". This one answers a narrower
+   * question — "does this build ship the back office" — because the console and the operator
+   * machinery are not the same product surface: a derived template may want a console for its own
+   * relationships and templates (`/admin/console`, `/admin/templates`) without shipping the
+   * operator's spec, audit, billing, broadcast, inbox, health, growth or review screens. Splitting
+   * the two is what makes the operator set switchable without deleting it, and it is the
+   * precondition for the seam that lets that tooling change on its own schedule.
+   *
+   * **`templates` names both records this tree ships, and `default` stays `false`** — the same
+   * reading `product.admin` gets: on for `quizhub` and on for `alignsynch`, so nothing changes for
+   * today's users; off for a template that has not claimed the tooling. `FLAG_PRODUCT_OPERATOR=0`
+   * closes all of it on a build that does ship it, which is the review path *and* the rollback:
+   * the routes stay exactly where they are and answer 404, they are never moved or deleted.
+   *
+   * **No `adminBypass`.** A bypass would read the session to answer a question about what the
+   * build ships, and this is a build capability, not a role: the role gates (`requireAdmin()`,
+   * `requireSpecReader()`, `requireRole("support")`) stay exactly where they are, *after* this one,
+   * and this flag never admits anybody past them.
+   *
+   * What it closes: the twenty-three routes in `lib/brand-boundary.ts::requireOperator()`'s
+   * docstring, through `requireOperator()` — ahead of the role gate, so a template that does not
+   * ship the tooling answers the 404 an unknown URL gets, with no session read.
+   */
+  "product.operator": {
+    default: false,
+    templates: ["quizhub", "alignsynch"],
+    note: "Shipped by both templates this tree has (#1391): the twenty-three operator routes (the admin landing, spec, audit, review, billing, broadcast, inbox, health, growth, gaps, permissions, brand, email templates and the docs shelves, minus the documentation pages themselves) answer 404 through requireOperator() on a build that does not claim the tooling. Beside product.admin, not instead of it: the console stays, the back office is what switches off.",
   },
 });
 

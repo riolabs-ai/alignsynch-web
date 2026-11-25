@@ -6,7 +6,7 @@
  * those is a measurement somebody had to go and take. This page takes them once, records them, and
  * shows them together.
  *
- * **Three gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
+ * **Four gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
  * capability, so a template that does not claim `product.admin` answers the 404 an unknown URL gets
  * before a session is read. Then `requireAdmin()` — a signed-out visitor is sent to
  * `/login?next=/admin/health`, a **`support`** session gets `notFound()` (the same 404 an unknown
@@ -44,7 +44,7 @@ import type { Metadata } from "next";
 import { PlatformHealth } from "@/components/admin/platform-health";
 import { adminHealthPageCopy } from "@/data/pages/admin-health";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import {
   ADMIN_HEALTH_PATH,
   type HealthFacts,
@@ -64,6 +64,7 @@ export default async function AdminHealthPage() {
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no file read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_HEALTH_PATH });
 
   let facts: HealthFacts | null = null;

@@ -35,7 +35,7 @@ import { SessionRegistry } from "@/components/admin/session-registry";
 import { adminSessionsPageCopy } from "@/data/pages/admin-instances";
 import { ADMIN_SESSIONS_PATH, type AdminSessionRow } from "@/lib/admin/session-registry";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { listAdminSessions } from "@/lib/db/admin-sessions";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 
@@ -66,6 +66,7 @@ export default async function AdminSessionsPage() {
   // The capability before the role (#509): a template that does not claim `product.admin` answers
   // the 404 an unknown URL gets, with no session read and no database work behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_SESSIONS_PATH });
 
   let rows: readonly AdminSessionRow[] = [];

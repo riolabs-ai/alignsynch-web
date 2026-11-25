@@ -1,7 +1,7 @@
 /**
  * `/admin/email-templates/<id>` — one transactional mail, its override and its history (#1138).
  *
- * **The same two gates as the list, and the same order** (`requireAdminProduct()` before
+ * **The same three gates as the list, and the same order** (`requireAdminProduct()` before
  * `requireAdmin({ next })`), so a member and a `support` seat get the 404 an unknown URL gets and a
  * signed-out visitor is sent to `/login` with this path as `next`. The read that follows is the one
  * query that can grow — the version history — so the page bounds what it draws rather than fetching
@@ -30,7 +30,7 @@ import { adminEmailTemplatesPageCopy } from "@/data/pages/admin-email-templates"
 import { readEmailTemplateEditor } from "@/lib/admin/email-templates";
 import { ADMIN_EMAIL_TEMPLATES_PATH } from "@/lib/admin/paths";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { renderSampleEmail } from "@/lib/email/samples";
 import {
@@ -66,6 +66,7 @@ export default async function AdminEmailTemplatePage({
   // The capability before the role, exactly as the list does it (#509): a template that does not
   // claim the console answers the 404 an unknown URL gets, with no session and no database read.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: `${ADMIN_EMAIL_TEMPLATES_PATH}/${id}` });
 
   let view: Awaited<ReturnType<typeof readEmailTemplateEditor>>;

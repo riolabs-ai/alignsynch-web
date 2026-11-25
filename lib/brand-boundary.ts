@@ -42,8 +42,9 @@
  * template inherits or turns off, rather than a product one template sells. It reads its own flag
  * (`product.admin`) through the same resolver, for the same reasons, and lands before the console's
  * `requireAdmin()` so a template without the console answers a 404 rather than a sign-in page. The
- * twenty-two quiz routes and the three console entry points are the only surfaces either gate
- * covers; nothing else in the tree is closed by a brand.
+ * twenty-two quiz routes, the three console entry points and the twenty-three operator routes
+ * (`requireOperator()`, #1391) are every surface a gate here covers; nothing else in the tree is
+ * closed by a brand or a capability.
  */
 import type { FlagName } from "@/data/flags";
 import { isEnabled } from "@/lib/flags";
@@ -159,4 +160,83 @@ export function adminProductShipped(): boolean {
  */
 export function requireAdminProduct(): void {
   if (!adminProductShipped()) notFound();
+}
+
+/* ------------------------------------------------------------------ *
+ * The operator tooling, as the third capability (#1391)
+ * ------------------------------------------------------------------ */
+
+/**
+ * The back office's switch. `product.operator`, beside `product.admin` in `data/flags.ts`.
+ *
+ * The question is the console's one size smaller. `product.admin` asks whether a build has a
+ * *console*; this asks whether it ships the operator's **tooling** — the spec shelves, the audit
+ * log, billing, the broadcast, the support inbox, platform health, the growth model, the gap
+ * analysis, the permission matrix, the brand story, the mail register, the review shelf and the
+ * admin landing. A derived template can plausibly want a console for its own relationships and
+ * templates and sell none of that, so the two are separate axes: this one sits *beside*
+ * `product.admin` and never replaces it, and every gated page calls both.
+ *
+ * **Why a flag and not a directory move.** The point of the gate is to *enumerate* the operator
+ * surface and be able to switch it off, not to hide URLs: nothing is moved, renamed or deleted, so
+ * `FLAG_PRODUCT_OPERATOR=1` reopens every route on a build that closed them and a revert is a
+ * deletion of the calls, not an un-move. The seam that makes the tooling changeable on its own
+ * schedule is the next card; this is its precondition.
+ *
+ * **`templates: ["quizhub", "alignsynch"]`, `default: false`** — on for both templates this tree
+ * ships, so today's users see no change; off for a template that has not named itself. The operator
+ * lever `FLAG_PRODUCT_OPERATOR=0` closes it on a build that does ship it, which is the review path.
+ * No `adminBypass`: reading a session to answer a question about what the build ships would make a
+ * build capability depend on a role.
+ */
+
+/** The tooling's flag. Typed as `FlagName`, so a rename in `data/flags.ts` fails `tsc` here. */
+export const OPERATOR_FLAG: FlagName = "product.operator";
+
+/** Does **this build** ship the operator tooling? Server-only, like every flag read. */
+export function operatorShipped(): boolean {
+  return isEnabled(OPERATOR_FLAG);
+}
+
+/**
+ * The route gate for a surface the operator tooling owns:
+ *
+ * ```ts
+ * export default async function Page() {
+ *   requireAdminProduct();
+ *   requireOperator();
+ *   await requireAdmin({ next: "/admin/audit" });
+ *   …
+ * }
+ * ```
+ *
+ * **Second, always** — after `requireAdminProduct()` and before the role gate:
+ *
+ *   1. `requireAdminProduct()` — a build with no console answers 404 before anything is read;
+ *   2. `requireOperator()` — a build with a console but no back office answers the same 404, still
+ *      with no session read;
+ *   3. the role gate (`requireAdmin()`, `requireSpecReader()`, `requireRole("support")`) — which
+ *      keeps its three answers exactly as they were. This call **adds** to them and never admits
+ *      anybody past them.
+ *
+ * **The 404 is the refusal, never a redirect.** `/login` would tell a stranger the route exists,
+ * which is the ruling #509 restated; a build that does not sell the tooling answers the byte-for-byte
+ * 404 an unknown URL gets.
+ *
+ * **Per page module, not a layout.** The only layout under `admin/` is the console's, and hanging
+ * this gate on it would also close `/admin/docs/[...slug]` (the documentation pages, which stay
+ * readable), `/admin/templates` and `/admin/console/templates` — three surfaces the owner excluded
+ * by name. Twenty-three call sites are the price of a gate that closes exactly the listed set.
+ *
+ * The routes it closes, in `app/(mainlayout)/admin/`: `dashboard`, `audit`, `billing`, `brand`,
+ * `broadcast`, `docs` (the hub only), `docs/features`, `docs/releases`, `docs/updates`,
+ * `email-templates`, `email-templates/[id]`, `gaps`, `growth`, `health`, `inbox`,
+ * `/admin/instances`, `/admin/instances/[id]`, `/admin/instances/[id]/report`, `permissions`,
+ * `review`, `spec`, `spec/[group]` and `spec/validation` — twenty-three page modules, listed once
+ * per page and asserted as a table in `tests/parity/boundary.ts`.
+ *
+ * Returns nothing when the capability is on, and throws Next's not-found when it is off.
+ */
+export function requireOperator(): void {
+  if (!operatorShipped()) notFound();
 }

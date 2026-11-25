@@ -7,7 +7,7 @@
  * eyeball. `content/growth-model.ts` computes the model, `pnpm growth` writes it, `pnpm growth:check`
  * holds the committed bytes to the code, and this page reads it.
  *
- * **Three gates, in this order** — the same order `/admin/health` and `/admin/gaps` document.
+ * **Four gates, in this order** — the same order `/admin/health` and `/admin/gaps` document.
  * `requireAdminProduct()` first (#509): the console is a template capability, so a template that
  * does not claim `product.admin` answers the 404 an unknown URL gets before a session is read. Then
  * `requireAdmin()`: a signed-out visitor is sent to `/login?next=/admin/growth`, a **`support`**
@@ -36,7 +36,7 @@ import { GrowthConsole, GrowthConsoleUnreadable } from "@/components/admin/growt
 import { adminGrowthPageCopy } from "@/data/pages/admin-growth";
 import { GROWTH_MODEL_PATH, GrowthModelUnreadable, readGrowthModel } from "@/lib/admin/growth";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +49,7 @@ export default async function AdminGrowthPage() {
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no file read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: "/admin/growth" });
 
   try {

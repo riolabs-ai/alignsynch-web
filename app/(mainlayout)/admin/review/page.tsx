@@ -1,7 +1,7 @@
 /**
  * `/admin/review` — the console's review shelf (#665), reading the store #667 landed.
  *
- * **Four gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
+ * **Five gates, in this order.** `requireAdminProduct()` first (#509): the console is a template
  * capability, so a template that does not claim `product.admin` answers the 404 an unknown URL gets
  * before a session is read. Then `requireAdmin()`, which sends a signed-out visitor to
  * `/login?next=/admin/review` and answers a member with the same 404. Then the read. Then the
@@ -41,7 +41,7 @@ import { notFound } from "next/navigation";
 import { ReviewArtifacts } from "@/components/admin/review-artifacts";
 import { adminReviewPageCopy } from "@/data/pages/admin-review";
 import { requireAdmin } from "@/lib/auth/require-role";
-import { requireAdminProduct } from "@/lib/brand-boundary";
+import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import {
   type ReviewArtifactDetail,
@@ -86,6 +86,7 @@ export default async function AdminReviewPage({
   // The capability before the role (#509): a template that does not claim the console answers the
   // 404 an unknown URL gets, with no session read and no database read behind it.
   requireAdminProduct();
+  requireOperator(); // #1391 — product.operator: the operator tooling, not the console
   await requireAdmin({ next: ADMIN_REVIEW_PATH });
 
   let shelf: ReviewShelf | null = null;
