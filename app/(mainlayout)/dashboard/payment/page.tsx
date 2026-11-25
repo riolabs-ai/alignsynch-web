@@ -29,6 +29,7 @@ import { PaymentView } from "@/components/billing/payment-view";
 import { StageColumn } from "@/components/assessment-flow/stage-column";
 import { paymentPageCopy } from "@/data/pages/payment";
 import { claimExtensionAction } from "@/app/(mainlayout)/dashboard/relationships/actions";
+import { openInvoicePortalAction } from "@/app/(mainlayout)/dashboard/payment/actions";
 import { requireRole } from "@/lib/auth/require-role";
 import { billingViewOf, membershipPrice, type BillingView } from "@/lib/billing/payment-view";
 import { DatabaseUnavailableError } from "@/lib/db/client";
@@ -58,6 +59,7 @@ export default async function PaymentPage() {
     panels: [],
     coverage: [],
     cardOnFile: false,
+    invoiceAccess: "none",
     empty: true,
   };
   let unreadable: string | null = null;
@@ -79,6 +81,7 @@ export default async function PaymentPage() {
         view={view}
         unreadable={unreadable}
         onClaimExtension={claimExtensionAction}
+        onOpenInvoices={openInvoicePortalAction}
       />
     </StageColumn>
   );

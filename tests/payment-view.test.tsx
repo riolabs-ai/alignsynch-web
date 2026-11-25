@@ -85,6 +85,7 @@ function markupOf(rows: readonly MemberRelationshipRow[], facts: Partial<Billing
       view,
       unreadable: null,
       onClaimExtension: () => Promise.resolve({ ok: false as const, code: "signed-out" }),
+      onOpenInvoices: () => Promise.resolve({ ok: false as const, code: "unavailable" as const }),
     }),
   );
 }
@@ -184,6 +185,45 @@ describe("the initiating account's page", () => {
   });
 });
 
+/**
+ * The invoices card (#1282, APP-46).
+ *
+ * Three states, and only one of them is a control. What is asserted is the *absence* as much as the
+ * presence: a card-free trial and a mock subscription must not offer a door into a page that does not
+ * exist, and no state may print an amount, a date or a receipt of our own — the provider owns the
+ * invoice list, and the app having a copy of it is the defect APP-46 forbids.
+ */
+describe("the Billing History card", () => {
+  const providerSubscription = () =>
+    trial({ provider: "stripe", status: "active", providerSubscriptionId: "sub_test_1" });
+
+  it("draws one control into the provider's page when the account has a provider subscription", () => {
+    const html = markupOf([row()], { subscription: providerSubscription() });
+    expect(html).toContain("Billing History");
+    expect(html).toContain('data-payment-action="open-invoices"');
+    expect(html).toContain("View Invoices and Receipts");
+    expect(html).toContain("Invoices and receipts are on the secure billing page");
+    // The one sentence it replaces is the "nothing charged" one.
+    expect(html).not.toContain("No charges yet.");
+    // Nothing of ours looks like an invoice: no amount and no date beyond the panel's own rows.
+    expect(html).not.toContain("<table");
+    expect(html).not.toContain(".pdf");
+  });
+
+  it("draws no control for a mock subscription — there is no provider page behind it", () => {
+    const html = markupOf([row()], { subscription: trial({ status: "active" }) });
+    expect(html).toContain("No charges yet.");
+    expect(html).not.toContain('data-payment-action="open-invoices"');
+    expect(html).not.toContain("View Invoices and Receipts");
+  });
+
+  it("draws no control for an account with no live subscription", () => {
+    const html = markupOf([row()], { subscription: null });
+    expect(html).toContain("No charges yet.");
+    expect(html).not.toContain('data-payment-action="open-invoices"');
+  });
+});
+
 describe("the Counterparty's page", () => {
   const joined = () =>
     row({
@@ -241,6 +281,7 @@ describe("the read's failure", () => {
       panels: [],
       coverage: [],
       cardOnFile: false,
+      invoiceAccess: "none",
       empty: true,
     };
     const html = renderToStaticMarkup(
@@ -249,6 +290,7 @@ describe("the read's failure", () => {
         view,
         unreadable: "DATABASE_URL is not set",
         onClaimExtension: () => Promise.resolve({ ok: false as const, code: "signed-out" }),
+        onOpenInvoices: () => Promise.resolve({ ok: false as const, code: "unavailable" as const }),
       }),
     );
     expect(html).toContain("could not be loaded just now");

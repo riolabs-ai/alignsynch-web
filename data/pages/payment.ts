@@ -143,9 +143,29 @@ export const paymentPageCopy: PageCopy = zPageCopy.parse({
       ],
     },
     {
+      /**
+       * Billing History (#1132, and the invoices half of APP-46 / #1282).
+       *
+       * **The app draws no invoice.** Amounts, dates, PDFs and receipts belong to the provider that
+       * holds the card; this card carries one control into that surface and a sentence for the two
+       * states where there is nothing to open — nothing charged yet, or a subscription that never
+       * touched a provider (the offline adapter's own row).
+       */
       id: "billing-history",
       heading: "Billing History",
       body: "No charges yet.",
+      items: [
+        {
+          id: "provider-body",
+          label: "Invoices and receipts are on the secure billing page where your card is held.",
+        },
+        { id: "open", label: "View Invoices and Receipts" },
+        { id: "open-pending", label: "Opening…" },
+        {
+          id: "open-failed",
+          label: "Your invoices could not be opened just now. Refresh the page and try again.",
+        },
+      ],
     },
     {
       id: "how-trials",

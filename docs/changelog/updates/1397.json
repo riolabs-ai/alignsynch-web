@@ -1,0 +1,9 @@
+{
+  "pr": 1397,
+  "date": "2026-11-25",
+  "area": "billing",
+  "summary": "The Payment tab's Billing History card draws one control that opens the provider's own billing portal for the signed-in customer, resolved through a new `invoicePortal()` operation on the billing port.",
+  "reader_impact": "A member with a provider subscription can reach their invoices and receipts from `/dashboard/payment`; a card-free trial and the offline adapter's rows still read \"No charges yet.\" and draw no control.",
+  "specs": ["docs/reference/billing.md"],
+  "risk": "low"
+}

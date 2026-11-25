@@ -1,7 +1,7 @@
 /**
  * The hosted adapter — Stripe Checkout in **test mode**, and its webhook (#289, card 2 of 3).
  *
- * It implements the same four operations `lib/billing/port.ts` defines, and it is the only file in
+ * It implements the same five operations `lib/billing/port.ts` defines, and it is the only file in
  * the tree that knows the provider's own vocabulary:
  *
  *   `startCheckout`      create a Checkout Session and hand the browser its URL
@@ -9,6 +9,8 @@
  *   `handleWebhook`      verify the signature, check the host claim, map the event onto
  *                        `billing_subscription`
  *   `entitlementFor`     `entitlements.ts` applied to that row
+ *   `invoicePortal`      mint a billing-portal session so the member reads their own invoices and
+ *                        receipts on the provider's page (#1282)
  *
  * **The host claim.** Both hosts run **test** keys, so the provider's sandbox is shared and every
  * test event reaches both deployments' billing webhook endpoints. The session therefore carries
@@ -67,6 +69,8 @@ import type {
   CheckoutRequest,
   CheckoutSession,
   Entitlement,
+  InvoicePortal,
+  InvoicePortalRequest,
   Subscription,
   SubscriptionStatus,
   WebhookOutcome,
@@ -555,6 +559,14 @@ interface StripeSubscriptionObject {
   readonly id: string;
   readonly status?: string | null;
   /**
+   * The customer the subscription belongs to, as an id or an expanded object.
+   *
+   * Read only by `invoicePortal()` (#1282): the app's own row names the subscription and not the
+   * customer, so this is where a member's billing page is resolved from. Nothing else in the
+   * adapter touches it — the webhook maps the subscription's *metadata*, which carries the account.
+   */
+  readonly customer?: string | { readonly id?: string } | null;
+  /**
    * Where the period end lives depends on the account's API version: it was a subscription field,
    * and in the `2025-04-30.basil` family it moved onto each subscription item. Both are read, so a
    * delivery is mapped correctly whichever version the account is pinned to.
@@ -975,6 +987,101 @@ export class StripeBillingAdapter implements BillingPort {
    */
   async readSubscription(userId: string): Promise<Subscription | null> {
     return readActiveSubscription(userId);
+  }
+
+  /**
+   * The customer's own invoices and receipts, on the provider's own page (#1282, APP-46).
+   *
+   * **Two calls, and the first one is needed because the customer id is not ours to store.** The
+   * app's `billing_subscription` row carries the *subscription* id (it is the webhook's idempotency
+   * key) and no customer id — deliberately, because a customer id is a provider-side handle that
+   * would then have to be migrated, back-filled and kept true for every account that ever checked
+   * out. So the customer is read from the subscription the row names, which is also the precise
+   * join: the invoices shown are the invoices of the subscription this account actually holds, not
+   * of some other customer that happens to share an email.
+   *
+   * **The second call mints a session, and the URL is single-use.** A portal session is not a
+   * bookmark: minting it per click (rather than storing one) is what keeps a link in a page that a
+   * member might share from opening somebody's billing page later, and it is why this operation is
+   * a POST-shaped action rather than a plain `href`.
+   *
+   * **`return_url` is the caller's**, built from this deployment's own base, so the browser lands
+   * back on the Payment tab it left rather than on whatever URL a preview happens to serve.
+   *
+   * A provider that refuses (the account's billing portal is not activated in the dashboard, or the
+   * account is not allowed one) answers `unavailable` with the provider's own sentence in `detail` —
+   * operator-facing, logged by the caller, never rendered. That sentence is the one that names the
+   * dashboard page an operator has to visit, which is exactly the kind of failure this method must
+   * not turn into a silent empty list.
+   */
+  async invoicePortal(request: InvoicePortalRequest): Promise<InvoicePortal> {
+    const subscription = await this.readSubscription(request.userId);
+    if (subscription === null) {
+      return {
+        available: false,
+        reason: "no-subscription",
+        detail: `no live subscription for this account on host "${this.host}" — nothing has been charged, so no provider holds an invoice for it`,
+      };
+    }
+
+    let customer: string | null;
+    try {
+      const object = await this.get<StripeSubscriptionObject>(
+        `/subscriptions/${encodeURIComponent(subscription.providerSubscriptionId)}`,
+      );
+      customer = idOf(object.customer);
+    } catch (error) {
+      return {
+        available: false,
+        reason: "unavailable",
+        detail: `the provider could not read subscription ${subscription.providerSubscriptionId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+
+    if (customer === null) {
+      return {
+        available: false,
+        reason: "unavailable",
+        detail: `subscription ${subscription.providerSubscriptionId} names no customer — there is no billing page behind it`,
+      };
+    }
+
+    const form = new URLSearchParams();
+    form.set("customer", customer);
+    form.set("return_url", request.returnUrl);
+
+    let url: string;
+    try {
+      const session = await this.post<{ readonly url?: string | null }>(
+        "/billing_portal/sessions",
+        form,
+      );
+      url = session.url?.trim() ?? "";
+    } catch (error) {
+      // A 4xx here is almost always configuration: the account's customer portal has never been
+      // activated, and the provider's sentence says where to activate it. Answered as a reason
+      // rather than thrown, because "this account has no portal configured" is not the member's
+      // request being wrong.
+      return {
+        available: false,
+        reason: "unavailable",
+        detail: `the provider refused a billing-portal session for customer ${customer}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      };
+    }
+
+    if (url === "") {
+      return {
+        available: false,
+        reason: "unavailable",
+        detail: `the provider answered a billing-portal session for customer ${customer} with no url`,
+      };
+    }
+
+    return { available: true, url, provider: "stripe" };
   }
 
   /**

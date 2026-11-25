@@ -1,18 +1,19 @@
 /**
  * The billing port — the interface, and nothing that knows a provider (#289).
  *
- * Four operations, and every surface in the app talks to them and to nothing else:
+ * Five operations, and every surface in the app talks to them and to nothing else:
  *
  *   `startCheckout`      a button asks for a purchase; the answer is a URL to send the browser to
  *   `readSubscription`   one account's live subscription, or `null`
  *   `handleWebhook`      a provider's event, applied at most once (`billing_event`)
  *   `entitlementFor`     what the server allows that account — the gate, read on the server
+ *   `invoicePortal`      where the customer reads their own invoices and receipts (#1282)
  *
  * **Why this file must stay provider-free.** The acceptance for #289 is a grep for the provider's
  * product name across this file and `entitlements.ts`, and it must return zero hits. That is not
  * ceremony — it is what makes the mock a real adapter rather than a fake screen. If this
  * interface named a provider, every caller could, and the day a second provider lands the UI
- * would start depending on which one is configured. The translation between these four nouns and
+ * would start depending on which one is configured. The translation between these five nouns and
  * any provider's objects lives in `lib/billing/adapters/`, and the choice of adapter lives in
  * `lib/billing/index.ts` — the two layers allowed to know.
  *
@@ -24,6 +25,8 @@ import type {
   CheckoutRequest,
   CheckoutSession,
   Entitlement,
+  InvoicePortal,
+  InvoicePortalRequest,
   Subscription,
   WebhookOutcome,
   WebhookRequest,
@@ -63,6 +66,20 @@ export interface BillingPort {
 
   /** What the account may do — `entitlements.ts` applied to this adapter's subscription. */
   entitlementFor(userId: string): Promise<Entitlement>;
+
+  /**
+   * Where the signed-in customer reads their own invoices and receipts (#1282, APP-46).
+   *
+   * Answers one URL to the provider's own page, or a reason there is none. It never answers a
+   * collection: the invoice list, the amounts, the receipts and the PDFs are the provider's
+   * documents, and a copy of them here would be a second source of truth for money — and a place
+   * this app could start drawing invoice rows it never received.
+   *
+   * The offline adapter answers `no-provider-surface` for its own rows: a subscription that never
+   * touched a provider has no hosted page behind it, and inventing one would be the fabricated
+   * receipt APP-46 forbids.
+   */
+  invoicePortal(request: InvoicePortalRequest): Promise<InvoicePortal>;
 }
 
 /**

@@ -30,6 +30,7 @@ import {
   cardOnFileOf,
   firstNameOf,
   initialsOf,
+  invoiceAccessOf,
   membershipPrice,
   type BillingFacts,
   type PanelText,
@@ -536,6 +537,40 @@ describe("the fixture carries every id the derivation can emit", () => {
       }),
     ).panels) {
       expect(wordsOf(panel.note)).not.toMatch(/\{[a-z]+\}/);
+    }
+  });
+});
+
+describe("the invoices link (#1282, APP-46)", () => {
+  it("is offered only for a provider subscription, and named for why it is not", () => {
+    expect(invoiceAccessOf(null)).toBe("none");
+    expect(invoiceAccessOf(trialSubscription({ provider: "mock" }))).toBe("offline");
+    expect(invoiceAccessOf(trialSubscription({ provider: "stripe" }))).toBe("provider");
+  });
+
+  it("carries that answer on the view, so the component decides nothing itself", () => {
+    const noSubscription = billingViewOf(factsOf({ rows: [rowOf()], subscription: null }));
+    expect(noSubscription.invoiceAccess).toBe("none");
+
+    const offline = billingViewOf(factsOf({ rows: [rowOf()] }));
+    expect(offline.invoiceAccess).toBe("offline");
+
+    const hosted = billingViewOf(
+      factsOf({ rows: [rowOf()], subscription: trialSubscription({ provider: "stripe" }) }),
+    );
+    expect(hosted.invoiceAccess).toBe("provider");
+  });
+
+  it("has every word the Billing History card can print in the fixture", () => {
+    const history = sectionOf(paymentPageCopy, "billing-history");
+    // The three the component names directly, plus the directory's own body.
+    for (const id of ["provider-body", "open", "open-pending", "open-failed"]) {
+      expect(itemLabelOr(history, id), `item ${id}`).toBeDefined();
+    }
+    expect(history.body ?? "").not.toBe("");
+    // No invoice amount, date or file name is fixture copy: the provider owns those documents.
+    for (const item of history.items ?? []) {
+      expect(item.label).not.toMatch(/\$\d|\.pdf|invoice\s+#?\d/i);
     }
   });
 });

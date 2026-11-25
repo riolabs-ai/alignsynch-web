@@ -258,11 +258,45 @@ no charge. That surface is `components/pricing/**`: card 3 of #289 has the band 
 `test-mode` line from `data/pages/pricing.ts` whenever `billingTestMode()` is true, and the plan it
 sells is charged on a test key inside stage 5's walk (#1043).
 
+## Invoices and receipts — the provider's page, linked (#1282)
+
+The Payment tab's **Billing History** card carries one control, and it opens the provider's own
+billing portal for the signed-in customer: plan, payment method and the invoice history with its
+receipts are all the provider's page, under the provider's own session.
+
+```text
+BillingPort::invoicePortal({ userId, returnUrl })  →  { available: true, url }
+                                                   |  { available: false, reason, detail }
+```
+
+Four facts about it, because each one is a decision:
+
+- **It answers one URL, never a collection.** No amount, date or PDF of ours crosses the port, so
+  there is nothing here that can disagree with the provider's documents.
+- **The customer is resolved from the subscription**, `GET /v1/subscriptions/<provider_subscription_id>`
+  → `customer`, not from an email lookup. `billing_subscription` stores no customer id on purpose,
+  and an email match would attach one person's invoices to another customer sharing an address.
+- **The session is minted per click**, because a portal session is single-use: there is no `href` to
+  render and nothing to store. `return_url` is this deployment's own Payment tab
+  (`NEXT_PUBLIC_BASE_URL`), so the browser comes back where it left.
+- **A provider that will not mint one is a reason, not a throw.** An account whose portal has never
+  been activated answers `unavailable` and the provider's sentence goes to the server log; the screen
+  says one sentence. The offline adapter answers `no-provider-surface` for its own rows and makes no
+  network call — a mock subscription never touched a provider, so no page exists behind it and none
+  is invented.
+
+Test mode was checked live before this shipped: `POST /v1/billing_portal/sessions` answers
+`https://billing.stripe.com/p/session/…` with `livemode: false`, and
+`GET /v1/billing_portal/configurations` reports the active default configuration with
+`features.invoice_history.enabled = true` on both test accounts.
+
 ## Deliberately absent
 
-No tax, invoices, dunning, coupons or seats. No coach role — `party.role` is structurally
-`initiator|counterparty`, and a coach paying for a seat is an architectural decision (SPEC-DRIFT
-§8), not a billing one. No `gap` column anywhere: the Gap stays `gapOf()` over two scores.
+No tax, **no invoices of our own**, dunning, coupons or seats — the customer's invoice history is
+linked to the provider's page (above), never drawn or stored in this tree. No coach role —
+`party.role` is structurally `initiator|counterparty`, and a coach paying for a seat is an
+architectural decision (SPEC-DRIFT §8), not a billing one. No `gap` column anywhere: the Gap stays
+`gapOf()` over two scores.
 
 ## Related
 
