@@ -81,8 +81,24 @@ export function normalise(text) {
     .replace(/^\s*>\s?/gm, " ")
     .replace(/<((?:https?|mailto):[^>\s]+)>/g, "$1")
     .replace(/[*_`~]+/g, " ")
-    // HTML tags and the escapes a formatter may add (`\#`, `\_`) are markup, not words.
-    .replace(/<[^>]+>/g, " ")
+    // HTML comments are markup, not words, and this has to be its own rule: `<!--…-->` is not a tag
+    // shape, so the tag rule below leaves it alone — every generated `changelog-view` header block
+    // would otherwise be read as prose (#1388). The comment ends at `-->`, never at the next `>`.
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    // HTML tags and the escapes a formatter may add (`\#`, `\_`) are markup, not words. ONLY a real
+    // tag shape is stripped. This used to be `/<[^>]+>/g`, which took any inline `<` in prose — a
+    // regex lookbehind (`(?<![\w@])`), a comparison, a generic — and ran to the next `>` however far
+    // away it sat, dropping everything between from the digest; on `docs/operations/mentions.md`
+    // that was one 2,720-character match, so the page hashed identically with its middle sections
+    // deleted (#1388). A backtick-less `<` in prose is not markup: it is not a word either, and the
+    // word matcher below drops it without needing a closing `>`.
+    //
+    // The attribute part stops at a newline, not just at a `>`. Without that, `</?[a-zA-Z][\w:-]*
+    // (\s[^>]*)?\/?>` still swallowed on `docs/qa/rail-handle/README.md`: `<md` followed by a space
+    // and a table's em-dashes reads as "tag + attributes", and the match ran 1,724 characters to the
+    // `<script>` in a later paragraph — 246 words out of the digest. A tag this file cares about is
+    // written on one line; a "tag" whose attributes span paragraphs is prose that lost its backtick.
+    .replace(/<\/?[a-zA-Z][\w:-]*(\s[^>\n]*)?\/?>/g, " ")
     .replace(/\\(?=[^\w\s])/g, " ")
     // Image and link syntax: keep the label, drop the target.
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1")
