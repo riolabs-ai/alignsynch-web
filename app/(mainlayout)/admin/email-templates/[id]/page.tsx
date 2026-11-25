@@ -21,7 +21,7 @@
  * `"use server"` — and the editor supplies the template id it already holds, so no wrapper is
  * needed.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -92,7 +92,7 @@ export default async function AdminEmailTemplatePage({
   );
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <div className="space-y-6">
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold font-mono">{view.template.id}</h1>
@@ -148,6 +148,6 @@ export default async function AdminEmailTemplatePage({
           onPreview={previewEmailTemplateAction}
         />
       </div>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

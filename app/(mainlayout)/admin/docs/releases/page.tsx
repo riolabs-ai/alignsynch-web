@@ -22,7 +22,7 @@
  *
  * **No clock in this render.** `date` is the entry's own instant; nothing here reads one.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -104,7 +104,7 @@ export default async function AdminDocsReleasesPage({
   if (unreadable === null && requested !== null && selected === null) notFound();
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <ReleasesShelf
         copy={adminDocsReleasesPageCopy}
         rows={rows}
@@ -112,6 +112,6 @@ export default async function AdminDocsReleasesPage({
         unreadable={unreadable}
         build={buildInfo()}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

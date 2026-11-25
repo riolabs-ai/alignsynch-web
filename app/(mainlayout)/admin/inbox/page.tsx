@@ -31,7 +31,7 @@
  * edge is evaluated inside the read, and the sentence it produces carries counts and minutes, never
  * a "now" that the browser could disagree with.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -71,14 +71,14 @@ export default async function AdminInboxPage({
     console.error("admin-inbox: the queue could not be read", error);
     const unreadable = adminInboxPageCopy.sections?.find((section) => section.id === "unreadable");
     return (
-      <StageColumn>
+      <OperatorFrame>
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             {unreadable?.heading ?? adminInboxPageCopy.heading}
           </h1>
           <p className="max-w-3xl text-muted-foreground">{error.reason}</p>
         </div>
-      </StageColumn>
+      </OperatorFrame>
     );
   }
 
@@ -95,7 +95,7 @@ export default async function AdminInboxPage({
   if (selectedId !== null && thread === null) notFound();
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <SupportInbox
         copy={adminInboxPageCopy}
         source={source}
@@ -104,6 +104,6 @@ export default async function AdminInboxPage({
         action={performInboxOperation}
         selfUserId={grant.user.userId}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

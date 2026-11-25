@@ -24,7 +24,7 @@
  * row is a database read on every visit, and `pnpm build` must keep passing with no `DATABASE_URL`
  * and no `NEON_AUTH_*`.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -67,7 +67,7 @@ export default async function AdminRelationshipPage({
     if (!(error instanceof DatabaseUnavailableError)) throw error;
     console.error("admin-relationship: the row could not be read", error);
     return (
-      <StageColumn>
+      <OperatorFrame>
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">
             {adminRelationshipPageCopy.sections?.find((s) => s.id === "unreadable")?.heading ??
@@ -75,7 +75,7 @@ export default async function AdminRelationshipPage({
           </h1>
           <p className="max-w-3xl text-muted-foreground">{error.reason}</p>
         </div>
-      </StageColumn>
+      </OperatorFrame>
     );
   }
 
@@ -102,7 +102,7 @@ export default async function AdminRelationshipPage({
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <div className="space-y-6">
         <RelationshipOperations
           copy={adminRelationshipPageCopy}
@@ -119,6 +119,6 @@ export default async function AdminRelationshipPage({
           />
         )}
       </div>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

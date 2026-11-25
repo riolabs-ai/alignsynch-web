@@ -32,7 +32,7 @@ import type { Metadata } from "next";
 import { SpecFrame } from "@/components/admin/spec/spec-frame";
 import { SpecNotice } from "@/components/admin/spec/spec-notice";
 import { SpecOverview } from "@/components/admin/spec/spec-overview";
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import { adminSpecPageCopy } from "@/data/pages/admin-spec";
 import { ADMIN_SPEC_PATH } from "@/lib/admin/spec-paths";
 import { requireSpecReader } from "@/lib/auth/require-role";
@@ -56,7 +56,7 @@ export default async function AdminSpecPage() {
   const viewerName = user.name.trim() === "" ? (user.email.split("@")[0] ?? "") : user.name;
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <SpecFrame copy={adminSpecPageCopy} doc={doc} current={{ kind: "overview" }}>
         {doc === null ? (
           <SpecNotice copy={adminSpecPageCopy} path={SPEC_VALIDATION_SOURCE} reason={reason} />
@@ -64,6 +64,6 @@ export default async function AdminSpecPage() {
           <SpecOverview copy={adminSpecPageCopy} doc={doc} viewerName={viewerName} />
         )}
       </SpecFrame>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

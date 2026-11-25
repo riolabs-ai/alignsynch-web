@@ -1,0 +1,37 @@
+{
+  "measuredAt": "origin/main @ e2b1c9c48 (package 2.0.0-rc2), 2026-11-25",
+  "why": "The measured starting set, not a failure: the seam test lands green on a tree that already breaks the operator arrow, and this file names what it carries. It may only shrink — an unlisted violation fails the test, and so does a row that is no longer a violation.",
+  "measuredWith": "pnpm exec vitest run tests/operator-seam.test.ts (census: N operator files walked, M violations, K allowlisted)",
+  "startingCounts": {
+    "operatorPageFiles": 23,
+    "operatorComponentFiles": 8
+  },
+  "counts": {
+    "operatorPageFiles": 2,
+    "operatorComponentFiles": 8
+  },
+  "reconciliation": {
+    "cardSaid": "12 operator pages importing StageColumn / 9 components/admin files reaching product-shell paths",
+    "measured": "23 operator page files (25 import edges) / 8 operator component files (9 edges)",
+    "pageFiles": "The surface is phase 1's gate list — all 23 admin page modules in lib/operator/routes.ts, not the ADR's 12 pre-phase-1 modules. 23 of 23 imported components/assessment-flow/stage-column; two more page files also import a product component (gaps -> components/console/gap-analysis, instances/[id] -> components/relationship/relationship-edit-panel).",
+    "componentFiles": "The ADR's 9 was a grep over comments: broadcast-composer.tsx and report-operations.tsx only mention product paths in their template-ancestor provenance lines, with no import edge. The AST found one the grep missed: docs/features-index.tsx -> components/console/stat-card-grid.",
+    "burnedDown": "23 page files: StageColumn -> components/operator/frame.tsx (OperatorFrame, identical markup asserted in tests/admin-column.test.tsx). Still open and carried here: 2 page files and 8 component files, each blocked on a product change or a decision this card may not take — LeavingLink is 'the only markup that leaves the app' (AGENTS.md), RailSheetSection needs MainLayout's provider, and AnswerForm/AspectDrawer/StatCardGrid/GapAnalysis/RelationshipEditPanel are product feature components."
+  },
+  "rows": {
+    "app/(mainlayout)/admin/gaps/page.tsx": ["@/components/console/gap-analysis"],
+    "app/(mainlayout)/admin/instances/[id]/page.tsx": [
+      "@/components/relationship/relationship-edit-panel"
+    ],
+    "components/admin/docs/features-index.tsx": ["@/components/console/stat-card-grid"],
+    "components/admin/permissions/permissions-console.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/spec/spec-frame.tsx": ["@/components/layout/rail-sheet-slot"],
+    "components/admin/spec/spec-issues.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/spec/spec-submenu.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/spec/story-page.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/spec/validation-matrix.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/template-editor.tsx": [
+      "@/components/assessment-flow/answer-form",
+      "@/components/assessment-flow/aspect-drawer"
+    ]
+  }
+}

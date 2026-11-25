@@ -8,7 +8,7 @@
  * the same 404, never a 403 that would confirm the page exists. That is the issue's "Must not 403 a
  * member who hits `/admin/email-templates`; same 404 / login behaviour as Docs".
  *
- * **The template is `/admin/templates`.** A `StageColumn`, a heading, and one client component whose
+ * **The template is `/admin/templates`.** A `OperatorFrame`, a heading, and one client component whose
  * every string comes from `data/pages/admin-email-templates.ts`; the axis of variation is the data
  * source (the code register plus a version table, instead of `record` rows) and the missing create
  * band (a mail template is code — this screen overrides one, it does not author a new row). Nothing
@@ -23,7 +23,7 @@
  * pass with no `DATABASE_URL` and no `NEON_AUTH_*` (a *request* on a tree with no auth env answers
  * 500 `NEON_AUTH_BASE_URL is not set`, which is the documented answer for a gated console route).
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { EmailTemplateRegistry } from "@/components/admin/email-templates/email-template-registry";
@@ -59,7 +59,7 @@ export default async function AdminEmailTemplatesPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <div className="space-y-6">
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold">{adminEmailTemplatesPageCopy.heading}</h1>
@@ -75,6 +75,6 @@ export default async function AdminEmailTemplatesPage() {
           unreadable={unreadable}
         />
       </div>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

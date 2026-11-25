@@ -32,7 +32,7 @@
  * those states, so no rendered string depends on the clock and there is nothing for hydration to
  * disagree with.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { AdminStartView } from "@/components/admin/start/start-view";
@@ -93,7 +93,7 @@ export default async function AdminStartPage() {
   const figures = read ? startFigures({ inbox, review, sessions, auditRows }) : null;
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <div className="space-y-6">
         {/**
          * The shared submenu (#1377), above the page's own bands: `/admin/start` and
@@ -109,6 +109,6 @@ export default async function AdminStartPage() {
           surfaces={ADMIN_START_SURFACES}
         />
       </div>
-    </StageColumn>
+    </OperatorFrame>
   );
 }

@@ -1,4 +1,4 @@
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import { AdminGapsUnreadable, AdminGapsView } from "@/components/console/gap-analysis";
 import { adminGapsPageCopy } from "@/data/pages/admin-gaps";
 import { aggregateGapPopulation } from "@/lib/admin/gap-aggregates";
@@ -58,17 +58,17 @@ export default async function AdminGapsPage() {
   } catch (error) {
     if (error instanceof DatabaseUnavailableError) {
       return (
-        <StageColumn>
+        <OperatorFrame>
           <AdminGapsUnreadable copy={adminGapsPageCopy} reason={error.message} />
-        </StageColumn>
+        </OperatorFrame>
       );
     }
     throw error;
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <AdminGapsView copy={adminGapsPageCopy} aggregate={aggregateGapPopulation(population)} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Maintenance fields · prev [The five flow stages (binding spec)](flow-stages.md) · next [ADR](pay-to-complete/ADR.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Maintenance fields · prev [The five flow stages (binding spec)](flow-stages.md) · next [Operator seam](operator-seam.md)
 
 <!-- docs-nav:end -->
 
@@ -209,6 +209,6 @@ name per party — a prior "one more field" cut, and the right one; nothing here
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Maintenance fields · prev [The five flow stages (binding spec)](flow-stages.md) · next [ADR](pay-to-complete/ADR.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Maintenance fields · prev [The five flow stages (binding spec)](flow-stages.md) · next [Operator seam](operator-seam.md)
 
 <!-- docs-nav:end -->

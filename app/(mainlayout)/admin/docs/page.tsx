@@ -22,7 +22,7 @@
  *
  * **No clock in this render.** `docs/docs.json` carries no dates, and nothing here reads one.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { DocsHub } from "@/components/admin/docs/docs-hub";
@@ -67,8 +67,8 @@ export default async function AdminDocsPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <DocsHub copy={adminDocsPageCopy} rows={rows} sections={sections} unreadable={unreadable} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

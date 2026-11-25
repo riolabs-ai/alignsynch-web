@@ -31,7 +31,7 @@
  * list is a database read on every visit, and `pnpm build` must keep passing with no `DATABASE_URL`
  * and no `NEON_AUTH_*`.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { BillingControl } from "@/components/admin/billing-control";
@@ -97,7 +97,7 @@ export default async function AdminBillingPage() {
   };
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <BillingControl
         copy={adminBillingPageCopy}
         rows={rows ?? []}
@@ -108,6 +108,6 @@ export default async function AdminBillingPage() {
         unreadable={unreadable}
         action={performComp}
       />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

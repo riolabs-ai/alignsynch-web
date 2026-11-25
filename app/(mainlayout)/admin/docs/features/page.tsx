@@ -8,7 +8,7 @@
  * that would confirm the page exists. `/admin/docs`, `/admin/review` and `/admin/health` document
  * the same order.
  *
- * **The template is `/admin/docs` itself.** A server page behind both gates, a `StageColumn`, one
+ * **The template is `/admin/docs` itself.** A server page behind both gates, an `OperatorFrame`, one
  * component whose every string comes from a `data/pages/**` fixture, and a read of the tree on the
  * request. The axis of variation is the data source: the hub reads the manifest for a list of
  * documents, this reads `CHANGELOG.md` for a list of *areas*, joined to the manifest rather than
@@ -26,7 +26,7 @@
  *
  * **No clock in this render.** Every date is the entry's own instant, and nothing here reads one.
  */
-import { StageColumn } from "@/components/assessment-flow/stage-column";
+import { OperatorFrame } from "@/components/operator/frame";
 import type { Metadata } from "next";
 
 import { FeaturesIndex } from "@/components/admin/docs/features-index";
@@ -67,8 +67,8 @@ export default async function AdminDocsFeaturesPage() {
   }
 
   return (
-    <StageColumn>
+    <OperatorFrame>
       <FeaturesIndex copy={adminDocsFeaturesPageCopy} areas={areas} unreadable={unreadable} />
-    </StageColumn>
+    </OperatorFrame>
   );
 }

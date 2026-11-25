@@ -450,6 +450,16 @@ export const uiRegistry: readonly UiEntry[] = zUiRegistry.parse([
       "`db`, and by a different route than it first claimed: every component here renders props the page read (a client component must not reach `pg`), and what pulls the domain into the database graph is the *type* it renders — `relationship-operations.tsx` annotates its props with `AdminRelationshipDetail`, and `import type` from `lib/db/**` still walks to `lib/db/client.ts` in this generator's graph. E34 is the runtime claim and it stays green: no `\"use client\"` module here value-imports a server module, which is why the pages render rather than 500. The audit log's filters, row projections and 48-character truncation live in `lib/admin/audit-log.ts`, which is pure for exactly this reason — the ui-registry check caught that module reaching `pg` through `lib/admin/act.ts`'s vocabulary, and the list moved to `lib/admin/roles.ts` rather than the domain widening its claim.",
   },
   {
+    kind: "domain",
+    surface: "components/operator",
+    status: "mock",
+    templates: ["alignsynch"],
+    capability:
+      "The operator surface's own column: the one container every operator page renders its screen inside, and the seam's replacement for the product onboarding flow's `StageColumn`.",
+    notes:
+      "`mock` because it renders no data of its own — `frame.tsx` is a `div` over a `children` prop, a server component with one `react` import, and its status is the generator's own wiring claim rather than a judgement. **It exists so the arrow points one way** (`docs/specs/operator-separation-adr.md` §4.2, #1391 phase 2): before it, 23 of 23 operator page modules imported `components/assessment-flow/stage-column.tsx`, so the console could not change its geometry without editing the assessment flow and a product width change re-laid out every operator screen. The geometry is not re-decided here — `tests/admin-column.test.tsx` renders this component and `StageColumn` with the same child and asserts **identical markup**, so a drift in either width fails a test instead of shipping a second column. `tests/operator-seam.test.ts` forbids every operator file importing a non-operator `components/**` module, and this file is the operator side of that rule.",
+  },
+  {
     kind: "route",
     surface: "/affiliate",
     status: "fixture",
