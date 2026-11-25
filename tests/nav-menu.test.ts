@@ -187,8 +187,9 @@ describe("the menu descriptor", () => {
    * the second door, which is the one place that reasoning was wrong rather than the ruling.
    *
    * The section is one row and **carries a heading**, unlike the one-row group it replaces: a
-   * section of the taxonomy names itself, and "Start" over a row reading "Admin start" is a heading
-   * doing work (the old row's own word was the heading, which is why it had none).
+   * section of the taxonomy names itself, and "Start" over a row reading "Dashboard" (#1382, it read
+   * "Admin start" when the section was drawn) is a heading doing work (the old row's own word was
+   * the heading, which is why it had none).
    */
   it("opens the rail on Start, in a titled one-row section", () => {
     expect(ALIGN_MENU[0]?.id).toBe("group-start");
@@ -229,6 +230,29 @@ describe("the menu descriptor", () => {
     // move: `review` and `admin-health` were staff rows under a heading that named a member surface.
     expect(operations?.items.map((item) => item.id)).toContain("review");
     expect(operations?.items.map((item) => item.id)).toContain("admin-health");
+  });
+
+  /**
+   * #1382 — **the two words the owner asked for**, resolved the way the sidebar resolves them
+   * (`itemLabel` over `nav-alignsynch`): the operator's landing reads `Dashboard` (it read
+   * `Admin start`) and the console hub reads `Admin Console` (it read `Console`). The ids, the
+   * hrefs and the rungs of both rows are untouched, and the cases around this one still assert
+   * them — this is presentation, not a move.
+   *
+   * The count is the point. The member's `/dashboard` row still says `Start`, so the rail carries
+   * exactly one `Dashboard`; the collision the change creates is in the account menu, where the
+   * same fixture id sits directly above the member's own `Dashboard` row (pinned by
+   * `tests/account-menu-session.test.ts`).
+   */
+  it("names the operator's landing Dashboard and the console hub Admin Console (#1382)", () => {
+    const nav = sectionOf(shellPageCopy, "nav-alignsynch");
+    const words = ALIGN_MENU.flatMap((group) => group.items.map((item) => itemLabel(nav, item.id)));
+    expect(itemLabel(nav, "admin-start")).toBe("Dashboard");
+    expect(itemLabel(nav, "console")).toBe("Admin Console");
+    expect(words.filter((word) => word === "Dashboard")).toHaveLength(1);
+    expect(words.filter((word) => word === "Admin Console")).toHaveLength(1);
+    expect(words).not.toContain("Admin start");
+    expect(words).not.toContain("Console");
   });
 
   /**
