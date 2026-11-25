@@ -131,6 +131,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           EVENT_ACTION: ${{ github.event.action }}
           THREAD_NUMBER: ${{ github.event.issue.number || github.event.pull_request.number }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
           ACTOR: ${{ github.event.comment.user.login || github.event.issue.user.login || github.event.review.user.login || github.event.pull_request.user.login }}
           ACTOR_TYPE: ${{ github.event.comment.user.type || github.event.issue.user.type || github.event.review.user.type || github.event.pull_request.user.type }}
           BODY: ${{ github.event.comment.body || github.event.issue.body || github.event.review.body || github.event.pull_request.body }}
@@ -148,6 +149,31 @@ jobs:
           fi
 
           echo "event=${EVENT_NAME:-?}.${EVENT_ACTION:-?} thread=#${THREAD_NUMBER} actor=${ACTOR:-unknown}"
+
+          # THE GUARD MUST BE ON THE DEFAULT BRANCH, AND THIS IS THE ONE WINDOW WHERE IT IS NOT.
+          # A `pull_request*` event runs *this file* from the pull request's own ref while the
+          # checkout above reads the default branch — so the run that first introduces this file
+          # finds the policy absent on `main`, and the older copy of this workflow on `main` cannot
+          # see the problem at all. Two different verdicts, and the split is not cosmetic:
+          #
+          #   an event that runs the default branch's own tree (`issue_comment`, `issues`) finding no
+          #   policy is a real breakage — the labeller cannot decide, and it fails here by name;
+          #   a `pull_request*` event finding none is the bootstrap before this change merges. It
+          #   leaves the label untouched and says so, rather than failing a review red forever or —
+          #   worse — reading the policy from the head of the pull request it is labelling, which
+          #   would hand `issues: write` to whatever that head contains.
+          if [ ! -f scripts/mention-queue.mjs ]; then
+            case "${EVENT_NAME:-}" in
+              issue_comment|issues)
+                echo "::error::scripts/mention-queue.mjs is missing from ${DEFAULT_BRANCH:-the default branch} — this event runs that tree, so the labeller has no rule to apply."
+                exit 1
+                ;;
+              *)
+                echo "::warning::scripts/mention-queue.mjs is not on ${DEFAULT_BRANCH:-the default branch} yet — ${EVENT_NAME:-event} runs a pull request's ref, so this run leaves ${LABEL} untouched on #${THREAD_NUMBER} until the policy merges."
+                exit 0
+                ;;
+            esac
+          fi
 
           # A here-string, never a pipe: `grep -q` exits at the first match, and under `pipefail`
           # the writer's SIGPIPE would turn a match into a non-zero status — a false "no mention"
