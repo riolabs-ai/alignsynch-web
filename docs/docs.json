@@ -203,6 +203,11 @@
           "question": "How does the orchestrator behave — decisions, blocking, re-carding?"
         },
         {
+          "path": "operations/public-surface.md",
+          "title": "The public site",
+          "question": "Which routes are public, and what does the sitemap publish?"
+        },
+        {
           "path": "operations/release-train.md",
           "title": "Release-train card template",
           "question": "What does a release-train card carry — children, sequence, cutoff, proof?"

@@ -1,0 +1,9 @@
+{
+  "pr": 1290,
+  "date": "2026-11-25",
+  "area": "seo",
+  "summary": "`app/sitemap.ts` publishes the public site as `/sitemap.xml` and `app/robots.ts` allows it, disallows `/admin`, `/dashboard` and `/api` and points at the sitemap; every URL is derived, never hand-listed.",
+  "reader_impact": "A crawler is handed 44 public URLs on the QuizHub build and 39 on the AlignSynch one — every one a page that answers 200 — instead of finding the site by guessing.",
+  "specs": ["docs/operations/public-surface.md"],
+  "risk": "low"
+}

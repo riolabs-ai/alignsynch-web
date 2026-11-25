@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Operations** › Release-train card template · prev [Orchestration rules](orchestration.md) · next [Releasing](releasing.md)
+[Docs hub](../README.md) › **Operations** › Release-train card template · prev [The public site](public-surface.md) · next [Releasing](releasing.md)
 
 <!-- docs-nav:end -->
 
@@ -31,6 +31,6 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Operations** › Release-train card template · prev [Orchestration rules](orchestration.md) · next [Releasing](releasing.md)
+[Docs hub](../README.md) › **Operations** › Release-train card template · prev [The public site](public-surface.md) · next [Releasing](releasing.md)
 
 <!-- docs-nav:end -->
