@@ -3,6 +3,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { brand, brandIdOf } from "@/data/brand";
 import { brandIconPaths } from "@/lib/brand-icon";
 import { brandThemeVars } from "@/lib/brand-theme";
+import { SITE_ORIGIN } from "@/lib/site-origin";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import type React from "react";
@@ -33,13 +34,14 @@ export const metadata: Metadata = {
    * absolute. A crawler handed a path with no origin has nothing to resolve it against and
    * drops the preview, which is why this is not left to the crawler's default.
    *
-   * Composed from `brand.domain` — the bare host `content/brand.ts` requires — and not from
-   * `referralBase`, which carries the scheme too but is the referral link's origin, a role that
-   * may point somewhere else the day a brand splits its demo from its marketing site. This is
-   * the one place in the tree that composes a URL out of `domain`, which is the use the field's
-   * own comment names.
+   * The value is `lib/site-origin.ts`'s, and not composed here: `app/sitemap.ts` publishes it and
+   * `app/robots.ts` points at it, so the three have to be the same host by construction rather
+   * than by three identical template literals. It is `brand.domain` — the bare host
+   * `content/brand.ts` requires — and not `referralBase`, which carries the scheme too but is the
+   * referral link's origin, a role that may point somewhere else the day a brand splits its demo
+   * from its marketing site.
    */
-  metadataBase: new URL(`https://${brand.domain}`),
+  metadataBase: new URL(SITE_ORIGIN),
   title: {
     default: brand.name,
     template: `%s · ${brand.name}`,
