@@ -1,0 +1,9 @@
+{
+  "pr": 1389,
+  "date": "2026-11-25",
+  "area": "docs",
+  "summary": "`scripts/md-normalise.mjs` strips HTML by tag shape instead of `<[^>]+>`, so an inline `<` in prose no longer deletes the text that follows it from a page's digest.",
+  "reader_impact": "Six pages that `md:normalised:check` could not see are covered again: `docs/operations/mentions.md` alone recovers 434 words, including `labeller`, `queue` and `founder`.",
+  "specs": ["docs/operations/repo-layers.md"],
+  "risk": "low"
+}

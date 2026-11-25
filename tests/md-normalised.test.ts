@@ -140,4 +140,39 @@ describe("docs/ markdown after the format pass", () => {
     const nav = "<!-- docs-nav:begin -->\nHub › next [X](../x.md)\n<!-- docs-nav:end -->\n";
     expect(normalise(`${nav}The words that matter.`)).toBe(normalise("The words that matter."));
   });
+
+  it("keeps the words on both sides of a backtick-less `<` in prose (#1388)", () => {
+    // The tag strip was `/<[^>]+>/g`, so ANY inline `<` in prose — a regex lookbehind, a
+    // comparison, a generic — opened a match that ran to the next `>` however many paragraphs
+    // away, and every word in between vanished from the digest. `docs/operations/mentions.md`
+    // paid for it with one 2,720-character match: the page hashed identically with its middle
+    // sections deleted, and `md:normalised:check` (a gate step in every lane) was blind there.
+    const page =
+      "The labeller matches `(?<![\\w@])@alignsynch` and the queue is drained.\n\n" +
+      "A founder sees `identity=<login>` on every run.\n";
+    // Paragraph one's words *after* the `<`, and paragraph two's words *before* the `>`.
+    expect(normalise(page)).toContain("labeller");
+    expect(normalise(page)).toContain("queue");
+    expect(normalise(page)).toContain("founder");
+    expect(normalise(page)).toContain("run");
+    // And the digest spans the whole page: dropping the second paragraph moves it, which is the
+    // property that was broken — a rewrite of the swallowed span used to be invisible.
+    expect(digest(page)).not.toBe(
+      digest("The labeller matches `(?<![\\w@])@alignsynch` and the queue is drained.\n"),
+    );
+    // What is still markup stays markup, and contributes no word of its own: a real tag shape and
+    // an HTML comment (the generated `changelog-view` header blocks are comments, not prose).
+    expect(normalise("Before.<br />After.")).toBe(normalise("Before. After."));
+    expect(normalise("Before.<!-- changelog-view:begin entry -->After.")).toBe(
+      normalise("Before. After."),
+    );
+    // And the attribute part stops at a newline. Bounding it at the next `>` alone is not enough:
+    // `<md` followed by a space reads as "tag + attributes", and on
+    // `docs/qa/rail-handle/README.md` that ran 1,724 characters into a later paragraph to the
+    // `<script>` it found there, taking 246 words out of the digest.
+    const across =
+      "Hidden (`<md`) in a row.\n\nThe handle sits within a pixel.\n\nReact's replay `<script>` ran.\n";
+    expect(normalise(across)).toContain("handle");
+    expect(normalise(across)).toContain("pixel");
+  });
 });
