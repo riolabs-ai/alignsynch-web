@@ -558,6 +558,18 @@ export const pageCopyBudget: PageCopyBudget = zPageCopyBudget.parse({
     fixture: "data/pages/help",
     budget: 0,
   },
+  /**
+   * `/glossary` — the product glossary, published from `docs/glossary.md` (#1289, register row
+   * WEB-07). Budget 0: the heading, the lede, the term-count sentence, the two labels and the
+   * unreadable sentence are `data/pages/glossary.ts`, and the terms themselves are the document
+   * — so the next literal written in `components/glossary/**` is a red build.
+   */
+  "/glossary": {
+    page: "app/(marketing)/glossary/page.tsx",
+    dirs: ["components/glossary"],
+    fixture: "data/pages/glossary",
+    budget: 0,
+  },
   "/support/articles/[slug]": {
     page: "app/(marketing)/support/articles/[slug]/page.tsx",
     dirs: ["components/support"],

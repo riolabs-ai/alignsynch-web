@@ -318,6 +318,10 @@ export function shellCopy(brand: Brand): PageCopy {
            * unchanged.
            */
           { id: "help", label: "Help" },
+          // #1289 (register row WEB-07) — the glossary's row. The public header draws it from this
+          // same id (`components/layout/public-header.tsx::publicRowsFor`), so the word has one
+          // home and the footer's mirrored column cannot spell it differently.
+          { id: "glossary", label: "Glossary" },
           { id: "console-gaps", label: "Gap Analysis" },
           // #920 — the growth model, beside the Gap it aggregates over: the same operator's read,
           // one level up (a business that is working rather than a pair that is aligned).
@@ -846,6 +850,15 @@ export function shellCopy(brand: Brand): PageCopy {
            * same question asked twice, and the split exists so that one URL is not two pages.
            */
           { id: "help", label: "Help" },
+          /**
+           * #1289 (register row WEB-07) — the glossary, last row of the public menu and of this
+           * mirrored column. It sits below Help because it is the same kind of destination (a
+           * reference a reader consults when a word was not explained) and because the owner's
+           * *"before help add Pricing"* pins Pricing directly above Help — a row inserted between
+           * them would undo that. The header draws it from `nav-alignsynch`'s `glossary` row and
+           * `tests/footer-links-mirror.test.tsx` fails if the two lists disagree.
+           */
+          { id: "glossary", label: "Glossary" },
         ],
       },
       {

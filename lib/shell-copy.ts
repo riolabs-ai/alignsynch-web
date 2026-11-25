@@ -120,7 +120,12 @@ const PUBLIC_NAV_ROWS: Readonly<
   quizhub: { section: "nav", ids: ["home", "categories", "pricing", "help"] },
   alignsynch: {
     section: "nav-alignsynch",
-    ids: ["home", "templates", "how-it-works", "pricing", "help"],
+    /**
+     * #1289 — `glossary` is the sixth row: the public header draws it below Help, and the footer's
+     * `footer-links-alignsynch` mirrors it. An id missing from this list is dropped by `pickItems`
+     * and then throws at `itemLabel` in the header, which is how this card found it.
+     */
+    ids: ["home", "templates", "how-it-works", "pricing", "help", "glossary"],
   },
 };
 

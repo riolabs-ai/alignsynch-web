@@ -553,6 +553,8 @@ function AlignSynchLinkColumn({
         />
         <FooterLinkRow href="/pricing" label={itemLabel(links, "pricing")} leaving={leaving} />
         <FooterLinkRow href="/help" label={itemLabel(links, "help")} leaving={leaving} />
+        {/* #1289 — the glossary, last row: the public header draws the same href from the same id. */}
+        <FooterLinkRow href="/glossary" label={itemLabel(links, "glossary")} leaving={leaving} />
       </ul>
     </div>
   );
