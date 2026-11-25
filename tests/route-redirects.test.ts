@@ -181,7 +181,10 @@ describe("the legacy redirects", () => {
 
     // Exact sources: every other console screen is the tree's, not a redirect's.
     for (const live of ["/admin/console", "/admin/inbox", "/admin/audit", "/admin/instances"]) {
-      expect(firstHit(live).map((entry) => entry.source), `${live} is redirected`).toEqual([]);
+      expect(
+        firstHit(live).map((entry) => entry.source),
+        `${live} is redirected`,
+      ).toEqual([]);
     }
   });
 
