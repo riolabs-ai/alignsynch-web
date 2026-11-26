@@ -73,8 +73,16 @@ export const PRODUCTION_ENDPOINTS = KNOWN_ENDPOINTS.filter((entry) =>
  */
 export const DEMO_ENDPOINT = "ep-fancy-bar-bd0pzuz0";
 
+/**
+ * The one Neon project this app runs on, every branch of it: `main` (production), `demo`, and any
+ * scratch branch cut from either. The id is a name, not a credential — it is quoted in
+ * `docs/reference/env-spec.md` and rendered into the three env files as `NEON_PROJECT_ID`, so it
+ * lives here once and `scripts/env-manifest.ts` imports it rather than typing it again.
+ */
+export const LIVE_PROJECT = "morning-bonus-76597456";
+
 /** The project the demo branch belongs to. */
-export const DEMO_PROJECT = "morning-bonus-76597456";
+export const DEMO_PROJECT = LIVE_PROJECT;
 
 /** The retired project's demo branch: evidence lives here, never a writer. */
 export const RETIRED_DEMO_ENDPOINT = "ep-crimson-truth-b4ppwxrp";

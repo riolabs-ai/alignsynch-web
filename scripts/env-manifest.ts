@@ -95,6 +95,8 @@ import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { LIVE_PROJECT } from "./neon-endpoints.mjs";
+
 /** The repo root, from this module's own location (`.datacheck/scripts/` included). */
 export const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -234,9 +236,11 @@ export const ENV_ROWS: readonly EnvRow[] = [
   ),
   row(
     "NEON_PROJECT_ID",
-    ["optional", "optional", "optional"],
-    carried,
-    "A project-scoped NEON_API_KEY cannot list projects, so the id is named (lib/account/purge.ts).",
+    ["required", "required", "required"],
+    { literal: LIVE_PROJECT },
+    "The project the account purge deletes a managed-auth user from (lib/account/purge.ts). One " +
+      "project holds every branch — production's `main` and the `demo` — so the id is the same in " +
+      "all three environments, which is why it is a literal and not a carried value.",
   ),
   row(
     "NEON_API_KEY",
