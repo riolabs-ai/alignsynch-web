@@ -21,6 +21,12 @@
  * **A status is a chip with a word.** The census list is `SpecStatusChip` plus the count — no
  * legend keyed by colour, and no red in any of the six tones (AS-07).
  *
+ * **Two identities, two lines, and they are never merged (#1439).** The panel prints the *app's*
+ * version and commit from `buildInfo()` (the values `next.config.mjs` inlines and `/api/version`
+ * answers) and, under its own label, the *register snapshot*'s release, date, commit and CSV
+ * digest. They were one line reading `doc.release`, which is how a 2.1.0 deployment came to print
+ * `2.0.0-rc1.2` beside the build that was serving it.
+ *
  * A server component: no state, no handler, no clock — the date is the register's `generatedAt`.
  */
 import Link from "next/link";
@@ -37,6 +43,7 @@ import {
   specBeyondRows,
   type SpecValidation,
 } from "@/content/spec";
+import { buildInfo } from "@/lib/build-info";
 import { SPEC_VALIDATION_SOURCE } from "@/lib/spec/file";
 import { specDateLabel } from "@/lib/spec/evidence";
 import { fillLabel, pageItemOf } from "@/lib/page-copy";
@@ -46,6 +53,12 @@ import { SpecStatusChip } from "./spec-status";
 
 /** The gauge's geometry, in one place: a 132px ring with a 12px stroke, drawn as an arc. */
 const GAUGE = { size: 132, stroke: 12 } as const;
+
+/**
+ * `buildInfo().commit`'s word for "this build could not know". A real answer, and the one case
+ * where the badge prints no commit rather than inventing one (`lib/build-info.ts`).
+ */
+const UNKNOWN_COMMIT = "unknown";
 
 function Gauge({
   met,
@@ -131,6 +144,8 @@ export function SpecStatusBox({
   className?: string;
 }) {
   const words = (id: string) => pageItemOf(copy, id).label;
+  /** This build — `package.json`'s version and the compiled commit, never the register's. */
+  const app = buildInfo();
   const storyRows = specStoryRows(doc);
   const totals = specTotalsOf(storyRows);
   const counts = specStatusCounts(storyRows);
@@ -154,12 +169,39 @@ export function SpecStatusBox({
             <span>{words("status-not-signable")}</span>
           </Chip>
         </div>
-        <p className="mt-2 text-xs">
-          <span className="font-bold">{doc.release}</span>
-          <span aria-hidden="true"> · </span>
-          <span className="text-muted-foreground">
-            {fillLabel(words("meta-main-sha"), { sha: doc.main })}
+        <p className="mt-2 text-xs" data-spec-app-version={app.version}>
+          <span className="font-bold">
+            {fillLabel(words("app-version"), { version: app.version })}
           </span>
+          {app.commit === UNKNOWN_COMMIT ? null : (
+            <>
+              <span aria-hidden="true"> · </span>
+              <span className="text-muted-foreground">
+                {fillLabel(words("app-commit"), { sha: app.commit.slice(0, 9) })}
+              </span>
+            </>
+          )}
+        </p>
+        {/**
+         * The register's own identity, on its own line and under its own label (#1439). It is a
+         * *snapshot*: the release label the agreement register carries, the day the CSV was read,
+         * the commit its citations were checked at, and the CSV's digest. None of those is this
+         * build's version, and the two were one line — `doc.release` — until this split.
+         */}
+        <p
+          className="mt-1 text-[11px] leading-snug text-muted-foreground"
+          data-spec-register={doc.register.release}
+        >
+          <span className="font-semibold text-foreground">
+            {fillLabel(words("register-release"), { release: doc.register.release })}
+          </span>
+          <span aria-hidden="true"> · </span>
+          {fillLabel(words("register-generated"), {
+            date: specDateLabel(doc.register.generatedAt),
+            sha: doc.register.main,
+          })}
+          <span aria-hidden="true"> · </span>
+          {fillLabel(words("register-csv"), { sha: doc.register.csvSha256.slice(0, 8) })}
         </p>
         <Gauge
           met={totals.met}
@@ -246,13 +288,21 @@ export function SpecStatusBox({
             <dd>
               {fillLabel(words("meta-register-value"), {
                 rows: totals.total,
-                date: specDateLabel(doc.generatedAt),
+                date: specDateLabel(doc.register.generatedAt),
               })}
+            </dd>
+            <dt className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              {words("meta-csv")}
+            </dt>
+            <dd>
+              <code className="font-mono">
+                {fillLabel(words("meta-csv-value"), { sha: doc.register.csvSha256.slice(0, 16) })}
+              </code>
             </dd>
             <dt className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
               {words("meta-evidence")}
             </dt>
-            <dd>{fillLabel(words("meta-evidence-value"), { sha: doc.main })}</dd>
+            <dd>{fillLabel(words("meta-evidence-value"), { sha: doc.register.main })}</dd>
             <dt className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
               {words("meta-release-map")}
             </dt>

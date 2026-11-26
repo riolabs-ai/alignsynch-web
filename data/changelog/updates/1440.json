@@ -1,0 +1,9 @@
+{
+  "pr": 1440,
+  "date": "2026-11-26",
+  "area": "admin",
+  "summary": "The Project Spec prints the app's version and the register's snapshot as two labelled facts — `App 2.1.0` from `package.json`, and `Register 2.0.0-rc1.2 · generated 2026-11-26 · @0ebca6823` — instead of `rc1.2` for both.",
+  "reader_impact": "A reader of `/admin/spec` now sees which build is serving them instead of `rc1.2`, and the page says the matrix is a register snapshot while the issue column is live from GitHub on a 60-second cache.",
+  "specs": ["docs/ui-registry.md"],
+  "risk": "low"
+}

@@ -282,7 +282,7 @@ export function StoryPage({
                     {row.id}
                   </TableCell>
                   <TableCell className="align-top">
-                    <EvidenceCell row={row} main={doc.main} />
+                    <EvidenceCell row={row} main={doc.register.main} />
                   </TableCell>
                   <TableCell className="align-top">
                     <SpecParityChip parity={row.parity} basis={row.parityBasis} />

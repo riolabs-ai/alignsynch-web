@@ -19,6 +19,11 @@
  *
  * A server component: no handler, no state, no clock.
  *
+ * **The subtitle is the *app's* version, never the register's (#1439).** It read `doc.release`
+ * — the agreement register's label — so the rail said `v2.0.0-rc1.2` on a `2.1.0` deployment.
+ * It reads `buildInfo()`'s version now: one identity per surface, and the register's snapshot is
+ * printed where it is labelled as a snapshot (the status box, beside the matrix).
+ *
  * **The last row leaves the app** (`Docs`, #1252 follow-up). Everything above it is a route of
  * this surface; the docs preview is a *different origin* — the v2 draft pages, which live outside
  * this repository and are not copied into it. So the row is `LeavingLink`
@@ -47,6 +52,7 @@ import {
   ADMIN_SPEC_VALIDATION_PATH,
   adminSpecGroupPath,
 } from "@/lib/admin/spec-paths";
+import { buildInfo } from "@/lib/build-info";
 import { fillLabel, pageItemOf } from "@/lib/page-copy";
 import { cn } from "@/lib/utils";
 
@@ -106,6 +112,7 @@ export function SpecSubmenu({
    */
   surface?: "column" | "sheet";
 }) {
+  const app = buildInfo();
   const words = (id: string) => pageItemOf(copy, id).label;
   const gauge = specTotalsOf(specStoryRows(doc));
   const isOverview = current.kind === "overview";
@@ -153,7 +160,7 @@ export function SpecSubmenu({
       <div className="min-w-0 space-y-0.5 border-b px-2 pb-2">
         <p className="text-sm font-bold">{words("rail-heading")}</p>
         <p className="text-xs text-muted-foreground">
-          {fillLabel(words("rail-subtitle"), { release: doc.release })}
+          {fillLabel(words("rail-subtitle"), { version: app.version })}
         </p>
       </div>
 

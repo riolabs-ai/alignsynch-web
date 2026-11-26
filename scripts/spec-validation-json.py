@@ -20,11 +20,24 @@ pdf_pages, agreement_quote, requirement, definition_of_done, v2_today, v2_0_0, r
 evidence, parity, parity_basis, review_pm, review_design, approval_jaden, approval_walt,
 next_acceptance, notes`.
 
-**`source.sha256` is the CSV's digest**, so a regenerated file is distinguishable from an edited
-one, and the page prints the register it is reading (`<code>data/spec/validation.json</code>`).
+**The register's identity is one `register` block, and it is not the app's.** `release` is the
+*agreement register's* release label and `main` is the commit the citations were checked at —
+neither is `package.json`'s version, and neither may ever be rendered as one. They sit under
+`register` (with `generatedAt` and the CSV's `csvSha256`) rather than at the top level, because
+top level is where a component reaches without asking: the Project Spec badges printed
+`2.0.0-rc1.2` beside a `2.1.0` build for a release precisely because `release` was a bare key.
+There is no top-level `release` and no top-level `main` any more, and `zSpecValidation`
+(`content/spec.ts`) is `.strict()`, so a file still carrying them is refused by `data:check` E42
+instead of quietly loading.
+
+**`csvSha256` is the CSV's digest**, so a regenerated file is distinguishable from an edited one,
+and the page prints the snapshot it is reading
+(`Register · <release> · generated <date> · @<main> · VALIDATION.csv@<sha8>`).
 
 `main` is the commit the evidence citations were checked at — the row's `file:line` links are built
-from it, so it must be a commit that exists on `origin/main`, never `HEAD` of a working tree.
+from it, so it must be a commit that exists on `origin/main`, never `HEAD` of a working tree. Pass
+`--main` when the citations are re-checked; the default is the commit the current register was
+taken at, so a bare re-run cannot silently move it backwards.
 """
 
 from __future__ import annotations
@@ -38,7 +51,7 @@ import pathlib
 import sys
 
 DEFAULT_RELEASE = "2.0.0-rc1.2"
-DEFAULT_MAIN = "601ce260f"
+DEFAULT_MAIN = "0ebca6823"
 
 
 def main(argv: list[str]) -> int:
@@ -93,10 +106,13 @@ def main(argv: list[str]) -> int:
 
     document = {
         "version": 1,
-        "release": args.release,
-        "main": args.main,
-        "generatedAt": args.generated_at or datetime.datetime.now(datetime.UTC).date().isoformat(),
-        "source": {"file": args.source.name, "sha256": hashlib.sha256(raw).hexdigest()},
+        "register": {
+            "release": args.release,
+            "main": args.main,
+            "generatedAt": args.generated_at
+            or datetime.datetime.now(datetime.UTC).date().isoformat(),
+            "csvSha256": hashlib.sha256(raw).hexdigest(),
+        },
         "quotesIncluded": bool(args.with_quotes),
         "rows": rows,
     }
@@ -108,7 +124,9 @@ def main(argv: list[str]) -> int:
 
     print(
         f"{len(rows)} rows -> {args.destination} "
-        f"(quotes {'IN — private storage only' if args.with_quotes else 'dropped'})"
+        f"(register {document['register']['release']} @ {document['register']['main']}, "
+        f"csv {document['register']['csvSha256'][:8]}, "
+        f"quotes {'IN — private storage only' if args.with_quotes else 'dropped'})"
     )
     return 0
 
