@@ -1,5 +1,5 @@
 {
-  "pr": 1432,
+  "pr": 1433,
   "date": "2026-11-26",
   "area": "flow",
   "summary": "Stage 1 prefills the Initiator's first and last name from the signed-in viewer's own name — `user_profile.display_name` when they have saved a profile, else the name the auth provider holds — and hands them down as editable field defaults.",
