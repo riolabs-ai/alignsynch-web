@@ -1,5 +1,5 @@
 {
-  "pr": 1429,
+  "pr": 1431,
   "date": "2026-11-26",
   "area": "flow",
   "summary": "Stage 5 collects an optional plain-text note (400 characters) and stores it on `session_invite.invite_note`, so the invitation mail and the `/invite/<token>` first step quote the sender's own paragraph.",
