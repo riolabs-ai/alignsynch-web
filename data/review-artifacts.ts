@@ -193,6 +193,28 @@ export const reviewArtifacts: readonly ReviewArtifact[] = [
     capturedAt: "2026-11-12T00:00:00.000Z",
   },
   /**
+   * comments v2 — the rebuild of #921's mockup, and the drawing to review. The owner's 2026-11-23
+   * verdict on v1 is that it is stale and not conformant to the approved 2.0 UI: it drew a generic
+   * thread on the 1.x QuizHub palette. The question did not change — two placements, every state
+   * the issue lists — only the surface it is asked on.
+   *
+   * v2 is assembled from two sources only: the approved `07-spec-design-page-chat-v2` bundle and
+   * this app's own comment ancestors (`components/quiz/comment.tsx`,
+   * `question-discussion.tsx`, `alignment-view.tsx`). It decides nothing new, which is why it sits
+   * beside v1 rather than replacing it: the stale drawing stays as history, exactly as v7/v8
+   * stayed beside the approved relationship v9.
+   */
+  {
+    id: "review-comments-v2",
+    slug: "prototype-comments-v2",
+    title:
+      "Comments on an opinion, a session and a relationship — v2 rebuild on the 2.0 chat bundle",
+    kind: "prototype",
+    version: "v2",
+    path: "docs/review/artifacts/prototype-comments-v2.html",
+    capturedAt: "2026-11-25T00:00:00.000Z",
+  },
+  /**
    * The icon set, captured (#963). A `report`, not a prototype: the deliverable is pixels and the
    * measured table beside them, because the owner's complaint was that three attempts were signed
    * off on description. Before/after at 16, 32, 48, 180, 192 and 512 px for both brands, the ink

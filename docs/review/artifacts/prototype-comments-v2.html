@@ -1,0 +1,1346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comments on an Aspect, a session and a relationship · prototype v2 · AlignSynch 2.0</title>
+<!--
+  ============================================================================
+  prototype-comments-v2.html — #921, revision 2.
+
+  v1 (prototype-comments-v1.html) drew a generic thread beside the subject on
+  the QuizHub palette (--action #6366f1). The owner's 2026-11-23 verdict is that
+  it is stale and not conformant to the approved 2.0 UI. v1 is left untouched;
+  this file is the new drawing and it is assembled from two sources only.
+
+  WHAT IT DECIDES
+    Where one comment thread renders for an ASPECT OPINION and for a SESSION
+    (assessment) SUMMARY — Variant A inline under the subject, or Variant B a
+    side panel. Both are drawn for every state; the choice is the owner's.
+    For the RELATIONSHIP the placement is already settled by bundle 07 (one
+    full-width thread on the chat surface); its two variants are drawn only so
+    the same anatomy can be judged inside a 20rem panel before it is copied
+    there for the other two subjects.
+
+  ANCESTORS (read before this file was drawn)
+    components/quiz/comment.tsx          // template-ancestor: components/ui/card.tsx
+                                          — avatar, author, timestamp, body, vote,
+                                            Reply, Show Replies (n)/Hide Replies,
+                                            one level of replies on a 2px rail
+    components/quiz/question-discussion.tsx  — the per-question thread + composer
+    data/quiz-comments.ts + content/quiz-result.ts   — QuizComment/QuizCommentThread
+    components/assessment-flow/alignment-view.tsx    — the Aspect card and the
+                                          Align summary, class strings copied out
+    components/media/generated-avatar.tsx — avatarGradient(), transcribed below
+    lib/category-gradient.ts             — slugSeed(), monogramOf(), gradientFor()
+
+  THREAD ANATOMY — settled by
+    project-spec/spec-design-v2-bundles/07-spec-design-page-chat-v2/chat.html
+    (avatar · author · Aspect tag · body · timestamp; the composer with its
+    "Tag an Aspect" row; the empty invitation; the paused read-only band).
+    A flat message stream (components/chat/chat-message.tsx) is NOT the ancestor
+    for the Aspect and session placements — a thread with replies is.
+
+  TOKENS
+    css/tokens.css + js/tw-config.js from the same bundle. TWO of those roles are
+    COMPLETE colours and are used unwrapped — --action-hover (#2a373e) and
+    --accent-press (#0693b8). Every other role is a bare HSL triple and is used
+    inside hsl(...). Writing a shade token as a triple emits
+    `background: 42 26% 20%`, which the browser drops: the fill goes transparent
+    and every gate stays green. See .btn--primary:hover below, which reads
+    var(--action-hover) raw.
+    Each value below is also present verbatim in quizhub/app/globals.css at the
+    head this was drawn on, so the two cannot drift silently.
+
+    RADIUS is the bundle's 0.5rem (lg 8 / md 6 / sm 4), i.e. the approved 2.0
+    density. The shipping tree still resolves --radius to 0.3125rem (lg 5 / md 3)
+    because #1120 parks that change behind a separate card. This artifact draws
+    the approved density; the difference is named here rather than left to be
+    spotted.
+
+  NO SCHEMA, NO ROUTE, NO SPEC. The durable thread model (one polymorphic
+  subject_comment vs three foreign keys) stays a spec decision for after this
+  mockup is approved. Nothing in this file is imported by the app.
+  ============================================================================
+-->
+<style>
+  /* ---------- tokens: bundle 07 css/tokens.css, verbatim ---------- */
+  :root{
+    --background: 0 0% 100%;
+    --foreground: 217.9 15% 24.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 217.9 15% 24.9%;
+    --popover: 0 0% 100%;
+    --primary: 200 17.9% 26.3%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 200 17.6% 96.7%;
+    --muted: 200 17.6% 96.7%;
+    --muted-foreground: 210 15.1% 36.5%;
+    --accent: 191.7 92.8% 43.3%;
+    --accent-foreground: 217.9 15% 24.9%;
+    --accent-press: #0693b8;               /* COMPLETE colour — never wrapped */
+    --action: 200 17.9% 26.3%;
+    --action-foreground: 0 0% 100%;
+    --action-hover: #2a373e;               /* COMPLETE colour — never wrapped */
+    --nav-active: 200 17.9% 26.3%;
+    --destructive: 200 17.9% 26.3%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 198.8 16% 80.4%;
+    --input: 198 15.2% 87.1%;
+    --ring: 200 17.9% 26.3%;
+    --radius: 0.5rem;
+
+    --paper: 200 27.3% 97.8%;
+    --mist: 200 17.6% 96.7%;
+    --sand: 200 36% 95.1%;
+    --line: 198 15.2% 87.1%;
+    --pale: 194.3 67.7% 93.9%;
+    --mark: 85.3 54.2% 51.2%;
+    --deep: 194.8 53.3% 32.7%;
+    --deep-calm: 194.8 53.3% 32.7%;        /* globals.css names the calm one */
+
+    --initiator: 13.6 50% 56.9%;
+    --initiator-ink: 14 50.2% 40.2%;
+    --initiator-solid: 14.7 45.1% 44.3%;
+    --initiator-tint: 20 65.2% 95.5%;
+    --initiator-line: 17.8 58.7% 82%;
+    --counterparty: 191.1 31% 44.3%;
+    --counterparty-ink: 191.2 36.6% 31.6%;
+    --counterparty-solid: 191.1 34% 37.5%;
+    --counterparty-tint: 186.7 33.3% 94.7%;
+    --counterparty-line: 189.1 30.8% 79%;
+
+    --status: 188.6 36.8% 96.3%;
+    --status-line: 190 38.5% 84.7%;
+    --status-chip: 189.5 40.4% 90.8%;
+    --billing: 144 23.8% 95.9%;
+    --billing-line: 141 22.2% 82.4%;
+    --billing-chip: 140 26.1% 91%;
+    --billing-ink: 150 38.4% 28.6%;
+
+    --synch: 148.5 38.6% 30%;
+    --synch-tint: 137.1 43.8% 93.7%;
+    --small-gap: 45.5 47.8% 27.1%;
+    --small-gap-tint: 47.7 90.7% 91.6%;
+    --gap: 33.5 67.1% 29.8%;
+    --gap-tint: 30.9 89.2% 92.7%;
+    --synch-mark: 145.7 67% 36.9%;
+    --small-gap-mark: 45.1 96% 48.4%;
+    --gap-mark: 29.3 100% 42.5%;
+
+    --scale-1: 21 76.1% 78.6%;
+    --scale-2: 35.9 76.7% 76.5%;
+    --scale-3: 47.3 61.7% 77.5%;
+    --scale-4: 76.5 40.2% 75.1%;
+    --scale-5: 133.3 27.7% 74.5%;
+
+    --r-lg: var(--radius);                 /* 8px */
+    --r-md: calc(var(--radius) - 2px);     /* 6px */
+    --r-sm: calc(var(--radius) - 4px);     /* 4px */
+
+    --frame-max: 68rem;
+    --panel: 20rem;                        /* tw-config gridTemplateColumns.detail */
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{-webkit-font-smoothing:antialiased}
+  body{
+    margin:0;
+    font:14px/1.5 Inter, ui-sans-serif, system-ui, sans-serif;
+    font-feature-settings:"cv11","ss01";
+    color:hsl(var(--foreground));
+    background:hsl(var(--mist));
+  }
+  h1,h2,h3,h4,p{margin:0}
+  h1,h2,h3,h4{line-height:1.25;font-weight:600}
+  a{color:hsl(var(--primary));text-underline-offset:4px}
+  button{font:inherit}
+  svg{flex:none}
+  .min0{min-width:0}
+  .muted{color:hsl(var(--muted-foreground))}
+  .xs{font-size:.75rem}
+  .sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  /* ---------- the prototype chrome: not part of any screen ---------- */
+  .proto{
+    display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;
+    padding:.5rem .75rem;
+    border-bottom:1px dashed hsl(var(--line));
+    background:hsl(var(--background));
+  }
+  .proto-tag{
+    font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:hsl(var(--muted-foreground));
+  }
+  .proto code{font-size:.75rem;color:hsl(var(--muted-foreground))}
+  .proto a{font-size:.75rem;font-weight:500}
+
+  .index{background:hsl(var(--background));border-bottom:1px solid hsl(var(--border));padding:.5rem .75rem .75rem}
+  .index-row{display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;margin-top:.375rem}
+  .index-row:first-child{margin-top:0}
+  .index-label{font-size:.6875rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:hsl(var(--muted-foreground));min-width:4.5rem}
+  .tab{
+    display:inline-flex;align-items:center;height:1.75rem;padding:0 .625rem;
+    border-radius:var(--r-md);border:1px solid hsl(var(--line));background:hsl(var(--background));
+    font-size:.75rem;font-weight:500;color:hsl(var(--foreground));text-decoration:none;white-space:nowrap;
+  }
+  .tab:hover{background:hsl(var(--mist))}
+  .tab[aria-current="true"]{background:hsl(var(--nav-active));border-color:hsl(var(--nav-active));color:hsl(var(--primary-foreground))}
+
+  /* ---------- the stage ---------- */
+  .stage{padding:1.25rem .75rem 4rem}
+  /* Variant A: the thread sits inside the subject's own band, directly under
+     the row, so it reads as part of the record rather than as a second page. */
+  .stack{display:flex;flex-direction:column;gap:.75rem}
+  .thread-inline{background:hsl(var(--mist));border:1px solid hsl(var(--border));border-radius:var(--r-lg);padding:.75rem}
+  .thread-inline .thread{background:hsl(var(--card))}
+  .stage-head{max-width:var(--frame-max);margin:0 auto 1rem}
+  .stage-eyebrow{font-size:.6875rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:hsl(var(--deep-calm))}
+  .stage-head h1{font-size:1.375rem;color:hsl(var(--primary));margin-top:.25rem}
+  .stage-note{margin-top:.375rem;max-width:52rem;font-size:.8125rem;color:hsl(var(--foreground))}
+  .stage-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.75rem}
+  .frame{max-width:var(--frame-max);margin:0 auto}
+  .frame.is-narrow{width:390px;max-width:100%;border:1px dashed hsl(var(--line));padding:.5rem;background:hsl(var(--paper));border-radius:var(--r-lg)}
+  .frame.is-narrow::before{
+    content:"390px";display:block;font-size:.6875rem;font-weight:600;letter-spacing:.06em;
+    text-transform:uppercase;color:hsl(var(--muted-foreground));margin:0 0 .375rem .125rem;
+  }
+
+  /* Variant B — the bundle's `detail` grid: minmax(0,1fr) 20rem */
+  .layout-b{display:grid;grid-template-columns:minmax(0,1fr) var(--panel);gap:1rem;align-items:start}
+  @media (max-width:991.98px){.layout-b{grid-template-columns:minmax(0,1fr)}}
+  .is-narrow .layout-b{grid-template-columns:minmax(0,1fr)}
+
+  /* ---------- primitives ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:.5rem;white-space:nowrap;
+    height:2.5rem;padding:0 .75rem;border-radius:var(--r-md);border:1px solid transparent;
+    font-size:.875rem;font-weight:500;text-decoration:none;cursor:pointer;background:transparent;
+  }
+  .btn svg{width:1rem;height:1rem}
+  .btn--outline{border-color:hsl(var(--input));background:hsl(var(--background));color:hsl(var(--primary))}
+  .btn--outline:hover{background:hsl(var(--mist))}
+  .btn--primary{background:hsl(var(--action));color:hsl(var(--action-foreground))}
+  /* the shade token is a COMPLETE colour in tokens.css — read raw, never hsl()-wrapped */
+  .btn--primary:hover{background:var(--action-hover)}
+  .btn--on-dark{background:hsl(var(--background));color:hsl(var(--primary));height:2.75rem}
+  .btn--on-dark:hover{background:hsl(var(--mist))}
+  .btn--ghost{
+    height:1.75rem;padding:0 .5rem;gap:.375rem;font-size:.75rem;font-weight:500;
+    color:hsl(var(--muted-foreground));border-radius:var(--r-sm);
+  }
+  .btn--ghost svg{width:.875rem;height:.875rem}
+  .btn--ghost:hover{background:hsl(var(--mist));color:hsl(var(--foreground))}
+  .btn--danger:hover{background:hsl(var(--gap-tint));color:hsl(var(--gap))}
+
+  .chip{
+    display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap;
+    border:1px solid;border-radius:999px;padding:.125rem .625rem;
+    font-size:.75rem;font-weight:600;
+  }
+  .chip svg{width:.875rem;height:.875rem}
+  .chip--neutral{border-color:hsl(var(--line));background:hsl(var(--background));color:hsl(var(--foreground))}
+  .chip--status{border-color:hsl(var(--status-line));background:hsl(var(--status));color:hsl(var(--foreground))}
+  .chip--synch{border-color:hsl(var(--synch-mark));background:hsl(var(--synch-tint));color:hsl(var(--synch))}
+  .chip--small{border-color:hsl(var(--small-gap-mark));background:hsl(var(--small-gap-tint));color:hsl(var(--small-gap))}
+  .chip--gap{border-color:hsl(var(--gap-mark));background:hsl(var(--gap-tint));color:hsl(var(--gap))}
+  .dot{width:.375rem;height:.375rem;border-radius:999px;background:hsl(var(--accent))}
+
+  /* avatar: bundle 07 draws a party as a solid disc; anything without a party
+     role falls back to GeneratedAvatar's seeded gradient (see avatarFor()). */
+  .av{
+    display:flex;align-items:center;justify-content:center;flex:none;
+    width:2.25rem;height:2.25rem;border-radius:999px;
+    font-size:.75rem;font-weight:600;overflow:hidden;
+  }
+  .av--md{width:2rem;height:2rem}
+  .av--sm{width:1.75rem;height:1.75rem;font-size:.6875rem}
+  .av--initiator{background:hsl(var(--initiator-solid));color:#fff}
+  .av--counterparty{background:hsl(var(--counterparty-solid));color:#fff}
+  .av--guest{background:hsl(var(--counterparty-tint));color:hsl(var(--counterparty-ink));box-shadow:inset 0 0 0 1px hsl(var(--counterparty-line))}
+
+  /* ---------- the Aspect card: alignment-view.tsx :: AspectCard ---------- */
+  .subject{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--r-lg);min-width:0}
+  .aspect-head{display:flex;flex-direction:column;gap:.5rem;padding:1rem}
+  @media (min-width:576px){.aspect-head{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:.75rem}}
+  .is-narrow .aspect-head{flex-direction:column;gap:.5rem}
+  .aspect-title{display:flex;gap:.75rem;min-width:0}
+  .aspect-num{
+    display:flex;align-items:center;justify-content:center;flex:none;
+    width:2rem;height:2rem;border-radius:var(--r-md);
+    background:hsl(var(--mist));color:hsl(var(--primary));font-size:.875rem;font-weight:600;
+  }
+  .aspect-title h3{font-size:1rem;color:hsl(var(--foreground));overflow-wrap:anywhere}
+  .aspect-head .chip{align-self:flex-start}
+  .aspect-rows{padding:0 1rem;display:flex;flex-direction:column;gap:.75rem}
+  .aspect-rows .rule{border-top:1px dashed hsl(var(--border))}
+
+  .answer-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem 1rem;align-items:center;padding-bottom:.75rem}
+  @media (min-width:768px){.answer-row{grid-template-columns:7rem minmax(0,1fr) auto}}
+  .is-narrow .answer-row{grid-template-columns:minmax(0,1fr) auto}
+  .answer-kind{font-size:.875rem;font-weight:600;color:hsl(var(--foreground))}
+  .answer-note{font-size:.75rem;color:hsl(var(--muted-foreground))}
+  .answer-track{grid-column:1 / -1;grid-row:2;min-width:0}
+  @media (min-width:768px){.answer-track{grid-column:auto;grid-row:auto}}
+  .is-narrow .answer-track{grid-column:1 / -1;grid-row:2}
+  .answer-status{grid-column:2;grid-row:1;display:flex;flex-direction:column;align-items:flex-end;gap:.125rem}
+  @media (min-width:768px){.answer-status{grid-column:auto;grid-row:auto}}
+  .is-narrow .answer-status{grid-column:2;grid-row:1}
+  .answer-steps{font-size:.75rem;color:hsl(var(--muted-foreground))}
+
+  .track{position:relative;height:5rem;margin:0 .25rem}
+  .track-cells{
+    position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);
+    display:grid;grid-template-columns:repeat(5,minmax(0,1fr));
+    height:1.5rem;overflow:hidden;border-radius:var(--r-md);
+    box-shadow:inset 0 0 0 1px hsl(var(--foreground) / .1);
+  }
+  .cell{display:flex;align-items:center;justify-content:center;font-size:.75rem;line-height:1;font-weight:500;color:hsl(var(--foreground))}
+  .cell.picked{font-weight:700;text-decoration:underline;text-decoration-color:hsl(var(--deep-calm));text-decoration-thickness:2px;text-underline-offset:2px}
+  .s1{background:hsl(var(--scale-1))}.s2{background:hsl(var(--scale-2))}.s3{background:hsl(var(--scale-3))}
+  .s4{background:hsl(var(--scale-4))}.s5{background:hsl(var(--scale-5))}
+  .band{position:absolute;top:50%;transform:translateY(-50%);height:1.5rem;border-radius:var(--r-md)}
+  /* ring-2 ring-offset-1: 1px of background, then 2px of mark */
+  .band--gap{box-shadow:0 0 0 1px hsl(var(--background)), 0 0 0 3px hsl(var(--gap-mark))}
+  .band--synch{box-shadow:0 0 0 1px hsl(var(--background)), 0 0 0 3px hsl(var(--synch-mark))}
+  .band--small{box-shadow:0 0 0 2px hsl(var(--small-gap-mark));outline:1px solid hsl(var(--small-gap));outline-offset:2px}
+  .marker{
+    position:absolute;display:flex;align-items:center;justify-content:center;
+    width:1.5rem;height:1.5rem;border-radius:999px;transform:translateX(-50%);
+    font-size:.75rem;font-weight:600;color:#fff;
+    box-shadow:0 0 0 2px hsl(var(--background));
+  }
+  .marker--initiator{top:0;background:hsl(var(--initiator-solid))}
+  .marker--counterparty{bottom:0;background:hsl(var(--counterparty-solid))}
+  .poles{display:flex;justify-content:space-between;margin-top:.25rem;font-size:.75rem;color:hsl(var(--muted-foreground));gap:1rem}
+  .poles span{overflow-wrap:anywhere}
+
+  .aspect-foot{
+    display:flex;flex-direction:column;gap:.75rem;margin-top:1rem;
+    padding:.75rem 1rem;border-top:1px solid hsl(var(--border));
+    background:hsl(var(--mist));border-radius:0 0 var(--r-lg) var(--r-lg);
+  }
+  @media (min-width:576px){.aspect-foot{flex-direction:row;align-items:center;justify-content:space-between}}
+  .is-narrow .aspect-foot{flex-direction:column}
+  .aspect-foot p{font-size:.875rem;line-height:1.5}
+  .aspect-foot strong{font-weight:600}
+
+  /* ---------- the session summary: alignment-view.tsx :: the Align block ---------- */
+  .summary{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--r-lg);overflow:hidden;min-width:0}
+  .summary-bars{display:flex;height:.25rem}
+  .summary-bars span:nth-child(1){flex:1;background:hsl(var(--action))}
+  .summary-bars span:nth-child(2){width:25%;background:hsl(var(--deep-calm) / .6)}
+  .summary-bars span:nth-child(3){width:16.6667%;background:hsl(var(--accent) / .5)}
+  .summary-head{display:flex;flex-direction:column;gap:1rem;padding:1.25rem}
+  @media (min-width:992px){.summary-head{flex-direction:row;align-items:flex-start;justify-content:space-between;padding:1.5rem}}
+  .is-narrow .summary-head{flex-direction:column;padding:1.25rem}
+  .summary-eyebrow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+  .eyebrow{display:flex;align-items:center;gap:.5rem;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:hsl(var(--deep-calm))}
+  .eyebrow svg{width:1rem;height:1rem}
+  .summary-head h2{font-size:1.5rem;color:hsl(var(--primary));letter-spacing:-.01em;margin-top:.5rem}
+  .summary-body{font-size:1rem;margin-top:.5rem}
+  .tolerance{flex:none;margin:0;padding:0;border:0;min-width:0}
+  .tolerance legend{font-size:.75rem;font-weight:600;color:hsl(var(--muted-foreground));padding:0 0 .375rem}
+  .segmented{display:inline-flex;align-items:center;height:2.25rem;padding:2px;border-radius:var(--r-md);background:hsl(var(--muted));color:hsl(var(--muted-foreground))}
+  .segmented button{
+    display:inline-flex;align-items:center;height:2rem;padding:0 .75rem;border:0;border-radius:var(--r-sm);
+    background:transparent;color:inherit;font-size:.75rem;font-weight:600;cursor:pointer;
+  }
+  .segmented button[aria-pressed="true"]{background:hsl(var(--background));color:hsl(var(--foreground));box-shadow:0 1px 2px hsl(var(--foreground) / .08)}
+  .segmented button:hover{color:hsl(var(--foreground))}
+  .tolerance-note{max-width:14rem;margin-top:.375rem;font-size:.75rem;color:hsl(var(--muted-foreground))}
+
+  .summary-band{
+    display:grid;grid-template-columns:minmax(0,1fr);gap:1.5rem;
+    padding:1.25rem;border-top:1px solid hsl(var(--status-line));background:hsl(var(--status));
+  }
+  @media (min-width:992px){.summary-band{grid-template-columns:repeat(3,minmax(0,1fr));padding:1.5rem}}
+  .is-narrow .summary-band{grid-template-columns:minmax(0,1fr);padding:1.25rem}
+  .summary-main{grid-column:auto;min-width:0}
+  @media (min-width:992px){.summary-main{grid-column:span 2}}
+  .is-narrow .summary-main{grid-column:auto}
+  .summary-main > * + *{margin-top:1rem}
+  .icon-chip{display:flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;border-radius:var(--r-md);background:hsl(var(--status-chip))}
+  .icon-chip svg{width:1rem;height:1rem}
+  .summary-count{font-size:1.875rem;font-weight:700;color:hsl(var(--primary));letter-spacing:-.01em}
+  .summary-count span{font-size:1rem;font-weight:500;color:hsl(var(--muted-foreground))}
+  .summary-headline{margin-top:.25rem;font-size:.875rem;color:hsl(var(--muted-foreground))}
+  .segments{display:flex;flex-direction:column;gap:.5rem}
+  @media (min-width:768px){.segments{flex-direction:row;gap:.5rem}}
+  .is-narrow .segments{flex-direction:column}
+  .segment{display:flex;align-items:center;gap:.75rem;min-width:0;border-radius:var(--r-md);text-decoration:none;color:inherit}
+  @media (min-width:768px){.segment{flex:1;flex-direction:column;align-items:stretch;gap:.375rem}}
+  .is-narrow .segment{flex-direction:row;align-items:center;gap:.75rem}
+  .segment-bar{display:flex;align-items:center;justify-content:center;height:2rem;width:3.5rem;flex:none;border-radius:var(--r-md)}
+  @media (min-width:768px){.segment-bar{width:auto}}
+  .is-narrow .segment-bar{width:3.5rem}
+  .segment-bar svg{width:.875rem;height:.875rem}
+  .segment-text{min-width:0}
+  .segment-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;font-weight:600;color:hsl(var(--foreground))}
+  .segment-word{display:block;font-size:.75rem;color:hsl(var(--muted-foreground))}
+  .seg--synch{background:hsl(var(--synch-mark));color:#fff}
+  .seg--small{background:hsl(var(--small-gap-mark));color:hsl(var(--foreground));box-shadow:inset 0 0 0 1px hsl(var(--small-gap))}
+  .seg--gap{background:hsl(var(--gap-mark));color:#fff}
+
+  .legend{display:flex;flex-wrap:wrap;gap:.75rem 1.5rem}
+  .legend-item{display:flex;align-items:center;gap:.5rem}
+  .legend-dot{display:flex;align-items:center;justify-content:center;width:2rem;height:2rem;border-radius:999px}
+  .legend-dot svg{width:.875rem;height:.875rem}
+  .legend-count{font-size:1.125rem;font-weight:700;line-height:1}
+  .legend-label{font-size:.75rem;color:hsl(var(--muted-foreground))}
+
+  .next-step{border-radius:var(--r-lg);background:hsl(var(--action));color:hsl(var(--action-foreground));padding:1rem;min-width:0}
+  .next-step .eyebrow{color:hsl(var(--action-foreground) / .8)}
+  .next-step h3{margin-top:.25rem;font-size:1rem;overflow-wrap:anywhere}
+  .next-step p{margin-top:.25rem;font-size:.875rem;color:hsl(var(--action-foreground) / .9);overflow-wrap:anywhere}
+  .next-step .btn{margin-top:.75rem}
+
+  /* ---------- the thread: bundle 07 chat.html + comment.tsx ---------- */
+  .thread{
+    display:flex;flex-direction:column;min-width:0;
+    background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--r-lg);
+  }
+  .thread-head{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;padding:1rem;border-bottom:1px solid hsl(var(--border));min-width:0}
+  .thread-head .min0{flex:1}
+  .thread-title{font-size:1rem;font-weight:600;color:hsl(var(--primary));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .thread-sub{font-size:.75rem;color:hsl(var(--muted-foreground));overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .thread-count{
+    display:inline-flex;align-items:center;justify-content:center;min-width:1.25rem;height:1.25rem;
+    padding:0 .375rem;border-radius:999px;background:hsl(var(--mist));color:hsl(var(--muted-foreground));
+    font-size:.75rem;font-weight:600;
+  }
+
+  .messages{list-style:none;margin:0;padding:1rem;display:flex;flex-direction:column;gap:1rem;flex:1}
+  .msg{display:flex;gap:.5rem;min-width:0}
+  .msg--own{flex-direction:row-reverse}
+  .msg-body{max-width:85%;min-width:0}
+  @media (min-width:768px){.msg-body{max-width:70%}}
+  .msg--wide .msg-body{max-width:100%}
+  .is-narrow .msg-body{max-width:85%}
+  .msg-meta{font-size:.75rem;color:hsl(var(--muted-foreground));margin-bottom:.25rem;overflow-wrap:anywhere}
+  .msg--own .msg-meta{text-align:right}
+  .msg-meta .who{font-weight:500;color:hsl(var(--foreground))}
+  .bubble{
+    border:1px solid;border-radius:var(--r-lg);padding:.5rem .75rem;
+    font-size:.875rem;line-height:1.5;color:hsl(var(--foreground));overflow-wrap:anywhere;
+  }
+  .bubble--counterparty{border-color:hsl(var(--counterparty-line));background:hsl(var(--counterparty-tint))}
+  .bubble--initiator{border-color:hsl(var(--initiator-line));background:hsl(var(--initiator-tint))}
+  .tags{display:flex;flex-wrap:wrap;align-items:center;gap:.375rem;margin-top:.5rem}
+  .tag{
+    display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap;
+    border:1px solid hsl(var(--line));border-radius:999px;background:hsl(var(--background));
+    padding:.125rem .625rem;font-size:.75rem;font-weight:500;color:hsl(var(--foreground));
+  }
+  .tag svg{width:.875rem;height:.875rem}
+  .msg-actions{display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;margin-top:.25rem}
+  .msg--own .msg-actions{justify-content:flex-end}
+  .replies{margin-top:.75rem;padding-left:.75rem;border-left:2px solid hsl(var(--border));display:flex;flex-direction:column;gap:.75rem}
+  .reply{display:flex;gap:.75rem;min-width:0}
+  .reply-body{min-width:0}
+  .reply-meta{font-size:.75rem;color:hsl(var(--muted-foreground));overflow-wrap:anywhere}
+  .reply-meta .who{font-weight:500;color:hsl(var(--foreground))}
+  .reply p.body{margin-top:.25rem;font-size:.875rem;overflow-wrap:anywhere}
+
+  .composer{border-top:1px solid hsl(var(--border));padding:1rem;display:flex;flex-direction:column;gap:.5rem}
+  .tagrow{display:flex;gap:.375rem;overflow-x:auto;padding-bottom:.25rem;scrollbar-width:none}
+  .tagrow::-webkit-scrollbar{display:none}
+  .tagrow-label{display:flex;align-items:center;flex:none;font-size:.75rem;color:hsl(var(--muted-foreground))}
+  .tagchip{
+    display:inline-flex;align-items:center;height:2rem;flex:none;white-space:nowrap;
+    border:1px solid hsl(var(--line));border-radius:999px;background:hsl(var(--background));
+    padding:0 .625rem;font-size:.75rem;font-weight:500;color:hsl(var(--foreground));cursor:pointer;
+  }
+  .tagchip:hover{background:hsl(var(--mist))}
+  .tagchip[aria-pressed="true"]{border-color:hsl(var(--action));background:hsl(var(--mist))}
+  .composer-row{display:flex;align-items:flex-end;gap:.5rem}
+  .textarea{
+    width:100%;min-width:0;min-height:4.5rem;padding:.5rem .75rem;
+    border:1px solid hsl(var(--input));border-radius:var(--r-md);background:hsl(var(--background));
+    font-size:.875rem;line-height:1.5;color:hsl(var(--foreground));resize:vertical;
+  }
+  .textarea::placeholder{color:hsl(var(--muted-foreground))}
+  .send{width:2.5rem;height:2.5rem;flex:none;padding:0}
+  .send svg{width:1rem;height:1rem}
+
+  .thread-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:3rem 1rem;flex:1}
+  .thread-empty .disc{display:flex;align-items:center;justify-content:center;width:3rem;height:3rem;border-radius:999px}
+  .thread-empty svg{width:1.5rem;height:1.5rem}
+  .thread-empty h3{margin-top:.75rem;font-size:1rem;font-weight:600;color:hsl(var(--primary))}
+  .thread-empty p{margin-top:.25rem;font-size:.875rem;color:hsl(var(--muted-foreground));max-width:22rem;overflow-wrap:anywhere}
+
+  .locked{border-top:1px solid hsl(var(--border));padding:1rem}
+  .locked-band{
+    display:flex;flex-wrap:wrap;align-items:flex-start;gap:.5rem;
+    border:1px solid hsl(var(--line));border-radius:var(--r-md);
+    background:hsl(var(--background));padding:.75rem;font-size:.875rem;
+  }
+  .locked-band svg{width:1rem;height:1rem;margin-top:.125rem}
+  .locked-band .btn{margin-left:auto}
+  .locked-note{width:100%;font-size:.75rem;color:hsl(var(--muted-foreground))}
+
+  /* ---------- the gallery ---------- */
+  .panel{background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:var(--r-lg);padding:1rem;margin-bottom:1rem}
+  .panel h2{font-size:1rem;color:hsl(var(--primary))}
+  .panel p,.panel li{font-size:.8125rem;line-height:1.6}
+  .panel p + p{margin-top:.5rem}
+  .panel ul{margin:.5rem 0 0;padding-left:1.125rem}
+  .panel code{font-size:.75rem;background:hsl(var(--mist));padding:.0625rem .25rem;border-radius:3px;overflow-wrap:anywhere}
+  table.grid{width:100%;border-collapse:collapse;font-size:.8125rem;margin-top:.5rem;table-layout:fixed}
+  table.grid th,table.grid td{text-align:left;padding:.375rem .5rem;border-bottom:1px solid hsl(var(--border));vertical-align:top;overflow-wrap:anywhere}
+  table.grid th{font-size:.6875rem;text-transform:uppercase;letter-spacing:.06em;color:hsl(var(--muted-foreground))}
+  table.grid td a{font-weight:500}
+  .proposed li{color:hsl(var(--foreground))}
+  .proposed em{font-style:normal;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="proto">
+  <span class="proto-tag">Prototype only</span>
+  <span class="muted xs">#921 · comments mockup v2 · drawn on main at <code>22faf9bf</code></span>
+  <a href="#stage=1">Index</a>
+</div>
+
+<nav class="index" id="index" aria-label="Screens"></nav>
+
+<main class="stage" id="stage"></main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ==========================================================================
+     DERIVATIONS — transcribed, not hand-picked.
+
+     slugSeed / seedHash are FNV-1a 32-bit over UTF-16 code units:
+     h ^= code; h = imul(h, 0x01000193); offset basis 0x811c9dc5; >>> 0.
+     avatarGradient then solves each stop's HSL lightness by bisecting for a
+     target relative luminance, so the ink is chosen rather than assumed.
+     Everything below is a pure function of the seed string.
+     ========================================================================== */
+  function seedHash(seed) {
+    var hash = 0x811c9dc5;
+    for (var i = 0; i < seed.length; i += 1) {
+      hash ^= seed.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return hash >>> 0;
+  }
+
+  function monogramOf(name) {
+    var words = String(name).trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0) return "?";
+    var first = words[0].charAt(0);
+    if (words.length === 1) return first.toUpperCase();
+    return (first + words[words.length - 1].charAt(0)).toUpperCase();
+  }
+
+  function gradientFor(slug) {
+    var seed = seedHash(slug);
+    var fromHue = seed % 360;
+    var toHue = (fromHue + 40 + (Math.floor(seed / 360) % 200)) % 360;
+    var angle = 45 + (Math.floor(seed / 72000) % 8) * 45;
+    return "linear-gradient(" + angle + "deg, hsl(" + fromHue + " 58% 42%) 0%, hsl(" + toHue + " 62% 28%) 100%)";
+  }
+
+  function clampChannel(value) { return Math.min(255, Math.max(0, Math.round(value))); }
+
+  function hslToRgb(hue, saturation, lightness) {
+    var s = saturation / 100;
+    var l = lightness / 100;
+    var chroma = (1 - Math.abs(2 * l - 1)) * s;
+    var sector = hue / 60;
+    var second = chroma * (1 - Math.abs((sector % 2) - 1));
+    var r, g, b;
+    if (sector < 1) { r = chroma; g = second; b = 0; }
+    else if (sector < 2) { r = second; g = chroma; b = 0; }
+    else if (sector < 3) { r = 0; g = chroma; b = second; }
+    else if (sector < 4) { r = 0; g = second; b = chroma; }
+    else if (sector < 5) { r = second; g = 0; b = chroma; }
+    else { r = chroma; g = 0; b = second; }
+    var offset = l - chroma / 2;
+    return { r: (r + offset) * 255, g: (g + offset) * 255, b: (b + offset) * 255 };
+  }
+
+  function linearChannel(channel) {
+    var c = channel / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  }
+
+  function relativeLuminance(colour) {
+    return 0.2126 * linearChannel(colour.r) + 0.7152 * linearChannel(colour.g) + 0.0722 * linearChannel(colour.b);
+  }
+
+  function contrastRatio(a, b) {
+    var first = relativeLuminance(a);
+    var second = relativeLuminance(b);
+    return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+  }
+
+  function hexOf(colour) {
+    return "#" + [colour.r, colour.g, colour.b].map(function (channel) {
+      return clampChannel(channel).toString(16).padStart(2, "0");
+    }).join("");
+  }
+
+  var INK_ON_DARK = { r: 255, g: 255, b: 255 };
+  var INK_ON_PALE = { r: 11, g: 15, b: 23 };
+  var LIGHTNESS_STEPS = 20;
+
+  function lightnessFor(hue, saturation, targetLuminance) {
+    var low = 0;
+    var high = 1;
+    for (var step = 0; step < LIGHTNESS_STEPS; step += 1) {
+      var middle = (low + high) / 2;
+      if (relativeLuminance(hslToRgb(hue, saturation, middle * 100)) < targetLuminance) low = middle;
+      else high = middle;
+    }
+    return Number((((low + high) / 2) * 100).toFixed(1));
+  }
+
+  var SATURATED_TARGETS = [0.055, 0.085, 0.115];
+  var PALE_TARGETS = [0.46, 0.52, 0.58];
+
+  function avatarGradient(seed) {
+    var hash = seedHash(seed);
+    var fromHue = hash % 360;
+    var toHue = (fromHue + 32 + ((hash >>> 9) % 96)) % 360;
+    var angle = 45 * (1 + ((hash >>> 17) % 8));
+    var saturation = 52 + ((hash >>> 11) % 17);
+    var pale = (hash >>> 5) % 4 === 0;
+    var target = (pale ? PALE_TARGETS : SATURATED_TARGETS)[(hash >>> 7) % 3];
+    var tipTarget = Math.max(0, target + (pale ? 0.04 : -0.035));
+    var base = hslToRgb(fromHue, saturation, lightnessFor(fromHue, saturation, target));
+    var tip = hslToRgb(toHue, saturation, lightnessFor(toHue, saturation, tipTarget));
+    var stops = [base, tip];
+    function worstOn(ink) { return Math.min(contrastRatio(stops[0], ink), contrastRatio(stops[1], ink)); }
+    var ink = worstOn(INK_ON_DARK) >= worstOn(INK_ON_PALE) ? INK_ON_DARK : INK_ON_PALE;
+    return {
+      angle: angle,
+      css: "linear-gradient(" + angle + "deg, " + hexOf(base) + " 0%, " + hexOf(tip) + " 100%)",
+      ink: hexOf(ink)
+    };
+  }
+
+  /* ==========================================================================
+     ICONS — lucide paths, as the bundle and the shipped components draw them.
+     ========================================================================== */
+  function svg(paths, extra) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round" aria-hidden="' + (extra || "true") + '">' + paths + '</svg>';
+  }
+  var ICON = {
+    list: svg('<path d="M10 6h11"/><path d="M10 12h11"/><path d="M10 18h11"/><path d="m3 6 1 1 2-2"/><path d="m3 12 1 1 2-2"/><path d="m3 18 1 1 2-2"/>'),
+    flag: svg('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/>'),
+    check: svg('<path d="M20 6 9 17l-5-5"/>'),
+    approx: svg('<path d="M5 9.5a6.5 6.5 0 0 1 7 0 6.5 6.5 0 0 0 7 0"/><path d="M5 15.5a6.5 6.5 0 0 1 7 0 6.5 6.5 0 0 0 7 0"/>'),
+    message: svg('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
+    arrow: svg('<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>'),
+    pause: svg('<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+    mail: svg('<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>'),
+    chevronDown: svg('<path d="m6 9 6 6 6-6"/>'),
+    chevronUp: svg('<path d="m18 15-6-6-6 6"/>'),
+    thumb: svg('<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>'),
+    pencil: svg('<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>'),
+    trash: svg('<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>'),
+    target: svg('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+    compare: svg('<circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/>'),
+    lock: svg('<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    plus: svg('<path d="M5 12h14"/><path d="M12 5v14"/>')
+  };
+
+  /* ==========================================================================
+     DATA — every string below has a home in the repo or in bundle 07.
+     Provenance is printed on the gallery screen; nothing here is invented
+     except the rows the gallery lists under "proposed copy".
+     ========================================================================== */
+  var PEOPLE = {
+    marcus: { name: "Marcus Reyes", seed: "marcus-reyes", party: "initiator" },
+    elena: { name: "Elena Reyes", seed: "elena-reyes", party: "counterparty" },
+    tomas: { name: "Tomás Reyes", seed: "tomas-reyes", party: "guest" },
+    /* A width probe, not a person in the dataset: a long name is the only way
+       to prove the 390px frame does not overflow. Labelled on its screen. */
+    probe: { name: "Bartholomew Fitzgerald-Kensington", seed: "bartholomew-fitzgerald-kensington", party: null }
+  };
+
+  var ASPECTS = [
+    { id: "contact", name: "Contact Frequency", feel: [2, 5], wish: [4, 4] },
+    { id: "roles", name: "Old Roles", feel: [3, 3], wish: [4, 4] },
+    { id: "showing", name: "Showing Up", feel: [3, 4], wish: [4, 4] },
+    { id: "decisions", name: "Parent Decisions", feel: [3, 5], wish: [4, 5] },
+    { id: "respected", name: "Feeling Respected", feel: [4, 4], wish: [4, 4] }
+  ];
+  var SUBJECT_ASPECT = {
+    name: "Contact Frequency",
+    prompt: "How much time do you spend together in a normal week?",
+    leftValue: "Rare",
+    rightValue: "Constant",
+    feel: [2, 5],
+    wish: [4, 4]
+  };
+
+  var RELATIONSHIP = {
+    title: "Staying Close Through Busy Seasons",
+    with: "With Elena · Brother–Sister",
+    status: "Stage 6 Live"
+  };
+
+  /* The three statuses of content/gaps.ts, in the words the align surface uses. */
+  var STATUS = {
+    synch: { word: "In Synch", chip: "chip--synch", seg: "seg--synch", icon: "check", band: "band--synch" },
+    small: { word: "Small Gap", chip: "chip--small", seg: "seg--small", icon: "approx", band: "band--small" },
+    gap: { word: "Gap", chip: "chip--gap", seg: "seg--gap", icon: "flag", band: "band--gap" }
+  };
+
+  function statusOf(a, b) {
+    var steps = Math.abs(a - b);
+    if (steps === 0) return "synch";
+    if (steps === 1) return "small";
+    return "gap";
+  }
+
+  var STATES = [
+    { key: "empty", label: "Empty invitation", short: "Empty" },
+    { key: "one", label: "One comment", short: "One" },
+    { key: "collapsed", label: "Collapsed reply", short: "Collapsed" },
+    { key: "expanded", label: "Same reply, expanded", short: "Expanded" },
+    { key: "own-nothing", label: "Own comment — draw nothing", short: "Own · nothing" },
+    { key: "own-edit", label: "Own comment — Edit", short: "Own · Edit" },
+    { key: "own-delete", label: "Own comment — Delete", short: "Own · Delete" },
+    { key: "locked", label: "Locked or closed subject", short: "Locked" },
+    { key: "long", label: "Long body + long name at 390", short: "Long @390" }
+  ];
+
+  var SUBJECTS = [
+    { key: "aspect", label: "Aspect opinion", sub: "one opinion row, as it renders today" },
+    { key: "session", label: "Session summary", sub: "the Align summary of one session" },
+    { key: "relationship", label: "Relationship", sub: "the chat thread from bundle 07" }
+  ];
+
+  var PLACEMENTS = [
+    { key: "a", label: "Variant A · inline under the subject", short: "Variant A" },
+    { key: "b", label: "Variant B · side panel (20rem)", short: "Variant B" }
+  ];
+
+  /* screen 1 = gallery; screens 2..55 = 3 subjects × 2 placements × 9 states */
+  var SCREENS = [{ kind: "gallery" }];
+  SUBJECTS.forEach(function (subject) {
+    PLACEMENTS.forEach(function (placement) {
+      STATES.forEach(function (state) {
+        SCREENS.push({ kind: "state", subject: subject, placement: placement, state: state });
+      });
+    });
+  });
+
+  /* ==========================================================================
+     ATOMS
+     ========================================================================== */
+  function avatar(person, size) {
+    var cls = "av";
+    if (size === "md") cls += " av--md";
+    if (size === "sm") cls += " av--sm";
+    if (person.party === "initiator" || person.party === "counterparty") {
+      cls += person.party === "initiator" ? " av--initiator" : " av--counterparty";
+      return '<span class="' + cls + '" aria-hidden="true">' + monogramOf(person.name).slice(0, 2) + "</span>";
+    }
+    /* no party role → GeneratedAvatar: initials over the seeded gradient */
+    var grad = avatarGradient(person.seed);
+    cls += " av--generated";
+    return '<span class="' + cls + '" style="background-image:' + grad.css + ";color:" + grad.ink +
+      ';font-size:.625rem" aria-hidden="true">' + monogramOf(person.name).slice(0, 2) + "</span>";
+  }
+
+  function statusChip(status) {
+    var s = STATUS[status];
+    return '<span class="chip ' + s.chip + '">' + ICON[s.icon] + s.word + "</span>";
+  }
+
+  /* ==========================================================================
+     SUBJECT 1 — the Aspect card, class strings from alignment-view.tsx
+     ========================================================================== */
+  function aspectSubject() {
+    var a = SUBJECT_ASPECT;
+    function row(kind, label, note, pair) {
+      var left = pair[0];
+      var right = pair[1];
+      var status = statusOf(left, right);
+      var steps = Math.abs(left - right);
+      var lower = Math.min(left, right);
+      var higher = Math.max(left, right);
+      var centre = function (score) { return ((score - 1) / 5) * 100 + 10; };
+      var cells = [1, 2, 3, 4, 5].map(function (n) {
+        var picked = n === left || n === right;
+        return '<span class="cell s' + n + (picked ? " picked" : "") + '">' + n + "</span>";
+      }).join("");
+      return '' +
+        '<div class="answer-row">' +
+          '<div><p class="answer-kind">' + label + '</p><p class="answer-note">' + note + "</p></div>" +
+          '<div class="answer-track">' +
+            '<div role="img" aria-label="' + label + ": Marcus Reyes " + left + ", Elena Reyes " + right +
+              " of 5. Gap " + steps + '.">' +
+              '<div class="track">' +
+                '<span class="track-cells">' + cells + "</span>" +
+                '<span class="band ' + STATUS[status].band + '" style="left:' + (lower - 1) / 5 * 100 +
+                  "%;width:" + ((higher - lower + 1) / 5) * 100 + '%"></span>' +
+                '<span class="marker marker--initiator" style="left:' + centre(left) + '%">M</span>' +
+                '<span class="marker marker--counterparty" style="left:' + centre(right) + '%">E</span>' +
+              "</div>" +
+              '<div class="poles"><span>' + a.leftValue + "</span><span>" + a.rightValue + "</span></div>" +
+            "</div>" +
+          "</div>" +
+          '<div class="answer-status">' + statusChip(status) +
+            (steps === 0 ? "" : '<span class="answer-steps">' + (steps === 1 ? "1 Step Apart" : steps + " Steps Apart") + "</span>") +
+          "</div>" +
+        "</div>";
+    }
+    return '' +
+      '<article class="subject">' +
+        '<header class="aspect-head">' +
+          '<div class="aspect-title">' +
+            '<span class="aspect-num">01</span>' +
+            '<div class="min0"><h3>' + a.name + "</h3></div>" +
+          "</div>" +
+          statusChip("gap") +
+        "</header>" +
+        '<div class="aspect-rows">' +
+          row("feel", "Feel", "How It Is Now", a.feel) +
+          '<div class="rule"></div>' +
+          row("wish", "Wish", "How Each Wants It", a.wish) +
+        "</div>" +
+        '<footer class="aspect-foot">' +
+          "<p><strong>Reading:</strong> Marcus Reyes and Elena Reyes are 3 apart here. " +
+            '<span class="muted">Worth a conversation.</span></p>' +
+          '<a class="btn btn--outline" href="#stage=1">' + ICON.message + "Discuss</a>" +
+        "</footer>" +
+      "</article>";
+  }
+
+  /* ==========================================================================
+     SUBJECT 2 — the Align summary, class strings from alignment-view.tsx
+     ========================================================================== */
+  function sessionSubject() {
+    var counts = { synch: 0, small: 0, gap: 0 };
+    var alignedSoft = 0;
+    var worst = null;
+    ASPECTS.forEach(function (aspect) {
+      var status = statusOf(aspect.feel[0], aspect.feel[1]);
+      counts[status] += 1;
+      if (status !== "gap") alignedSoft += 1;
+      if (!worst || Math.abs(aspect.feel[0] - aspect.feel[1]) > Math.abs(worst.feel[0] - worst.feel[1])) worst = aspect;
+    });
+    var talk = ASPECTS.length - alignedSoft;
+    var segments = ASPECTS.map(function (aspect) {
+      var status = statusOf(aspect.feel[0], aspect.feel[1]);
+      var s = STATUS[status];
+      return '<a class="segment" href="#stage=1">' +
+        '<span class="segment-bar ' + s.seg + '">' + ICON[s.icon] + "</span>" +
+        '<span class="segment-text"><span class="segment-name">' + aspect.name + "</span>" +
+        '<span class="segment-word">' + (status === "small" ? "Small Gap · OK" : s.word) + "</span></span>" +
+      "</a>";
+    }).join("");
+    var legend = [
+      ["synch", "In Synch", counts.synch],
+      ["small", "Small Gap", counts.small],
+      ["gap", "Gap", counts.gap]
+    ].map(function (entry) {
+      var s = STATUS[entry[0]];
+      return '<div class="legend-item"><span class="legend-dot ' + s.seg + '">' + ICON[s.icon] + "</span>" +
+        "<div><p class=legend-count>" + entry[2] + '</p><p class="legend-label">' + entry[1] + "</p></div></div>";
+    }).join("");
+
+    return '' +
+      '<section class="summary">' +
+        '<div class="summary-bars" aria-hidden="true"><span></span><span></span><span></span></div>' +
+        '<div class="summary-head">' +
+          '<div class="min0">' +
+            '<div class="summary-eyebrow">' +
+              '<p class="eyebrow">' + ICON.compare + "Stage 6 · Align</p>" +
+              '<span class="chip chip--neutral">Live</span>' +
+            "</div>" +
+            "<h2>Where You Agree, and Where You Differ</h2>" +
+            '<p class="summary-body">Both answers on every Aspect, side by side. Start with the widest Gap.</p>' +
+          "</div>" +
+          '<fieldset class="tolerance">' +
+            "<legend>Alignment Tolerance</legend>" +
+            '<div class="segmented" role="group" aria-label="Alignment Tolerance">' +
+              '<button type="button" aria-pressed="true">Soft</button>' +
+              '<button type="button" aria-pressed="false">Full</button>' +
+            "</div>" +
+            '<p class="tolerance-note">A Small Gap (1 step) counts as aligned.</p>' +
+          "</fieldset>" +
+        "</div>" +
+        '<div class="summary-band">' +
+          '<div class="summary-main">' +
+            '<p class="eyebrow"><span class="icon-chip">' + ICON.target + "</span>Summary</p>" +
+            '<div><p class="summary-count">' + alignedSoft + " of " + ASPECTS.length +
+              " <span>Aspects Aligned</span></p>" +
+              '<p class="summary-headline">You agree on more than you differ. ' + talk + " of " +
+                ASPECTS.length + " Aspects need a conversation.</p></div>" +
+            '<div class="segments">' + segments + "</div>" +
+            '<div class="legend">' + legend + "</div>" +
+          "</div>" +
+          '<div class="next-step">' +
+            '<p class="eyebrow">' + ICON.arrow + "Next Step</p>" +
+            "<h3>Talk About Your Widest Gap</h3>" +
+            "<p>“" + worst.name + "” is " + Math.abs(worst.feel[0] - worst.feel[1]) +
+              " steps apart — the widest on this relationship. Start there.</p>" +
+            '<a class="btn btn--on-dark" href="#stage=1">' + ICON.message + "Start the Conversation</a>" +
+          "</div>" +
+        "</div>" +
+      "</section>";
+  }
+
+  /* ==========================================================================
+     SUBJECT 3 — the relationship: bundle 07's conversation header
+     ========================================================================== */
+  function relationshipSubject() {
+    return '' +
+      '<article class="subject">' +
+        '<div class="thread-head">' +
+          avatar(PEOPLE.elena) +
+          '<div class="min0">' +
+            '<h2 class="thread-title">' + RELATIONSHIP.title + "</h2>" +
+            '<p class="thread-sub">' + RELATIONSHIP.with + "</p>" +
+          "</div>" +
+          '<span class="chip chip--status"><span class="dot" aria-hidden="true"></span>' + RELATIONSHIP.status + "</span>" +
+          '<a class="btn btn--outline" href="#stage=1" style="flex:none">Open</a>' +
+        "</div>" +
+        '<div style="padding:1rem;font-size:.875rem;color:hsl(var(--muted-foreground))">' +
+          "Stage 6 · five Aspects answered and accepted. The thread below is that relationship's one shared chat." +
+        "</div>" +
+      "</article>";
+  }
+
+  /* ==========================================================================
+     THE THREAD
+     ========================================================================== */
+  function message(opts) {
+    var person = opts.person;
+    var own = opts.person.party === "initiator";
+    var side = own ? "initiator" : "counterparty";
+    var body = "" +
+      '<div class="bubble bubble--' + side + '">' + opts.body +
+        (opts.tag
+          ? '<span class="tags"><span class="tag">' + ICON.list + (opts.tag === true ? SUBJECT_ASPECT.name : opts.tag) + "</span>" +
+            statusChip(opts.tagStatus || "gap") + "</span>"
+          : "") +
+      "</div>";
+    var actions = "" +
+      '<div class="msg-actions">' +
+        '<button type="button" class="btn btn--ghost" aria-label="Like">' + ICON.thumb + (opts.likes || 0) + "</button>" +
+        '<button type="button" class="btn btn--ghost">Reply</button>' +
+        (opts.replies && opts.replies.length
+          ? '<button type="button" class="btn btn--ghost">' +
+            (opts.expanded ? ICON.chevronUp + "Hide Replies" : ICON.chevronDown + "Show Replies (" + opts.replies.length + ")") +
+            "</button>"
+          : "") +
+        (own && opts.canEdit ? '<button type="button" class="btn btn--ghost">' + ICON.pencil + "Edit</button>" : "") +
+        (own && opts.canDelete ? '<button type="button" class="btn btn--ghost btn--danger">' + ICON.trash + "Delete</button>" : "") +
+      "</div>";
+    var replies = "";
+    if (opts.expanded && opts.replies && opts.replies.length) {
+      replies = '<div class="replies">' + opts.replies.map(function (reply) {
+        return '<div class="reply">' + avatar(reply.person, "sm") +
+          '<div class="reply-body"><p class="reply-meta"><span class="who">' + reply.person.name +
+          "</span> · " + reply.when + "</p>" +
+          '<p class="body">' + reply.body + "</p></div></div>";
+      }).join("") + "</div>";
+    }
+    return '<li class="msg' + (own ? " msg--own" : "") + (opts.wide ? " msg--wide" : "") + '">' +
+      avatar(person, "md") +
+      '<div class="msg-body">' +
+        '<p class="msg-meta"><span class="who">' + (own ? "You" : person.name) + "</span> · " + opts.when + "</p>" +
+        body + actions + replies +
+      "</div></li>";
+  }
+
+  /* The bundle's own lines, one word changed where the bundle's Aspect differs
+     from the subject's. Elena's sentences are chat.html's verbatim. */
+  var LINES = {
+    elena1: "I saw the results. Contact Frequency surprised me a bit.",
+    marcus1: "Me too. I think I assumed we were closer on that one.",
+    elena2: "Same 1–5 scale and we're two steps apart on what we want. Worth a call?",
+    reply1: "I answered 2 on Feel — it's Wish where we agree."
+  };
+
+  var ELENA1 = { person: PEOPLE.elena, when: "Mon 8:10", body: LINES.elena1, likes: 2, tag: true };
+  var MARCUS1 = { person: PEOPLE.marcus, when: "Mon 8:31", body: LINES.marcus1, likes: 1 };
+  var MARCUS1_EDIT = { person: PEOPLE.marcus, when: "Mon 8:31", body: LINES.marcus1, likes: 1, canEdit: true };
+  var MARCUS1_DELETE = { person: PEOPLE.marcus, when: "Mon 8:31", body: LINES.marcus1, likes: 1, canDelete: true };
+  var ELENA2 = { person: PEOPLE.elena, when: "Mon 9:42", body: LINES.elena2, likes: 0, tag: true };
+  var THREE = [ELENA1, MARCUS1, ELENA2];
+
+  /* One model per state. `subjectKey` only decides the empty invitation's noun:
+     an Aspect thread and a session thread are the same thread. */
+  function threadModel(stateKey, subjectKey) {
+    switch (stateKey) {
+      case "empty":
+        return {
+          messages: [],
+          composer: true,
+          empty: {
+            icon: ICON.message,
+            title: "No Comments Yet",
+            body: "Nothing has been said about this " + (subjectKey === "aspect" ? "Aspect." : "session.")
+          }
+        };
+      case "one":
+        return { messages: [{ person: PEOPLE.elena, when: "Mon 8:10", body: LINES.elena1, likes: 0, tag: true }], composer: true, empty: null };
+      case "collapsed":
+        return {
+          messages: [{
+            person: PEOPLE.elena, when: "Mon 8:10", body: LINES.elena1, likes: 2, tag: true,
+            replies: [{ person: PEOPLE.marcus, when: "Mon 8:22", body: LINES.reply1 }], expanded: false
+          }],
+          composer: true, empty: null
+        };
+      case "expanded":
+        return {
+          messages: [{
+            person: PEOPLE.elena, when: "Mon 8:10", body: LINES.elena1, likes: 2, tag: true,
+            replies: [{ person: PEOPLE.marcus, when: "Mon 8:22", body: LINES.reply1 }], expanded: true
+          }],
+          composer: true, empty: null
+        };
+      case "own-nothing":
+        return {
+          messages: THREE,
+          composer: true, empty: null
+        };
+      case "own-edit":
+        return {
+          messages: [ELENA1, MARCUS1_EDIT, ELENA2],
+          composer: true, empty: null
+        };
+      case "own-delete":
+        return {
+          messages: [ELENA1, MARCUS1_DELETE, ELENA2],
+          composer: true, empty: null
+        };
+      case "locked":
+        return {
+          messages: THREE,
+          composer: false, empty: null, locked: true
+        };
+      case "long":
+        return {
+          messages: [{
+            person: PEOPLE.probe,
+            when: "Nov 14",
+            body: "0 steps is In Synch. 1 step is a Small Gap (OK under Soft). 2 or more is a Gap worth talking about. " +
+              "0 steps is In Synch. 1 step is a Small Gap (OK under Soft). 2 or more is a Gap worth talking about. " +
+              "0 steps is In Synch. 1 step is a Small Gap (OK under Soft). 2 or more is a Gap worth talking about.",
+            likes: 0, wide: true, tag: true
+          }],
+          composer: true, empty: null
+        };
+      default:
+        return { messages: [], composer: true, empty: null };
+    }
+  }
+
+  function composer(opts) {
+    var tags = "";
+    if (opts.tags) {
+      tags = '<div class="tagrow" role="group" aria-label="Tag an Aspect">' +
+        '<span class="tagrow-label">Tag:</span>' +
+        ASPECTS.map(function (aspect) {
+          return '<button type="button" class="tagchip" aria-pressed="' +
+            (aspect.name === SUBJECT_ASPECT.name ? "true" : "false") + '">' + aspect.name + "</button>";
+        }).join("") + "</div>";
+    }
+    return '<form class="composer" onsubmit="return false">' + tags +
+      '<div class="composer-row">' +
+        '<label class="sr" for="msg-' + opts.uid + '">Message Elena</label>' +
+        '<textarea class="textarea" id="msg-' + opts.uid + '" rows="2" placeholder="Message Elena"></textarea>' +
+        '<button type="submit" class="btn btn--primary send" aria-label="Send">' + ICON.arrow + "</button>" +
+      "</div></form>";
+  }
+
+  function thread(subjectKey, state, uid) {
+    var model = threadModel(state.key, subjectKey);
+    var head = "";
+    if (subjectKey === "relationship") {
+      head = '<div class="thread-head">' + avatar(PEOPLE.elena) +
+        '<div class="min0"><h2 class="thread-title">' + RELATIONSHIP.title + "</h2>" +
+        '<p class="thread-sub">' + RELATIONSHIP.with + "</p></div>" +
+        '<span class="chip chip--status"><span class="dot" aria-hidden="true"></span>' + RELATIONSHIP.status + "</span>" +
+        "</div>";
+    } else {
+      var count = model.messages.length + model.messages.reduce(function (total, m) {
+        return total + (m.replies ? m.replies.length : 0);
+      }, 0);
+      head = '<div class="thread-head">' +
+        '<span class="av av--md av--counterparty" aria-hidden="true">ER</span>' +
+        '<div class="min0"><h2 class="thread-title">Discuss</h2>' +
+        '<p class="thread-sub">' + (subjectKey === "aspect" ? SUBJECT_ASPECT.name : RELATIONSHIP.title) + "</p></div>" +
+        '<span class="thread-count" aria-label="' + count + ' comments">' + count + "</span>" +
+        "</div>";
+    }
+
+    var body = "";
+    if (model.empty) {
+      body = '<div class="thread-empty">' +
+        '<span class="disc" style="background:hsl(var(--mist));color:hsl(var(--primary))">' + model.empty.icon + "</span>" +
+        "<h3>" + model.empty.title + "</h3><p>" + model.empty.body + "</p></div>";
+    } else {
+      body = '<ol class="messages" aria-label="Messages">' + model.messages.map(function (m) {
+        return message({
+          person: m.person, when: m.when, body: m.body, likes: m.likes,
+          /* the Aspect tag is the subject on the Aspect placement, so it is not
+             repeated on every message there; it stays where a thread spans Aspects */
+          tag: Boolean(m.tag) && subjectKey !== "aspect",
+          tagStatus: "gap",
+          replies: m.replies, expanded: m.expanded, canEdit: m.canEdit, canDelete: m.canDelete, wide: m.wide
+        });
+      }).join("") + "</ol>";
+    }
+
+    var foot = "";
+    if (model.locked) {
+      var copy = subjectKey === "relationship"
+        ? "Stage 6 is paused, so chat is read-only. Nothing is lost."
+        : "Stage 6 is paused, so comments are read-only. Nothing is lost.";
+      foot = '<div class="locked"><p class="locked-band">' + ICON.pause + "<span>" + copy + "</span>" +
+        '<a class="btn btn--primary" href="#stage=1">Add a Card</a></p>' +
+        '<p class="locked-note">The thread stays readable. The composer returns the moment a card is added — this is not a dead end.</p></div>';
+    } else if (model.composer) {
+      foot = composer({ tags: subjectKey !== "aspect", uid: uid });
+    }
+
+    return '<section class="thread" data-thread>' + head + body + foot + "</section>";
+  }
+
+  /* The relationship's own empty state is bundle 07's invitation, not "no
+     comments yet": a single-relationship thread cannot exist before the other
+     party joins, so its empty screen is a fact about the invite. Aspect and
+     session threads are empty because nobody has written yet. */
+  function threadFor(screen) {
+    if (screen.subject.key === "relationship" && screen.state.key === "empty") {
+      var model = { empty: null, composer: false, locked: false, messages: [] };
+      return '<section class="thread" data-thread>' +
+        '<div class="thread-head">' + avatar(PEOPLE.elena) +
+        '<div class="min0"><h2 class="thread-title">Planning Dad\'s 70th</h2>' +
+        '<p class="thread-sub">With Tomás · Siblings · Event</p></div>' +
+        '<span class="chip chip--neutral">' + ICON.mail + "Waiting on Invite</span></div>" +
+        '<div class="thread-empty">' +
+          '<span class="disc" style="background:hsl(var(--mist));color:hsl(var(--primary))">' + ICON.mail + "</span>" +
+          "<h3>Chat Opens When Tomás Joins</h3><p>Invite sent Nov 14.</p></div>" +
+        "</section>";
+    }
+    return thread(screen.subject.key, screen.state, screen.subject.key + screen.placement.key);
+  }
+
+  /* ==========================================================================
+     SCREENS
+     ========================================================================== */
+  function screenNumber(screen) {
+    return SCREENS.indexOf(screen) + 1;
+  }
+
+  function stateScreen(screen) {
+    var n = screenNumber(screen);
+    var firstOfGroup = 2 + SUBJECTS.indexOf(screen.subject) * 18 + PLACEMENTS.indexOf(screen.placement) * 9;
+    var stateIndex = STATES.indexOf(screen.state);
+    var sibling = PLACEMENTS[(PLACEMENTS.indexOf(screen.placement) + 1) % 2];
+    var siblingNumber = 2 + SUBJECTS.indexOf(screen.subject) * 18 + PLACEMENTS.indexOf(sibling) * 9 + stateIndex;
+
+    var subject;
+    if (screen.subject.key === "aspect") subject = aspectSubject();
+    else if (screen.subject.key === "session") subject = sessionSubject();
+    else subject = relationshipSubject();
+
+    var threadHtml = threadFor(screen);
+
+    var layout;
+    if (screen.placement.key === "a") {
+      /* Variant A: the thread sits inside the subject's own column, directly
+         under the row, and reads as part of it rather than as a second page.
+         On the relationship the thread already carries the conversation header
+         bundle 07 draws, so the subject strip is not repeated above it — this is
+         the settled chat surface, at the content width. */
+      layout = screen.subject.key === "relationship"
+        ? '<div class="stack">' + threadHtml + "</div>"
+        : '<div class="stack">' + subject + '<div class="thread-inline">' + threadHtml + "</div></div>";
+    } else {
+      var left = screen.subject.key === "relationship" ? sessionSubject() : subject;
+      layout = '<div class="layout-b"><div class="min0">' + left + '</div><div class="min0">' + threadHtml + "</div></div>";
+    }
+
+    var narrow = screen.state.key === "long";
+    var note = screen.state.key === "long"
+      ? "390px frame. The author name and the body are width probes, not product copy: the face is GeneratedAvatar's seeded gradient, so what overflows or wraps here is what the build would draw."
+      : stateNote(screen);
+
+    return '<header class="stage-head">' +
+        '<p class="stage-eyebrow">' + screen.subject.label + " · " + screen.placement.short +
+          " · state " + (stateIndex + 1) + " of " + STATES.length + "</p>" +
+        "<h1>" + screen.state.label + "</h1>" +
+        '<p class="stage-note">' + note + "</p>" +
+        '<div class="stage-actions">' +
+          '<a class="tab" href="#stage=' + siblingNumber + '">Same state, ' + sibling.short + "</a>" +
+          '<a class="tab" href="#stage=' + firstOfGroup + '">Start of this group</a>' +
+          (n > 2 ? '<a class="tab" href="#stage=' + (n - 1) + '">← Previous</a>' : "") +
+          (n < SCREENS.length ? '<a class="tab" href="#stage=' + (n + 1) + '">Next →</a>' : "") +
+          '<a class="tab" href="#stage=1">Index</a>' +
+        "</div>" +
+      "</header>" +
+      '<div class="frame' + (narrow ? " is-narrow" : "") + '">' + layout + "</div>";
+  }
+
+  function stateNote(screen) {
+    var key = screen.state.key;
+    if (key === "empty") {
+      return screen.subject.key === "relationship"
+        ? "Bundle 07's invitation state, drawn verbatim: the thread cannot open before the other party joins, so the empty screen is a fact about the invite — and the composer is withheld, because there is nobody to write to yet."
+        : "Nobody has written here yet. The composer is present: an empty thread under " +
+          (screen.subject.key === "aspect" ? "an Aspect" : "a session") + " is an invitation, not a notice.";
+    }
+    if (key === "one") return "One comment, no replies. The vote, Reply and the timestamp are components/quiz/comment.tsx's; the bubble and the party tint are bundle 07's. The Aspect tag travels with the message on the session and relationship placements and is withheld on the Aspect placement, where the subject already is the Aspect.";
+    if (key === "collapsed") return "One reply, folded behind Show Replies (1). The control and its rail are comment.tsx's; nothing is drawn until the reader asks.";
+    if (key === "expanded") return "The same thread with the reply open on its 2px rail — only the reply's visibility moved between this screen and the last one.";
+    if (key === "own-nothing") return "The reader's own comment, as the shipped component draws it: no edit and no delete. This is the baseline the next two screens are measured against.";
+    if (key === "own-edit") return "One proposed control on the reader's own comment. Edit and Delete are not shipped copy; they are the two words this artifact proposes and the gallery lists them as proposed.";
+    if (key === "own-delete") return "The second proposed control. Delete is drawn in the Gap tint because it destroys a row — stated in words, not colour alone.";
+    if (key === "locked") return "The subject is closed: the composer is withheld and the reason is on screen with the action that reopens it. A locked thread that only says read-only is the dead end this state exists to avoid.";
+    return "";
+  }
+
+  function gallery() {
+    var rows = "";
+    SCREENS.slice(1).forEach(function (screen) {
+      var n = screenNumber(screen);
+      rows += "<tr><td>" + n + "</td><td>" + screen.subject.label + "</td><td>" + screen.placement.short +
+        "</td><td>" + screen.state.label + '</td><td><a href="#stage=' + n + '">open</a></td></tr>';
+    });
+    var probe = PEOPLE.probe;
+    var grad = avatarGradient(probe.seed);
+    var chip = gradientForHint();
+    return '<header class="stage-head">' +
+        '<p class="stage-eyebrow">#921 · comments mockup v2 · 3 subjects × 2 placements × 9 states</p>' +
+        "<h1>Comments on an Aspect, a session and a relationship</h1>" +
+        '<p class="stage-note">One thread, drawn at three altitudes and in two placements. Screens 2–' +
+          SCREENS.length + " are the states; the hash is <code>#stage=n</code> with n−1 as the index, so a deep link " +
+          "names the screen under discussion and never the gallery.</p>" +
+      "</header>" +
+      '<div class="frame">' +
+        '<div class="panel">' +
+          "<h2>What this decides</h2>" +
+          "<p><strong>Settled — bundle 07.</strong> The thread's message anatomy (avatar, author, Aspect tag, body, timestamp), the composer with its Tag an Aspect row, and the empty and paused states of a relationship thread. The relationship subject <em>is</em> the chat surface, so its thread needs no new placement.</p>" +
+          "<p><strong>Open — this artifact.</strong> Where the same thread renders for an aspect opinion and for a session summary: Variant A inline under the row, or Variant B a 20rem side panel. Both are drawn for every state.</p>" +
+          "<p><strong>The measurable difference.</strong> Variant B's panel is <code>20rem</code> (320px) — the bundle's own <code>detail</code> grid — so the message column is 320px minus its padding, and the composer's textarea, the Tag row and the summary's three-column band all have to stack below the 992px breakpoint. Variant A keeps the subject's own width. Neither is proposed here; the frames are the argument.</p>" +
+          "<p><strong>The one anatomy change the placement forces.</strong> Bundle 07's composer carries a <em>Tag an Aspect</em> row, and a message carries the Aspect tag inside its bubble. On the Aspect placement the subject already is that Aspect, so both are withheld there and kept on the session and relationship placements, where one thread spans five. That is drawn on every screen rather than described, because it changes what the composer costs in a 20rem panel.</p>" +
+        "</div>" +
+        '<div class="panel">' +
+          "<h2>Provenance — every class and every word</h2>" +
+          "<ul>" +
+          "<li><strong>The Aspect card and the session summary</strong> are <code>components/assessment-flow/alignment-view.tsx</code> — the numbered card, the painted 1–5 track, the party markers, the Gap band, the tolerance toggle, the summary counts, the segments and the legend. Labels come from <code>data/pages/assessment-instance.ts</code>.</li>" +
+          "<li><strong>The thread</strong> is <code>project-spec/spec-design-v2-bundles/07-spec-design-page-chat-v2/chat.html</code> — party-tinted bubbles, the Aspect tag inside the bubble, the composer, the paused band. Its vote, Reply, Show Replies (n)/Hide Replies and the reply rail are <code>components/quiz/comment.tsx</code>.</li>" +
+          "<li><strong>The data shape</strong> the drawn thread stands for is <code>QuizComment</code>/<code>QuizCommentThread</code> (<code>content/quiz-result.ts</code>) as <code>data/quiz-comments.ts</code> projects it: one comment, one level of replies, an author, a body, an instant.</li>" +
+          "<li><strong>Tokens</strong> are the bundle's <code>css/tokens.css</code> + <code>js/tw-config.js</code>, and each value is also in <code>app/globals.css</code> at the head this was drawn on. <code>--action-hover</code> and <code>--accent-press</code> are complete colours and are read unwrapped; every other role is a bare HSL triple.</li>" +
+          "<li><strong>Radius</strong> is the bundle's 0.5rem (lg 8 / md 6 / sm 4). The shipping tree still resolves 0.3125rem (lg 5 / md 3) because #1120 parks that change; this artifact draws the approved density and says so rather than leaving it to be spotted.</li>" +
+          "<li><strong>Aspect titles are the bundle's short names</strong> (<em>Contact Frequency</em>, <em>Parent Decisions</em>). The shipped Align card renders <code>row.prompt</code> instead, because an Aspect carries the question only — <code>data/pages/dashboard-relationship-detail.ts</code> records that bundle 04's reference has both. If the short name is what the design wants, the model needs the field, and that is a spec decision after this mockup.</li>" +
+          "</ul>" +
+        "</div>" +
+        '<div class="panel">' +
+          "<h2>Derivations — computed, not hand-picked</h2>" +
+          "<p>Artwork on these screens is drawn, never chosen. <code>avatarGradient()</code> is transcribed from <code>components/media/generated-avatar.tsx</code>: FNV-1a over the seed, then each stop's HSL lightness solved by bisection for a target relative luminance, then the ink picked as whichever of white and near-black scores higher over both stops. The width probe's seed resolves to:</p>" +
+          "<p><code>" + probe.seed + "</code><br><code>" + grad.css + "</code><br>ink <code>" + grad.ink + "</code>, angle " + grad.angle + "°</p>" +
+          "<p>A subject tile would be <code>gradientFor()</code> + <code>monogramOf()</code> (<code>lib/category-gradient.ts</code>); no screen here draws one, so that pair is carried in the file only for the next revision that needs a cover. "+ chip + "</p>" +
+        "</div>" +
+        '<div class="panel proposed">' +
+          "<h2>Proposed copy — the only words with no shipped home</h2>" +
+          "<ul>" +
+          "<li><em>Edit</em> and <em>Delete</em> — the reader's own comment controls. <code>comment.tsx</code> draws a vote, Reply and Hide/Show Replies only.</li>" +
+          "<li><em>No Comments Yet</em> / <em>Nothing has been said about this Aspect.</em> — the empty thread under an Aspect; the session placement reuses it with <em>…about this session.</em></li>" +
+          "<li><em>Discuss</em> as the thread's header for the Aspect and session placements. The word is shipped — it is the Aspect card's own button (<code>data/pages/assessment-instance.ts</code> <code>itemLabel(section, \"discuss\")</code>) — but using it as a section heading is new.</li>" +
+          "<li><em>Stage 6 is paused, so comments are read-only. Nothing is lost.</em> — the locked band for an Aspect and a session. It is bundle 07's chat sentence with one noun changed, because the relationship's own sentence says <em>chat</em>.</li>" +
+          "</ul>" +
+          "<p>Everything else on these screens is transcribed: <em>Discuss</em>, <em>Feel</em>, <em>Wish</em>, <em>In Synch</em>, <em>Small Gap</em>, <em>Gap</em>, <em>Reading</em>, <em>Aspects Aligned</em>, <em>Next Step</em>, <em>Start the Conversation</em>, <em>Add a Card</em>, <em>Message Elena</em>, <em>Tag</em>, <em>Reply</em>, <em>Show Replies (1)</em>, <em>Hide Replies</em>, <em>Chat Opens When Tomás Joins</em>, <em>Invite sent Nov 14.</em></p>" +
+        "</div>" +
+        '<div class="panel">' +
+          "<h2>The " + (SCREENS.length - 1) + " screens</h2>" +
+          '<table class="grid"><thead><tr><th style="width:3rem">#</th><th>Subject</th><th>Placement</th><th>State</th><th style="width:3.5rem"></th></tr></thead><tbody>' +
+          rows + "</tbody></table>" +
+        "</div>" +
+      "</div>";
+  }
+
+  function gradientForHint() {
+    var seed = seedHash("contact-frequency");
+    var from = seed % 360;
+    var to = (from + 40 + (Math.floor(seed / 360) % 200)) % 360;
+    var angle = 45 + (Math.floor(seed / 72000) % 8) * 45;
+    return "Seeded for reference: <code>gradientFor(\"contact-frequency\")</code> → hue " + from + "° → " + to +
+      "°, angle " + angle + "°, monogram <code>" + monogramOf("Contact Frequency") + "</code> — the same " +
+      "function, so a future revision that draws a cover draws this one. The transcript of " +
+      "<code>gradientFor()</code> in this file computes <code>" + gradientFor("contact-frequency") + "</code>.";
+  }
+
+  /* ==========================================================================
+     ROUTER — #stage=n, n−1 as the index
+     ========================================================================== */
+  var stageEl = document.getElementById("stage");
+  var indexEl = document.getElementById("index");
+
+  function stageFromHash() {
+    var match = /stage=(\d+)/.exec(window.location.hash || "");
+    var n = match ? parseInt(match[1], 10) : 1;
+    if (!Number.isFinite(n) || n < 1 || n > SCREENS.length) n = 1;
+    return n;
+  }
+
+  function renderIndex(n) {
+    var current = SCREENS[n - 1];
+    var subjectIndex = current.kind === "state" ? SUBJECTS.indexOf(current.subject) : 0;
+    var placementIndex = current.kind === "state" ? PLACEMENTS.indexOf(current.placement) : 0;
+    var stateKey = current.kind === "state" ? current.state.key : null;
+    var base = 2 + subjectIndex * 18;
+
+    function row(label, items) {
+      return '<div class="index-row"><span class="index-label">' + label + "</span>" + items.join("") + "</div>";
+    }
+    function tab(href, text, active, title) {
+      return '<a class="tab" href="' + href + '"' + (active ? ' aria-current="true"' : "") +
+        (title ? ' title="' + title + '"' : "") + ">" + text + "</a>";
+    }
+
+    var subjects = SUBJECTS.map(function (subject, index) {
+      return tab("#stage=" + (2 + index * 18), subject.label,
+        current.kind === "state" && index === subjectIndex, subject.sub);
+    });
+    var placements = PLACEMENTS.map(function (placement, index) {
+      return tab("#stage=" + (base + index * 9), placement.label,
+        current.kind === "state" && index === placementIndex);
+    });
+    var states = STATES.map(function (state, index) {
+      return tab("#stage=" + (base + placementIndex * 9 + index), (index + 1) + " " + state.short,
+        state.key === stateKey, state.label);
+    });
+
+    indexEl.innerHTML =
+      row("Screen", [tab("#stage=1", "Index", n === 1)]) +
+      row("Subject", subjects) +
+      row("Placement", placements) +
+      row("State", states) +
+      row("Where", ['<span class="muted xs">stage ' + n + " of " + SCREENS.length + "</span>"]);
+  }
+
+  /* Every string handed to innerHTML below is a literal from this file or an
+     integer derived from the hash — no URL text, no user input, no remote
+     content reaches the DOM. */
+  function render() {
+    var n = stageFromHash();
+    var screen = SCREENS[n - 1];
+    stageEl.innerHTML = screen.kind === "gallery" ? gallery() : stateScreen(screen);
+    renderIndex(n);
+    window.scrollTo(0, 0);
+  }
+
+  window.addEventListener("hashchange", render);
+  render();
+})();
+</script>
+</body>
+</html>
