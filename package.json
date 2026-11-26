@@ -41,6 +41,8 @@
     "vocabulary:census": "tsc -p tsconfig.datacheck.json && node .datacheck/scripts/vocabulary.js",
     "columns:check": "node scripts/column-refs.ts --check",
     "worktrees:prune": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/worktree-prune.mjs",
+    "hygiene": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/repo-hygiene.mjs",
+    "hygiene:apply": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/repo-hygiene.mjs --apply",
     "release": "bash scripts/release.sh",
     "release:cut": "node scripts/release-cut.mjs",
     "release:preflight": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/release-preflight.mjs",
