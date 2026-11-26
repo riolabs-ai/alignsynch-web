@@ -7,6 +7,12 @@
  * live-mode credential. The last case walks the real tree, because a rule nobody can violate in a
  * fixture is a comment.
  */
+import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import {
@@ -19,6 +25,9 @@ import {
   extractBootReads,
   extractReads,
   forbiddenIn,
+  formatEnvLine,
+  parseEnvText,
+  parseEnvValue,
   readTree,
   renderExample,
   requiredRows,
@@ -286,8 +295,8 @@ describe("a render never crosses environments", () => {
       ]),
       derived: new Map([["package.json:version", "1.20.1"]]),
     });
-    expect(plan.body).toContain("DEMO_PIN=4321");
-    expect(plan.body).toContain("APP_VERSION=1.20.1");
+    expect(plan.body).toContain("DEMO_PIN='4321'");
+    expect(plan.body).toContain("APP_VERSION='1.20.1'");
     expect(plan.body).not.toContain("ADMIN_EMAILS");
     expect(plan.body).not.toContain("STRIPE_API_VERSION");
     expect(plan.resolutions.map((entry) => entry.name)).not.toContain("ADMIN_EMAILS");
@@ -372,7 +381,7 @@ describe("a render refuses a vault value on a retired endpoint", () => {
     expect(result.missing).toEqual([]);
     expect(result.resolutions[0].status).toBe("ok");
     expect(result.resolutions[0].note).toBeUndefined();
-    expect(result.body).toContain("DATABASE_URL=postgresql://");
+    expect(result.body).toContain("DATABASE_URL='postgresql://");
   });
 
   it("leaves a vault value that is not an address alone", () => {
@@ -403,12 +412,13 @@ describe("the checked-in template is the table's own projection", () => {
     row("DEMO_PIN", ["required", "required", "forbidden"], { carried: true }),
   ];
 
-  it("renders one `NAME=` per row, in table order, carrying no value", () => {
+  it("renders one empty-quoted value slot per row, in table order, carrying no value", () => {
     const text = renderExample(rows);
     expect(exampleNames(text)).toEqual(["DATABASE_URL", "BRAND", "DEMO_PIN"]);
-    // Every line that is a declaration ends at the `=`: the template is names and decisions only.
+    // The slot is the renderer's own syntax — `NAME=''` — so filling it in keeps the quotes that
+    // stop a `&` in a connection string from ending the shell assignment (#1422).
     const declarations = text.split("\n").filter((line) => /^[A-Z_][A-Z0-9_]*=/.test(line));
-    expect(declarations).toEqual(["DATABASE_URL=", "BRAND=", "DEMO_PIN="]);
+    expect(declarations).toEqual(["DATABASE_URL=''", "BRAND=''", "DEMO_PIN=''"]);
     // A split source is named per environment, which is the question a deployment failure asks.
     expect(text).toContain("production vault ALIGNSYNCH_PROD_DATABASE_URL");
     expect(text).toContain("production forbidden");
@@ -476,5 +486,152 @@ describe("a read through an env record that defaults to process.env", () => {
       },
     ]);
     expect([...reads.keys()]).toEqual(["RESEND_ENDPOINT"]);
+  });
+});
+
+/**
+ * #1422 — the rendered file is **sourced**, so a value is data only if bash agrees it is.
+ *
+ * The v2.1.0 cut refused on "DATABASE_URL is unset and --no-record was not passed" twice, and
+ * `demo:verify` blamed the wrong branch, because the renderer wrote a Neon URL bare:
+ *
+ *     $ bash -c 'X=a?b&c=d; echo X=$X'
+ *     X=                        ← the assignment was backgrounded empty; `c=d` ran as a command
+ *
+ * Every plain value still loaded, so the environment looked half-loaded and the failure was
+ * blamed on the wrong variable. These cases render a plan, write it to a file, source that file in
+ * a fresh bash with `set -a`, and compare **length and sha256** — never the value — so a regression
+ * is a red test rather than a release cut that cannot start.
+ */
+describe("a rendered env file loads whole in bash", () => {
+  /** Every character a shell would eat if the value were bare, and the URL that started this. */
+  const HOSTILE: ReadonlyMap<string, string> = new Map([
+    [
+      "FIXTURE_CONNECTION",
+      "postgresql://neondb_owner:***@ep-fancy-bar-pooler.c-8.us-east-2.aws.neon.tech/neondb" +
+        "?sslmode=require&channel_binding=require",
+    ],
+    ["FIXTURE_SPACES", "two words  and a tab\there"],
+    ["FIXTURE_EXPANSION", "literal $HOME and ${PATH} and `id` and $(id)"],
+    ["FIXTURE_HASH", "value # not a comment"],
+    ["FIXTURE_QUOTE", "it's a quote, and 'two' of them"],
+    ["FIXTURE_DQUOTE", 'a "double" quote'],
+    ["FIXTURE_BACKSLASH", "trailing backslash \\ and a \\n escape"],
+    ["FIXTURE_EMPTYISH", "-"],
+  ]);
+
+  /** One plan whose every row is a literal taken from `HOSTILE` — no vault, no network. */
+  const renderedRows: EnvRow[] = [...HOSTILE.entries()].map(([name, value]) => ({
+    ...row(name, ["required", "required", "required"], { literal: value }),
+  }));
+
+  const sha = (value: string): string => createHash("sha256").update(value).digest("hex");
+
+  /** A probe that prints length + hash per name, so a failing case never prints a value. */
+  const PROBE = [
+    'import { createHash } from "node:crypto";',
+    "const out = {};",
+    "for (const name of process.argv.slice(2)) {",
+    "  const value = process.env[name];",
+    '  out[name] = value === undefined ? null : [value.length, createHash("sha256").update(value).digest("hex")];',
+    "}",
+    "process.stdout.write(JSON.stringify(out));",
+  ].join("\n");
+
+  it("writes a single-quoted literal that re-parses to its own bytes", () => {
+    for (const [name, value] of HOSTILE) {
+      const line = formatEnvLine(name, value);
+      expect(line.startsWith(`${name}='`), name).toBe(true);
+      expect(line.endsWith("'"), name).toBe(true);
+      expect(parseEnvValue(line.slice(line.indexOf("=") + 1)), name).toBe(value);
+    }
+    // The one shape a `NAME=value` line cannot carry is a line break: refused, by name, and the
+    // message must not quote the value it refused.
+    let refusal = "";
+    try {
+      formatEnvLine("BROKEN", "secret\nsecond line");
+    } catch (error) {
+      refusal = error instanceof Error ? error.message : String(error);
+    }
+    expect(refusal).toContain("BROKEN");
+    expect(refusal).toContain("line break");
+    expect(refusal).not.toContain("secret");
+  });
+
+  it("sources in a fresh bash with every value byte-identical", () => {
+    const plan = planRender({ environment: "local", rows: renderedRows });
+    expect(plan.missing).toEqual([]);
+    const body = plan.body ?? "";
+    expect(body.length).toBeGreaterThan(0);
+
+    // The repo's own reader agrees with the file, key for key.
+    const parsed = parseEnvText(body);
+    for (const [name, value] of HOSTILE) expect(parsed.get(name), name).toBe(value);
+
+    // ...and so does bash, which is the half that was broken.
+    const directory = mkdtempSync(join(tmpdir(), "env-roundtrip-"));
+    try {
+      const file = join(directory, ".env.local");
+      const probe = join(directory, "probe.mjs");
+      writeFileSync(file, body);
+      writeFileSync(probe, PROBE);
+      const names = [...HOSTILE.keys()];
+      const raw = execFileSync(
+        "bash",
+        [
+          "-c",
+          `set -a; . ${JSON.stringify(file)}; node ${JSON.stringify(probe)} ${names.join(" ")}`,
+        ],
+        { encoding: "utf8" },
+      );
+      const seen = JSON.parse(raw) as Record<string, [number, string] | null>;
+
+      for (const name of names) {
+        const expected = HOSTILE.get(name) ?? "";
+        expect(seen[name], name).not.toBeNull();
+        // Length and hash: the assertion that proves bytes without printing them.
+        expect(seen[name]?.[0], name).toBe(expected.length);
+        expect(seen[name]?.[1], name).toBe(sha(expected));
+      }
+      // Every key the manifest asked for is present — the old bug left exactly one unset while
+      // its neighbours loaded, which is why the failure was reported against the wrong variable.
+      expect(Object.values(seen).filter((entry) => entry === null)).toEqual([]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it("leaves no rendered line unquoted", () => {
+    const plan = planRender({ environment: "local", rows: renderedRows });
+    for (const line of (plan.body ?? "").split("\n")) {
+      if (line === "" || line.startsWith("#")) continue;
+      expect(/^[A-Z_][A-Z0-9_]*='.*'$/.test(line), line.slice(0, line.indexOf("="))).toBe(true);
+    }
+  });
+
+  /**
+   * The vault holds one of these for real: `ALIGNSYNCH_GH_FEEDBACK_TOKEN` is a token plus a
+   * trailing newline, and a bare line used to carry it by accident. Trailing framing is dropped and
+   * said out loud — the value the app sees is unchanged — while a break *inside* a value has no
+   * representable form and is unresolved by name (`planRender`), refused if the row is required.
+   */
+  it("drops a trailing line break as framing, and refuses an interior one by name", () => {
+    const trailing = planRender({
+      environment: "local",
+      rows: [row("FEEDBACK_TOKEN", ["optional", "optional", "optional"], { literal: "sekrit\n" })],
+    });
+    expect(trailing.body).toContain("FEEDBACK_TOKEN='sekrit'");
+    expect(trailing.resolutions[0].status).toBe("ok");
+    expect(trailing.resolutions[0].note).toContain("ends with a line break");
+    expect(JSON.stringify(trailing.resolutions)).not.toContain("sekrit");
+
+    const interior = planRender({
+      environment: "local",
+      rows: [row("CERT", ["required", "required", "required"], { literal: "line one\nline two" })],
+    });
+    expect(interior.body).toBeNull();
+    expect(interior.missing.map((entry) => entry.name)).toEqual(["CERT"]);
+    expect(interior.missing[0].note).toContain("line break");
+    expect(JSON.stringify(interior.resolutions)).not.toContain("line one");
   });
 });

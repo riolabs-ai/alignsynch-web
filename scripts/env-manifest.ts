@@ -1136,27 +1136,87 @@ export function readTree(root: string): SourceFile[] {
 /** Modules that name env variables without reading them. */
 export const SCAN_SKIP = ["scripts/env-manifest.ts", "scripts/env-render.ts"];
 
-/** `NAME=value` pairs in one env file. Values are never printed by anything in this module. */
-export function parseEnvFile(path: string): Map<string, string> {
+/**
+ * The env-file syntax, in one place: **`NAME='value'`, every value a single-quoted shell literal.**
+ *
+ * This is not a style. The v2.1.0 cut refused on "DATABASE_URL is unset" twice, and `demo:verify`
+ * blamed the wrong branch, because an unquoted line
+ *
+ *     DATABASE_URL=postgresql://…/neondb?sslmode=require&channel_binding=require
+ *
+ * is two shell commands: `&` is a control operator, so `set -a; . .env.local` backgrounded the
+ * assignment (with an empty value) and ran `channel_binding=require` as a command. Every plain
+ * value loaded, so the environment looked half-loaded and the failure was attributed to the wrong
+ * variable. Double quotes would not fix it either — `$`, a backtick or a trailing `\` would expand.
+ * Single quotes are the one shell form that takes every byte literally; an embedded `'` is written
+ * `'\''` (close, escaped quote, reopen), which bash, `dash` and every *.env reader agree on.
+ *
+ * A line is written by `formatEnvLine` and read by `parseEnvValue`, so the two directions cannot
+ * drift: the renderer re-parses its own output before writing a file, and a value the line cannot
+ * carry (a line break) is refused by name rather than emitted half-loadable.
+ */
+export function formatEnvLine(name: string, value: string): string {
+  const carried = envFileValue(value);
+  if (/[\r\n]/.test(carried)) {
+    throw new Error(
+      `${name} contains a line break inside its value — a \`NAME=value\` line cannot carry one, ` +
+        "and a multi-line value in an env file silently breaks the file from that line down",
+    );
+  }
+  return `${name}='${carried.replaceAll("'", "'\\''")}'`;
+}
+
+/**
+ * The value as a `NAME=value` line can carry it.
+ *
+ * A **trailing** line break is framing, not data: it is what a vault row holds after somebody
+ * pasted a file, no env file can carry it, bash ends the line at it, and `parseEnvValue` trims it
+ * on the way back in. So it is dropped — which is a no-op against the value the application has
+ * always received — and `planRender` says so out loud rather than letting it look like a value.
+ * A line break *inside* a value is different: it cannot be written at all, and rendering it would
+ * break the file from that line down. `formatEnvLine` refuses it.
+ */
+export function envFileValue(value: string): string {
+  return value.replace(/[\r\n]+$/, "");
+}
+
+/**
+ * One value, in the syntax `formatEnvLine` writes.
+ *
+ * Bare values (everything this repo wrote before the quoting fix, and `neon env pull`'s output)
+ * are taken literally; a single-quoted value un-escapes `'\''`; a double-quoted value un-escapes
+ * `\"`. No expansion, no comment stripping — the whole point is that a value is bytes.
+ */
+export function parseEnvValue(raw: string): string {
+  const value = raw.trim();
+  if (value.length < 2) return value;
+  const first = value[0];
+  if (value[value.length - 1] !== first) return value;
+  if (first === "'") return value.slice(1, -1).replaceAll("'\\''", "'");
+  if (first === '"') return value.slice(1, -1).replaceAll('\\"', '"');
+  return value;
+}
+
+/** `NAME=value` pairs in one env file's text. Values are never printed by anything here. */
+export function parseEnvText(text: string): Map<string, string> {
   const entries = new Map<string, string>();
-  if (!existsSync(path)) return entries;
   const key = /^[A-Za-z_][A-Za-z0-9_]*$/;
-  for (const raw of readFileSync(path, "utf8").split(/\r?\n/)) {
+  for (const raw of text.split(/\r?\n/)) {
     const line = raw.trim();
     if (line === "" || line.startsWith("#")) continue;
     const separator = line.indexOf("=");
     if (separator === -1) continue;
     const name = line.slice(0, separator).trim();
     if (!key.test(name)) continue;
-    let value = line.slice(separator + 1).trim();
-    const quoted =
-      value.length >= 2 &&
-      ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'")));
-    if (quoted) value = value.slice(1, -1);
-    entries.set(name, value);
+    entries.set(name, parseEnvValue(line.slice(separator + 1)));
   }
   return entries;
+}
+
+/** `NAME=value` pairs in one env file. Values are never printed by anything in this module. */
+export function parseEnvFile(path: string): Map<string, string> {
+  if (!existsSync(path)) return new Map();
+  return parseEnvText(readFileSync(path, "utf8"));
 }
 
 /** The census line, in the one shape the gate prints it. */
@@ -1234,6 +1294,11 @@ export function renderExample(rows: readonly EnvRow[] = ENV_ROWS): string {
     "# absence honestly. `forbidden` — that deployment must not hold it. `pnpm env:check` fails when",
     "# this file and the table disagree in either direction, so a variable is documented by the",
     "# change that adds it and never by memory.",
+    "#",
+    "# The value slot is `NAME=''` — a single-quoted shell literal, in the syntax `pnpm env:render`",
+    "# writes. Keep the quotes when you fill one in: an unquoted value containing `&` (every Neon",
+    "# connection string does) ends the shell assignment there, and `. .env.local` silently loads a",
+    "# truncated environment.",
     "",
   ];
 
@@ -1258,7 +1323,10 @@ export function renderExample(rows: readonly EnvRow[] = ENV_ROWS): string {
       }
     }
     lines.push(...wrapLine(row.why, 100, "#   "));
-    lines.push(`${row.name}=`);
+    // The value slot is written in the file's own syntax — `NAME=''` — from the same formatter the
+    // renderer uses, so filling this template in produces a file that sources in bash without a
+    // second thought: `NAME=value` bare is how a `&` in a connection string truncates the line.
+    lines.push(formatEnvLine(row.name, ""));
     lines.push("");
   }
 
