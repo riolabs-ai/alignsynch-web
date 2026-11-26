@@ -1,20 +1,17 @@
 /**
- * The catalog builder's two absences — #1419. `prototypes/` is not in this repository yet (the
- * decision that commits it is a separate card), and the builder treated "there is no such tree" as
- * one condition. That is two conditions:
+ * The catalog builder's two absences — #1419. `prototypes/` is a tree that arrives by decision, so a
+ * checkout without it has nothing to publish; a source that was *declared* and does not resolve is
+ * broken input. The builder used to report both as one hard error, which is why `main` was red on
+ * every push before the tree landed — and why the fix must not go the other way and excuse a typo.
  *
- *   - **no input yet** — the default `./prototypes` is absent because nothing has been committed
- *     there. The workflow reports a notice and stops green; this script does the same **only** when
- *     it is told so explicitly, with `--allow-empty`.
- *   - **broken input** — a root that was named (a repository variable, a `--root` on a hand run, a
- *     typo) and does not resolve, a root that exists but carries almost nothing, a `--require`
- *     target that is not there. All of these stay exit 1. The default is the hard error, so a wrong
- *     path in a real run is still caught — the flag is a caller's statement about its own tree, never
- *     a property of the builder.
+ *   - **no input yet** — every declared source is absent, and the caller said so with
+ *     `--allow-empty`. Exit 0, nothing written, the previous build left alone.
+ *   - **broken input** — a source that does not resolve without that flag, a source that survives
+ *     while another is missing and cannot clear the floor, a missing `--require` target. Exit 1.
  *
- * Every case below runs the real CLI as a child process, because the flag only means anything at the
- * process boundary. The tree is a fixture directory, so nothing here depends on whether the
- * repository has prototypes today.
+ * Every case runs the real CLI as a child process, because the flag only means anything at that
+ * boundary. The trees are fixtures, so nothing here depends on whether this repository has
+ * prototypes today (it does, since #1420).
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
@@ -60,105 +57,124 @@ function cli(
   return { status: result.status, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
 }
 
-describe("an absent prototype root", () => {
-  it("is a hard error by default — a wrong path in a real run is still caught", () => {
-    const root = fixture("absent");
-    const result = cli(["--root", join(root, "prototypes"), "--out", join(root, "out")]);
+describe("a tree where every declared source is absent", () => {
+  it("is a hard error by default — a checkout that lost its tree is still caught", () => {
+    const root = tree();
+    const result = cli(["--out", "out"], root);
 
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /prototype root does not exist: .*prototypes/);
+    assert.match(result.stderr, /prototype source does not exist: .*prototypes/);
   });
 
   it("is 'nothing to build' only with --allow-empty, and writes nothing", () => {
-    const root = fixture("allow-empty");
+    const root = tree();
     const out = join(root, "out");
-    const result = cli(["--root", join(root, "prototypes"), "--out", out, "--allow-empty"]);
+    const result = cli(["--out", out, "--allow-empty"], root);
 
     assert.equal(result.status, 0);
-    assert.match(result.stdout, /prototype root absent \(.*prototypes\) — nothing to build/);
-    assert.equal(existsSync(out), false, "an empty run must not create or empty the output tree");
+    assert.match(result.stdout, /nothing to build — 2 declared source\(s\) absent/);
+    assert.match(result.stdout, /source absent \(.*prototypes\) — skipped/);
+    assert.equal(existsSync(out), false, "an empty run must not create the output tree");
   });
 
-  it("creates no output tree even when one already exists", () => {
-    const root = fixture("allow-empty-existing");
+  it("leaves a previous build exactly where it is", () => {
+    const root = tree();
     const out = join(root, "out");
     mkdirSync(out, { recursive: true });
-    writeFileSync(join(out, "keep.txt"), "previous build");
+    writeFileSync(join(out, "catalog.json"), "[]");
 
-    const result = cli(["--root", join(root, "prototypes"), "--out", out, "--allow-empty"]);
+    const result = cli(["--out", out, "--allow-empty"], root);
 
     assert.equal(result.status, 0);
-    assert.equal(readFileSync(join(out, "keep.txt"), "utf8"), "previous build");
+    assert.equal(readFileSync(join(out, "catalog.json"), "utf8"), "[]");
   });
 });
 
-describe("a prototype root that exists", () => {
-  it("builds, and --allow-empty changes nothing about it", () => {
+describe("a tree where one source survives and one is absent", () => {
+  it("still fails the floor — --allow-empty is not a licence for a short catalogue", () => {
+    const root = tree({ "prototypes/proof.html": PROTOTYPE });
+    const result = cli(
+      [
+        "--out",
+        "out",
+        "--source",
+        "prototypes",
+        "--source",
+        "prototypes-prod",
+        "--min-entries",
+        "2",
+        "--allow-empty",
+      ],
+      root,
+    );
+
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /catalog has 1 entries, expected at least 2/);
+  });
+
+  it("builds the surviving source when the caller accepts the absence", () => {
     const root = tree({ "prototypes/proof.html": PROTOTYPE });
     const out = join(root, "out");
-    const result = cli([
-      "--root",
-      join(root, "prototypes"),
-      "--out",
-      out,
-      "--min-entries",
-      "1",
-      "--allow-empty",
-    ]);
+    const result = cli(
+      [
+        "--out",
+        out,
+        "--source",
+        "prototypes",
+        "--source",
+        "prototypes-prod",
+        "--min-entries",
+        "1",
+        "--allow-empty",
+      ],
+      root,
+    );
 
     assert.equal(result.status, 0, result.stderr);
     assert.match(result.stdout, /entries: 1/);
+    assert.match(result.stdout, /source absent \(.*prototypes-prod\) — skipped/);
     assert.equal(existsSync(join(out, "p", "proof.html")), true);
-    assert.equal(JSON.parse(readFileSync(join(out, "catalog.json"), "utf8")).length, 1);
   });
+});
 
-  it("still fails when it carries nothing — --allow-empty is not a licence for an empty catalog", () => {
-    const root = tree({ "prototypes/notes.md": "no prototypes here" });
-    const result = cli([
-      "--root",
-      join(root, "prototypes"),
-      "--out",
-      join(root, "out"),
-      "--min-entries",
-      "250",
-      "--allow-empty",
-    ]);
+describe("a prototype source that exists", () => {
+  it("builds, and --allow-empty changes nothing about it", () => {
+    const root = tree({ "prototypes/proof.html": PROTOTYPE, "docs/page.html": PROTOTYPE });
+    const out = join(root, "out");
+    const result = cli(
+      ["--out", out, "--source", "prototypes", "--min-entries", "1", "--allow-empty"],
+      root,
+    );
 
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, /catalog has 0 entries, expected at least 250/);
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /entries: 1/);
+    assert.equal(JSON.parse(readFileSync(join(out, "catalog.json"), "utf8")).length, 1);
   });
 
   it("still fails when a --require target is missing", () => {
     const root = tree({ "prototypes/proof.html": PROTOTYPE });
-    const result = cli([
-      "--root",
-      join(root, "prototypes"),
-      "--out",
-      join(root, "out"),
-      "--require",
-      "project-spec/absent/deep-link.html",
-    ]);
+    const result = cli(
+      ["--out", "out", "--source", "prototypes", "--require", "project-spec/absent/deep-link.html"],
+      root,
+    );
 
     assert.equal(result.status, 1);
-    assert.match(
-      result.stderr,
-      /required prototype\(s\) missing from the catalog: project-spec\/absent/,
-    );
+    assert.match(result.stderr, /required prototype\(s\) missing from the catalog: project-spec/);
   });
 });
 
-describe("a typo'd root on a tree that has prototypes/", () => {
+describe("a typo'd source on a tree that has prototypes/", () => {
   it("exits non-zero — the name was given, so an absent directory is broken input", () => {
     const root = tree({ "prototypes/proof.html": PROTOTYPE });
-    const result = cli(["--root", "prototypes-prod", "--out", "out"], root);
+    const result = cli(["--out", "out", "--source", "prototypes-prod"], root);
 
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /prototype root does not exist: .*prototypes-prod/);
+    assert.match(result.stderr, /prototype source does not exist: .*prototypes-prod/);
   });
 
-  it("does not fail when the same tree is asked for its real root", () => {
+  it("does not fail when the same tree is asked for its real source", () => {
     const root = tree({ "prototypes/proof.html": PROTOTYPE });
-    const result = cli(["--root", "prototypes", "--out", "out", "--min-entries", "1"], root);
+    const result = cli(["--out", "out", "--source", "prototypes", "--min-entries", "1"], root);
 
     assert.equal(result.status, 0, result.stderr);
   });

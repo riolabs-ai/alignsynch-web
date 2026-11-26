@@ -1,20 +1,26 @@
 name: prototype catalog
 
-# Rebuilds https://alignsynch-mockups.vercel.app from the prototypes in this
-# repository and deploys it. main only: a preview deployment of unreleased
+# Rebuilds https://alignsynch-mockups.vercel.app from the prototypes committed in
+# this repository and deploys it. main only: a preview deployment of unreleased
 # prototypes would multiply the surface and leak them.
 #
-# The prototypes live at ./prototypes (override with the repo variable
-# PROTOTYPE_ROOT). `fetch-depth: 0` is not optional — dates come from
-# `git log -1 --format=%cs` and versions from `git describe --tags`, so a
-# shallow clone would mark every row as untracked.
+# The prototypes live in two places, and both are declared by the builder
+# (`scripts/build-prototype-catalog.mjs`), not by this file:
 #
-# TWO ABSENCES, TWO ANSWERS (#1419). `prototypes/` is not committed yet, so the
-# default root is legitimately absent and there is nothing to publish: the job
-# says so with a notice and stops green, because a red `main` for "no input"
-# teaches everyone to ignore this workflow. A root that was NAMED and does not
-# resolve — a typo in PROTOTYPE_ROOT, a moved tree — is broken input and fails
-# here, by name. Everything that needs the tree (the token, the build, the
+#   prototypes/   → project-spec/**, project-reqs/**   (committed under #1405)
+#   docs/         → quizhub/quizhub/docs/**            (this repo's docs tree)
+#
+# `fetch-depth: 0` is not optional — dates come from `git log -1 --format=%cs`
+# and versions from `git describe --tags`, so a shallow clone would mark every
+# row as untracked (and `--fail-on-untracked` below would then fail the run,
+# which is the point: a guessed date is not a shipped date).
+#
+# TWO ABSENCES, TWO ANSWERS (#1419). `prototypes/` is a tree that arrives by
+# decision, so a checkout that does not have it yet has nothing to publish: the
+# job says so with a notice and stops green, because a red `main` for "no input"
+# teaches everyone to ignore this workflow. A source that should be in every
+# checkout and is not — `docs/` — is broken input, and it fails here, by name.
+# Everything that needs the tree (the token, the history check, the build, the
 # deploy, the smoke check) is gated on the same verdict and stays exactly as
 # loud as it was: the point is to tell "no input yet" from "input is broken",
 # never to make the job quiet.
@@ -35,6 +41,10 @@ env:
   CATALOG_OUT: .catalog-site
   DEEP_LINK: project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html
   SITE: https://alignsynch-mockups.vercel.app
+  # The floor and the required row. 225 rows ship today (170 prototypes/ + 55 docs/);
+  # 220 leaves room to retire a handful without a red run, while still failing a
+  # checkout that cannot see the tree at all.
+  MIN_ENTRIES: 220
 
 jobs:
   deploy:
@@ -48,39 +58,27 @@ jobs:
 
       # The one judge. Everything below asks this step, so "is there a tree?" is
       # answered once and the answer is visible in the log rather than inferred
-      # from a stack of skipped steps. `configured` is what separates the two
-      # absences: the default root may legitimately not exist yet, a root that
-      # was named must.
+      # from a stack of skipped steps.
       #
-      # The repository variable arrives through `env` and is quoted in the
-      # script; it is never interpolated into a `run:` string, so its value
-      # cannot become shell syntax.
+      # `prototypes/` missing is the tree that has not arrived: a notice, and the
+      # job stops green. `docs/` missing is a checkout that lost its own source,
+      # which no notice can explain away — that is an error.
       - name: detect prototype root
         id: root
-        env:
-          VAR_ROOT: ${{ vars.PROTOTYPE_ROOT }}
         run: |
           set -euo pipefail
-          if [ -n "${VAR_ROOT:-}" ]; then
-            root="$VAR_ROOT"
-            configured=true
-          else
-            root=prototypes
-            configured=false
-          fi
-          echo "path=$root" >> "$GITHUB_OUTPUT"
-          echo "configured=$configured" >> "$GITHUB_OUTPUT"
-          if [ -d "$root" ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-            echo "prototype root present: $root"
-            exit 0
-          fi
-          echo "present=false" >> "$GITHUB_OUTPUT"
-          if [ "$configured" = "true" ]; then
-            echo "::error::PROTOTYPE_ROOT is set to '$root' but that directory does not exist in this tree. A named root that does not resolve is broken input, not missing input — fix the path, or unset the repository variable to build from ./prototypes."
+          if [ ! -d docs ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::error::the docs source (docs/) is missing from this checkout. That is a broken tree, not a tree with nothing to build — docs/ is in every checkout of this repository."
             exit 1
           fi
-          echo "::notice::prototype root absent (./$root) — nothing to build yet. The prototypes are committed by the decision tracked in issue 1405 and this workflow rebuilds and deploys them the moment they land. Nothing was built and nothing was deployed."
+          if [ ! -d prototypes ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::prototype root absent (./prototypes) — nothing to build yet. The prototypes are committed by the decision tracked in issue 1405 and this workflow rebuilds and deploys them the moment they land. Nothing was built and nothing was deployed."
+            exit 0
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "prototype root present: ./prototypes"
 
       # Fail loudly and first: a missing token must never look like a skipped
       # deploy. Without this the Vercel CLI fails later with an auth error that
@@ -101,18 +99,26 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      # Dates and tags are the whole point of this workflow, so refuse to build
+      # from anything but a full, tracked checkout.
+      - name: check out full history
+        if: steps.root.outputs.present == 'true'
+        run: |
+          set -euo pipefail
+          git rev-parse --is-shallow-repository | grep -qx false || {
+            echo "::error::shallow clone — git dates and tags would be guesses"; exit 1; }
+          echo "commits: $(git rev-list --count HEAD) · tags: $(git tag | wc -l)"
+
       # No --allow-empty here on purpose: this step only runs when the tree was
-      # found, so the builder keeps its strict default and a root that vanished
+      # found, so the builder keeps its strict default and a source that vanished
       # between the two steps still fails loudly.
       - name: build catalog
         if: steps.root.outputs.present == 'true'
-        env:
-          PROTOTYPE_ROOT: ${{ steps.root.outputs.path }}
         run: |
           node scripts/build-prototype-catalog.mjs \
-            --root "$PROTOTYPE_ROOT" \
             --out "$CATALOG_OUT" \
-            --min-entries 250 \
+            --min-entries "$MIN_ENTRIES" \
+            --fail-on-untracked \
             --require "$DEEP_LINK"
 
       - name: deploy to production
@@ -134,10 +140,25 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE/p/$DEEP_LINK")
-            rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})')
+            rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})' )
             echo "attempt $attempt: deep link $code · live rows $rows"
-            if [ "$code" = "200" ] && [ "$rows" -ge 250 ]; then exit 0; fi
+            if [ "$code" = "200" ] && [ "$rows" -ge "$MIN_ENTRIES" ]; then exit 0; fi
             sleep 10
           done
           echo "::error::catalog deploy did not converge — deep link $code, live rows $rows"
           exit 1
+
+      - name: summary
+        if: always()
+        run: |
+          {
+            echo "### prototype catalog"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| commit | \`${GITHUB_SHA:0:8}\` |"
+            echo "| required row | \`$DEEP_LINK\` |"
+            echo "| floor | $MIN_ENTRIES rows |"
+            echo "| tree | prototypes/ present: ${{ steps.root.outputs.present }} |"
+            echo "| site | $SITE |"
+          } >> "$GITHUB_STEP_SUMMARY"

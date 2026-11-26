@@ -1,5 +1,5 @@
 {
-  "pr": 1420,
+  "pr": 1421,
   "date": "2026-11-26",
   "area": "ci",
   "summary": "`prototype-catalog.yml` asks one question before it builds — is there a tree? — and answers two ways: a notice and a green job when `./prototypes` is absent, a named failure when `PROTOTYPE_ROOT` does not resolve.",

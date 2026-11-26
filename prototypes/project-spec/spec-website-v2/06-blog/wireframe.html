@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blog · AlignSynch</title>
+<meta name="description" content="Notes on getting in synch.">
+
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="css/wire.css">
+</head>
+<body>
+<div class="wf-bar"><span>WIREFRAME · Blog · low-fi, greyscale · numbered notes below cite WEB-xx + PDF page</span><span>spec-website-v2 · R0</span></div><a class="skip" href="#main">Skip to Content</a>
+<header class="nav" data-n="1" data-note="WEB-01 Global nav · PDF p5, p81 · Docs links out to the docs site (WEB-17). Items and order come from CONFIG nav.">
+ <div class="wrap">
+  <a class="brand" href="../01-home/wireframe.html" aria-label="AlignSynch home"><img src="images/mark.png" alt="" width="34" height="26"><span>Align<span class="l">Synch</span></span></a>
+  <nav aria-label="Main"><ul><li><a href="../01-home/wireframe.html">Home</a></li><li><a href="../02-features/wireframe.html">Features</a></li><li><a href="../03-pricing/wireframe.html">Pricing</a></li><li><a href="../04-about/wireframe.html">About</a></li><li><a href="../06-blog/wireframe.html" aria-current=page>Blog</a></li><li><a href="../05-contact-support/wireframe.html">Support</a></li><li><a class="ext" href="https://alignsynch-v2-docs-preview.vercel.app/">Docs</a></li></ul></nav>
+  <div class="act"><a class="signin" href="https://app.alignsynch.com/sign-in">Sign In</a><a class="btn btn-scale btn-sm" href="https://app.alignsynch.com/start">Start <span class="hide-sm">7 Days </span>Free</a>
+  <button class="menu-btn" aria-expanded="false" aria-controls="msheet" aria-label="Open menu"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div>
+ </div>
+</header>
+<div class="msheet" id="msheet" hidden><a href="../01-home/wireframe.html">Home</a><a href="../02-features/wireframe.html">Features</a><a href="../03-pricing/wireframe.html">Pricing</a><a href="../04-about/wireframe.html">About</a><a href="../06-blog/wireframe.html">Blog</a><a href="../05-contact-support/wireframe.html">Support</a><a href="https://alignsynch-v2-docs-preview.vercel.app/">Docs ↗</a><a href="https://app.alignsynch.com/sign-in">Sign In</a><a class="btn btn-scale" href="https://app.alignsynch.com/start">Start 7 Days Free</a></div>
+<main id="main">
+<!-- section: page-hero -->
+<section class="phero" data-n="3" data-note="WEB-15 Blog index · PDF p5 (Blog), p81 &#x27;Community Blog (only our posting of articles)&#x27;: team posts only, no comments. OFFSET: PDF p4 WordPress → MDX files in the repo."><div class="glow" aria-hidden="true"></div><div class="wrap"><span class="eyebrow">Blog</span><h1 class="d2">Notes on Getting <span class="it">In Synch.</span></h1><p class="lede">Short, practical posts on talking about the things that matter.</p></div></section>
+<!-- section: post-list -->
+<section class="section"><div class="wrap">
+ <div class="legend" data-n="4" data-note="WEB-15 Category filter · categories come from MDX front matter (CONFIG blog). Plain links, 44px."><a class="btn btn-sm" href="#">All</a><a class="btn btn-ghost btn-sm" href="#">Communication</a><a class="btn btn-ghost btn-sm" href="#">Work</a><a class="btn btn-ghost btn-sm" href="#">Family</a><a class="btn btn-ghost btn-sm" href="#">Product</a></div>
+ <a class="post" href="wireframe-post.html" style="text-decoration:none;display:grid;grid-template-columns:1.2fr 1fr;margin-bottom:22px" data-n="5" data-note="WEB-15 Featured post · newest post with featured: true. Titles here are DRAFT TOPICS, not published posts; R0 can launch with zero posts."><div class="art alt" style="aspect-ratio:auto;min-height:280px"></div><div class="body" style="align-content:center;padding:36px"><span class="ph">Draft Topic · Product</span><h3 style="font-size:34px">Feel vs. Wish: The Two Questions Behind Every Gap</h3><span class="muted">AlignSynch Team · placeholder date · 4 min read</span></div></a>
+ <div class="post-grid" data-n="6" data-note="WEB-15 Post grid · 3 / 2 / 1 columns at 1280 / 768 / 390. Cover art is a generated gradient from the brand scale unless the post sets an image."><a class="post" href="wireframe-post.html" style="text-decoration:none"><div class="art "></div><div class="body"><span class="ph">Draft Topic · Communication</span><h3>How to Bring Up a Hard Topic Softly</h3><span class="muted" style="font-size:14px">AlignSynch Team · placeholder date</span></div></a><a class="post" href="wireframe-post.html" style="text-decoration:none"><div class="art alt2"></div><div class="body"><span class="ph">Draft Topic · Communication</span><h3>Why Talking for Hours Doesn't Mean You're Aligned</h3><span class="muted" style="font-size:14px">AlignSynch Team · placeholder date</span></div></a><a class="post" href="wireframe-post.html" style="text-decoration:none"><div class="art "></div><div class="body"><span class="ph">Draft Topic · Work</span><h3>Five Aspects Worth Checking With a Co-Founder</h3><span class="muted" style="font-size:14px">AlignSynch Team · placeholder date</span></div></a><a class="post" href="wireframe-post.html" style="text-decoration:none"><div class="art alt"></div><div class="body"><span class="ph">Draft Topic · Product</span><h3>What a Small Gap Really Means</h3><span class="muted" style="font-size:14px">AlignSynch Team · placeholder date</span></div></a><a class="post" href="wireframe-post.html" style="text-decoration:none"><div class="art alt2"></div><div class="body"><span class="ph">Draft Topic · Family</span><h3>Checking In With a Sibling About Parent Decisions</h3><span class="muted" style="font-size:14px">AlignSynch Team · placeholder date</span></div></a></div>
+</div></section>
+</main>
+<footer class="foot" data-n="2" data-note="WEB-02 Footer · PDF p5 · links to every WEB-scope page incl. Terms, Privacy, Contact.">
+ <div class="wrap"><div class="cols">
+  <div><a class="brand" href="../01-home/wireframe.html"><img src="images/mark.png" alt="" width="34" height="26"><span style="color:var(--on-ink)">Align<span class="l">Synch</span></span></a>
+   <p style="margin-top:16px;max-width:30ch">A soft communication tool for finding out if two people are on the same page.</p></div>
+  <div><h4>Product</h4><ul><li><a href="../02-features/wireframe.html">Features</a></li><li><a href="../01-home/wireframe.html#how-it-works">How It Works</a></li><li><a href="../03-pricing/wireframe.html">Pricing</a></li></ul></div>
+  <div><h4>Company</h4><ul><li><a href="../04-about/wireframe.html">About</a></li><li><a href="../06-blog/wireframe.html">Blog</a></li><li><a href="../05-contact-support/wireframe.html#contact">Contact</a></li></ul></div>
+  <div><h4>Help</h4><ul><li><a href="../05-contact-support/wireframe.html">Support</a></li><li><a href="https://alignsynch-v2-docs-preview.vercel.app/">Documentation ↗</a></li><li><a href="../01-home/wireframe.html#faq">FAQ</a></li></ul></div>
+  <div><h4>Legal</h4><ul><li><a href="../07-legal/wireframe.html">Terms</a></li><li><a href="../07-legal/wireframe-privacy.html">Privacy</a></li></ul></div>
+ </div><div class="base"><span>© 2026 AlignSynch. All rights reserved.</span><span>Not a substitute for professional counseling.</span></div></div>
+</footer><section class="wf-notes"><div class="wrap"><h2>Annotations</h2><ol><li><b class="n">1</b><span>WEB-01 Global nav · PDF p5, p81 · Docs links out to the docs site (WEB-17). Items and order come from CONFIG nav.</span></li><li><b class="n">2</b><span>WEB-02 Footer · PDF p5 · links to every WEB-scope page incl. Terms, Privacy, Contact.</span></li><li><b class="n">3</b><span>WEB-15 Blog index · PDF p5 (Blog), p81 &#x27;Community Blog (only our posting of articles)&#x27;: team posts only, no comments. OFFSET: PDF p4 WordPress → MDX files in the repo.</span></li><li><b class="n">4</b><span>WEB-15 Category filter · categories come from MDX front matter (CONFIG blog). Plain links, 44px.</span></li><li><b class="n">5</b><span>WEB-15 Featured post · newest post with featured: true. Titles here are DRAFT TOPICS, not published posts; R0 can launch with zero posts.</span></li><li><b class="n">6</b><span>WEB-15 Post grid · 3 / 2 / 1 columns at 1280 / 768 / 390. Cover art is a generated gradient from the brand scale unless the post sets an image.</span></li></ol></div></section>
+<script src="js/site.js"></script>
+</body>
+</html>

@@ -19,18 +19,45 @@ opens the artefact itself, not a copy of its text.
 | Is it indexed?                   | No — the index carries `noindex,nofollow`. The files are public, not listed                                                      |
 | Can a prototype be edited there? | No. The copies are byte-identical artefacts; edit the source file and merge again                                                |
 
+## Where the prototypes come from
+
+The site used to be a snapshot assembled by hand, so 175 of its 252 rows existed only on one
+workstation and no main-branch build could reproduce it. The prototypes are now committed, and the
+builder's sources are declared in one place (`DEFAULT_SOURCES` in the script):
+
+| Source                     | Catalogue path           | Rows | What it is                                                                                                                    |
+| -------------------------- | ------------------------ | ---: | ----------------------------------------------------------------------------------------------------------------------------- |
+| `prototypes/project-spec/` | `project-spec/…`         |  167 | the approved design handoffs, committed byte-identical to what the live site serves                                           |
+| `prototypes/project-reqs/` | `project-reqs/…`         |    3 | the requirement exhibits from the same history                                                                                |
+| `docs/`                    | `quizhub/quizhub/docs/…` |   55 | this repo's docs tree; the long `quizhub/quizhub` prefix is kept because it is the path every existing deep link already uses |
+
+225 rows in total. The old snapshot's 252 also counted 24 pages of `inbox/` — scratch, not product
+history, and deliberately **not** published — and four incidental HTML files the walker picked up
+(`quizhub/documentation/…` and `lib/quizhub/…` copies of the same player page). Neither is a
+prototype, so neither is committed, and the live catalogue is 27 rows smaller than the snapshot for
+that reason alone.
+
+An empty prefix means a file keeps its path relative to the source directory; `--source
+<dir>[:<prefix>]` declares an extra one, and two sources claiming the same catalogue path is a
+refusal rather than a last-write-wins.
+
 ## What the two columns mean
 
 The catalogue used to guess both. It no longer does.
 
-| Column      | Derived from                                                                                             | When it cannot be derived                                                                                               |
-| ----------- | -------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **date**    | `git log -1 --format=%cs -- <path>` — the last commit that touched the file                              | The row falls back to the file's mtime, prints in amber with a `*`, and carries `dateSource: "mtime"` in `catalog.json` |
-| **version** | `git describe --tags --abbrev=0 <sha>` on that same commit — the nearest release tag the file shipped in | The row prints `—` and carries `version: null`, `versionSource: "none"`                                                 |
+| Column      | Derived from                                                                                                                                                                                      | When it cannot be derived                                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **date**    | `git log -1 --format=%cs -- <path>` — the committer date of the last commit that touched the file                                                                                                 | The row falls back to the file's mtime, prints in amber with a `*`, and carries `dateSource: "mtime"`, `untracked: true` in `catalog.json` |
+| **version** | `git describe --tags --abbrev=0 <sha>` on that same commit — the nearest release tag reachable from it — plus `git rev-list --count <tag>..<sha>`, how many commits past that tag the file landed | The row prints `—` and carries `version: null`, `versionSource: "none"`                                                                    |
 
-`catalog.json` therefore answers _where each fact came from_, per row: `dateSource` is `git` or `mtime`,
-`versionSource` is `tag` or `none`, and `untracked` is true exactly when the file is in no repository.
-A filename that happens to contain `v2` is not evidence and is not read.
+A version reads `v2.0.0-rc2+40`: the file landed forty commits after `v2.0.0-rc2`. The bare tag alone
+would claim the file shipped _in_ that release, which is the same kind of guess as reading `v2` out of
+a filename — so the distance is part of the value, and `versionTag` / `versionDistance` carry the two
+halves separately.
+
+`catalog.json` therefore answers _where each fact came from_, per row: `dateSource` is `git` or
+`mtime`, `versionSource` is `tag` or `none`, and `untracked` is true exactly when the file is in no
+repository. A filename that happens to contain `v2` is not evidence and is not read.
 
 **`git describe` takes a commit, not a path.** `git describe --tags --abbrev=0 -- <path>` exits with
 `fatal: Not a valid object name <path>`; the builder resolves the commit first and describes that.
@@ -38,20 +65,45 @@ A filename that happens to contain `v2` is not evidence and is not read.
 ## Running it by hand
 
 ```bash
-node scripts/build-prototype-catalog.mjs --root <prototypes dir> --out .catalog-site \
-  --min-entries 250 --require project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html
+pnpm catalog:build   # node scripts/build-prototype-catalog.mjs --out .catalog-site …
 ```
 
-`--min-entries` and `--require` exist because a build that quietly loses most of its rows is worse than
-a red workflow: the workflow passes both, so a checkout that cannot see the full set fails instead of
-publishing a short catalogue over a complete one.
+which is exactly what CI runs: `--min-entries 220 --fail-on-untracked --require
+project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html`. The three guards exist
+because a build that quietly loses most of its rows, or fills a date in from a file's mtime, is worse
+than a red workflow:
 
-A root that does not exist is a **hard error** by default, for the same reason: a `--root` that was
-typed and does not resolve is a broken run, and it must not read as a successful empty one. `--allow-empty`
-says "an absent root means there is nothing to publish yet"; it writes no output at all — a previous
-build in `--out` is left exactly where it is — and it excuses nothing else (too few rows still fails
-`--min-entries`, a missing `--require` target still fails). The workflow does not pass it; it gates the
-build step on the tree instead, so CI keeps the strict default.
+- `--min-entries 220` — a checkout that cannot see the tree fails instead of publishing a short
+  catalogue over a complete one (225 rows ship today; the floor leaves room to retire a few).
+- `--require <path>` — the deep link in the card, so the one URL the release note names can never
+  fall out of the set silently.
+- `--fail-on-untracked` — a prototype that git does not track gets an mtime guess. The builder marks
+  that row (`dateSource: "mtime"`, amber `*`); CI refuses it outright, so a guess can never ship as
+  a date.
+
+`.catalog-site/` is gitignored: it is the deploy input, not a committed artifact.
+
+## Two absences, two answers
+
+`prototypes/` is a tree that arrives by decision (#1405), so the workflow has to survive a checkout
+that does not have it yet without going quiet about a checkout that is broken. One step decides — the
+`detect prototype root` step — and everything that needs the tree is gated on its `present` output.
+
+| What the tree looks like                                  | Workflow                                                                                                        | Builder                                                          |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `prototypes/` absent                                      | green: `::notice::prototype root absent (./prototypes) — nothing to build yet`; nothing built, nothing deployed | exit 1 — `--allow-empty` is how a caller says "nothing to build" |
+| `docs/` absent                                            | red: `::error::the docs source (docs/) is missing from this checkout` — a broken tree, not an empty one         | exit 1                                                           |
+| a declared source that does not resolve, in a hand run    | n/a                                                                                                             | exit 1 — a typo in `--source` is broken input, not missing input |
+| root present, rows under the floor, or a `--require` gone | red                                                                                                             | exit 1                                                           |
+| `VERCEL_TOKEN` absent                                     | red, naming the secret                                                                                          | n/a                                                              |
+| build error, or a deploy that never converges             | red, naming the reason                                                                                          | exit 1                                                           |
+
+The two failures stay different on purpose, and the quiet direction is the dangerous one: a guard that
+skipped on _any_ absent directory would turn a wrong `--source` into a green run that deployed nothing.
+So the default is the hard error, and `--allow-empty` is the caller's statement about its own tree —
+it writes no output at all (a previous build in `--out` is left where it is), and a run where some
+sources survive still has to clear `--min-entries`, `--require` and `--fail-on-untracked`. CI does not
+pass the flag; it gates the steps instead, so the builder keeps its strict default there.
 
 ## Secrets the workflow needs
 
@@ -61,37 +113,14 @@ build step on the tree instead, so CI keeps the strict default.
 | `VERCEL_ORG_ID`     | `team_kA2uEuTmRU2RhACF1Len0GES`               | The deploy step fails naming the missing secret                                            |
 | `VERCEL_PROJECT_ID` | `prj_rr0WB1ExFvmLWgT7vZPat4Tq2iQ7`            | The deploy step fails naming the missing secret                                            |
 
-`fetch-depth: 0` in the checkout is load-bearing: a shallow clone has neither history nor tags, and
-every row would be marked as an mtime guess.
-
-## Two absences, two answers
-
-Only 77 of the 252 rows are in a repository (54 in `docs/`, 23 in an unrelated local tree); the other
-175 — including the deep-link target above — live on one workstation. The workflow therefore expects the
-prototypes at `./prototypes` (override: the repository variable `PROTOTYPE_ROOT`), and the decision that
-commits them is tracked in issue 1405. Until then the default root is legitimately absent, and the
-workflow has to survive a tree with nothing to publish without going quiet about a tree it cannot read.
-
-| What the tree looks like                                             | Workflow                                                                                                                  | Builder                                                          |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `./prototypes` absent, no `PROTOTYPE_ROOT` set                       | green, one step: `::notice::prototype root absent (./prototypes) — nothing to build yet`; nothing built, nothing deployed | exit 1 — `--allow-empty` is how a caller says "nothing to build" |
-| `PROTOTYPE_ROOT` set to a path that is not in the tree (a typo)      | red: `::error::PROTOTYPE_ROOT is set to '…' but that directory does not exist in this tree`                               | exit 1 — the workflow passes no flag                             |
-| root present, fewer rows than `--min-entries`, or a `--require` gone | red                                                                                                                       | exit 1                                                           |
-| `VERCEL_TOKEN` absent                                                | red, naming the secret                                                                                                    | n/a                                                              |
-| build error, or a deploy that never converges                        | red, naming the reason                                                                                                    | exit 1                                                           |
-
-The one judge is the `detect prototype root` step; every step that needs the tree — the token, the build,
-the deploy, the smoke check — is gated on its `present` output. So the answer is one visible line in the
-log rather than a stack of skipped steps, and **the two failures stay different**: "no input yet" is a
-notice, "input is broken" is a failure. A named root that does not resolve is the second one, which is why
-a typo fails instead of skipping — a guard that skipped on any absent directory would turn a wrong
-`PROTOTYPE_ROOT` into a green run that deployed nothing, which is the state this workflow exists to make
-impossible.
+`fetch-depth: 0` in the checkout is load-bearing: a shallow clone has neither history nor tags, so
+every date and every version would be a guess. The workflow proves the clone is not shallow before
+it builds, and `--fail-on-untracked` is the second net.
 
 ## What this page is not
 
-It is not a catalogue. The live site is. This page is the mechanism — how a row gets its date, why a
-version is missing, and what breaks when a token is absent.
+It is not a catalogue. The live site is. This page is the mechanism — where the rows come from, how a
+row gets its date, why a version carries a `+N`, and what breaks when a token is absent.
 
 <!-- docs-nav:begin -->
 

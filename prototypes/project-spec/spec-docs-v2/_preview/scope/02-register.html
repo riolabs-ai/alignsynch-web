@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Spec 2.0 · Register · AlignSynch Docs</title>
+  <meta name="description" content="Create an account, sign in, land on your relationships. Agreed in 2024 against v2.0 today." />
+  <link rel="icon" type="image/png" href="/assets/brand/alignsynch-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button class="menu-btn" type="button" aria-label="Open navigation" data-menu-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <a class="brand" href="/">
+        <img src="/assets/brand/alignsynch-logo.png" alt="" width="28" height="28" />
+        <span>AlignSynch <em>Docs</em></span>
+      </a>
+      <span class="preview-badge">v2 preview</span>
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Toggle color theme">Theme</button>
+    </header>
+    <div class="body">
+      <aside class="sidebar" id="sidebar">
+        <a class="nav-home" href="/">Overview</a>
+<div class="nav-extra">
+<a class="" href="/README.html">Docs plan</a>
+<a class="" href="/INVENTORY.html">Feature inventory</a>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Project Spec 2.0</div>
+<div class="nav-group"><div class="nav-group-label">Overview</div><ul>
+<li><a class="nav-link" href="/scope/index.html">Index</a></li>
+</ul></div>
+<div class="nav-group nav-group--fixed" data-fixed="true" aria-expanded="true"><div class="nav-group-label">Validation</div><ul>
+<li><a class="nav-link" href="/scope/validation.html">Validation</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Story</div><ul>
+<li><a class="nav-link" href="/scope/01-play-with-aspects.html">01 Play With Aspects</a></li>
+<li><a class="nav-link is-active" href="/scope/02-register.html">02 Register</a></li>
+<li><a class="nav-link" href="/scope/03-invite.html">03 Invite</a></li>
+<li><a class="nav-link" href="/scope/04-opinions.html">04 Opinions</a></li>
+<li><a class="nav-link" href="/scope/05-share.html">05 Share</a></li>
+<li><a class="nav-link" href="/scope/06-discuss.html">06 Discuss</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Around the Story</div><ul>
+<li><a class="nav-link" href="/scope/07-billing.html">07 Billing</a></li>
+<li><a class="nav-link" href="/scope/08-coaches.html">08 Coaches</a></li>
+<li><a class="nav-link" href="/scope/09-admin.html">09 Admin</a></li>
+<li><a class="nav-link" href="/scope/10-website.html">10 Website</a></li>
+<li><a class="nav-link" href="/scope/11-launch-and-operations.html">11 Launch and Operations</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Builder Docs</div>
+<div class="nav-group"><div class="nav-group-label">Introduction</div><ul>
+<li><a class="nav-link" href="/start/what-is-alignsynch.html">What Is Alignsynch</a></li>
+<li><a class="nav-link" href="/start/quickstart.html">Quickstart</a></li>
+<li><a class="nav-link" href="/start/core-concepts.html">Core Concepts</a></li>
+<li><a class="nav-link" href="/start/plans-and-trial.html">Plans and Trial</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Guides</div>
+<div class="nav-group"><div class="nav-group-label">Initiator</div><ul>
+<li><a class="nav-link" href="/guides/initiator/pick-a-template.html">Pick a Template</a></li>
+<li><a class="nav-link" href="/guides/initiator/set-up-details-settings-and-aspects.html">Set Up Details Settings and Aspects</a></li>
+<li><a class="nav-link" href="/guides/initiator/create-your-account.html">Create Your Account</a></li>
+<li><a class="nav-link" href="/guides/initiator/send-the-invite.html">Send the Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/edit-a-draft-or-sent-invite.html">Edit a Draft or Sent Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/copy-resend-or-cancel-an-invite.html">Copy Resend or Cancel an Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/if-a-draft-cant-be-created.html">If a Draft Cant Be Created</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-relationships-and-start.html">My Relationships and Start</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-templates.html">My Templates</a></li>
+<li><a class="nav-link" href="/guides/initiator/your-7-days-free.html">Your 7 Days Free</a></li>
+<li><a class="nav-link" href="/guides/initiator/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/initiator/add-a-card-or-take-your-extra-week.html">Add a Card or Take Your Extra Week</a></li>
+<li><a class="nav-link" href="/guides/initiator/payment.html">Payment</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Counterparty</div><ul>
+<li><a class="nav-link" href="/guides/counterparty/accept-or-decline-an-invite.html">Accept or Decline an Invite</a></li>
+<li><a class="nav-link" href="/guides/counterparty/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/counterparty/save-these-aspects-as-a-template.html">Save These Aspects as a Template</a></li>
+<li><a class="nav-link" href="/guides/counterparty/ask-to-be-removed.html">Ask to Be Removed</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Both People</div><ul>
+<li><a class="nav-link" href="/guides/shared/answer-the-assessment.html">Answer the Assessment</a></li>
+<li><a class="nav-link" href="/guides/shared/results-and-align.html">Results and Align</a></li>
+<li><a class="nav-link" href="/guides/shared/propose-a-change.html">Propose a Change</a></li>
+<li><a class="nav-link" href="/guides/shared/chat-and-discussion.html">Chat and Discussion</a></li>
+<li><a class="nav-link" href="/guides/shared/leave-a-relationship.html">Leave a Relationship</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Account & Settings</div><ul>
+<li><a class="nav-link" href="/guides/account/account-menu.html">Account Menu</a></li>
+<li><a class="nav-link" href="/guides/account/profile-and-password.html">Profile and Password</a></li>
+<li><a class="nav-link" href="/guides/account/delete-your-account.html">Delete Your Account</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Admin</div><ul>
+<li><a class="nav-link" href="/guides/admin/crud-and-permissions.html">Crud and Permissions</a></li>
+<li><a class="nav-link" href="/guides/admin/email-templates.html">Email Templates</a></li>
+<li><a class="nav-link" href="/guides/admin/who-sees-the-admin-rail.html">Who Sees the Admin Rail</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Reference</div>
+<div class="nav-group"><div class="nav-group-label">Stages 1–6</div><ul>
+<li><a class="nav-link" href="/reference/stages/stage-1-details.html">Stage 1 Details</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-2-settings.html">Stage 2 Settings</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-3-aspects.html">Stage 3 Aspects</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-4-account.html">Stage 4 Account</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-5-invite.html">Stage 5 Invite</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-6-align.html">Stage 6 Align</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">States & Status</div><ul>
+<li><a class="nav-link" href="/reference/states/relationship-states-by-role.html">Relationship States By Role</a></li>
+<li><a class="nav-link" href="/reference/states/status-chips.html">Status Chips</a></li>
+<li><a class="nav-link" href="/reference/states/answer-scale.html">Answer Scale</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Emails</div><ul>
+<li><a class="nav-link" href="/reference/emails/invitation.html">Invitation</a></li>
+<li><a class="nav-link" href="/reference/emails/counterparty-joined.html">Counterparty Joined</a></li>
+<li><a class="nav-link" href="/reference/emails/trial-started.html">Trial Started</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-initiator.html">Paused Initiator</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-counterparty.html">Paused Counterparty</a></li>
+<li><a class="nav-link" href="/reference/emails/release-notes-and-banners.html">Release Notes and Banners</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Copy & Glossary</div><ul>
+<li><a class="nav-link" href="/reference/copy/glossary.html">Glossary</a></li>
+<li><a class="nav-link" href="/reference/copy/retired-terms.html">Retired Terms</a></li>
+<li><a class="nav-link" href="/reference/copy/copy-rules.html">Copy Rules</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Changelog</div><ul>
+<li><a class="nav-link" href="/reference/changelog.html">Changelog</a></li>
+</ul></div>
+</div>
+      </aside>
+      <div class="overlay" data-menu-toggle hidden></div>
+      <main class="main">
+        <article class="article" id="article">
+          
+        <header class="doc-header">
+          <div class="doc-pills"><span class="pill pill-info">Local Only · ✓ 3 Delivered · ★ 1 Over-Delivered · ◐ 1 Partial · ⇄ 1 Offset · ◌ 3 Tentative</span><span class="pill pill-audience">Jaden</span><span class="pill pill-audience">Walt</span><span class="pill pill-audience">Hermes</span></div>
+          <h1>Project Spec 2.0 · Register</h1>
+          <p class="doc-summary">Create an account, sign in, land on your relationships. Agreed in 2024 against v2.0 today.</p>
+        </header>
+        
+          <p>Create an account, sign in, land on your relationships.</p>
+<blockquote>
+<p><strong>Confidential:</strong> this page draws on the 2024 Consulting Agreement, which is under NDA (Exhibit C). It stays local and off the public preview. Fees are not reproduced; see Exhibit B.</p>
+</blockquote>
+<h2 id="agreed">Agreed</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Page</th>
+<th>Agreed in 2024</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP-12</td>
+<td>p87, p121</td>
+<td>“User Registration … Create Account Button”</td>
+</tr>
+<tr>
+<td>APP-13</td>
+<td>p87, p121</td>
+<td>“UserName [we want this so that email is not the users unique identifier]”</td>
+</tr>
+<tr>
+<td>APP-14</td>
+<td>p9, p87</td>
+<td>“Added Age to User Registration … Age-Based Templates in future”</td>
+</tr>
+<tr>
+<td>APP-15</td>
+<td>p88</td>
+<td>“Create Account Button – Sends email verification link.”</td>
+</tr>
+<tr>
+<td>APP-16</td>
+<td>p88, p121</td>
+<td>“Phone Number ??? … UNDECIDED. Is phone number required … for 2FA”</td>
+</tr>
+<tr>
+<td>APP-17</td>
+<td>p81, p85</td>
+<td>“Login, Logout, Forgot Username, Forgot Password”</td>
+</tr>
+<tr>
+<td>APP-18</td>
+<td>p81, p85</td>
+<td>“Profile Maintenance … Usual stuff, contacts, subscription type”</td>
+</tr>
+<tr>
+<td>APP-19</td>
+<td>p84, p101</td>
+<td>“A list of each Relationship I have [Top]. Then a list of the Templates [Bottom].”</td>
+</tr>
+<tr>
+<td>APP-20</td>
+<td>p17, p102–p103</td>
+<td>“Gap Flags … Mode … Setting … Last Modified”</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="Exhibit D p15 · the eight-stage bar (A–D are user stages)" src="../assets/scope/agreed/p15-opinions-and-eight-stages-desktop.png" /></p>
+<p><em>Exhibit D p15 · the eight-stage bar (A–D are user stages)</em></p>
+<h2 id="v20-today">v2.0 Today</h2>
+<p><img alt="Stage 4 · Account only, no card" src="../assets/wizard/stage-4-account-desktop.png" /></p>
+<p><em>Stage 4 · Account only, no card · Bundle 01</em></p>
+<p><img alt="My Relationships" src="../assets/start-and-list/my-relationships-desktop.png" /></p>
+<p><em>My Relationships · Bundle 05</em></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>What v2.0 does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP-12</td>
+<td>Two-step sign-up (email, then name and password) plus Google sign-in; return to the draft after sign-in.</td>
+</tr>
+<tr>
+<td>APP-13</td>
+<td>Email (or Google) is the identifier; sign-up asks for no username, so there is no Forgot Username to need.</td>
+</tr>
+<tr>
+<td>APP-14</td>
+<td>Date of birth was removed from sign-up because nothing read it. No age-based templates exist.</td>
+</tr>
+<tr>
+<td>APP-15</td>
+<td>Not evidenced. The auth path list names <code>send-verification-email</code>; delivery was not verified end to end.</td>
+</tr>
+<tr>
+<td>APP-16</td>
+<td>Not built. The source marks it undecided; phone was removed from sign-up.</td>
+</tr>
+<tr>
+<td>APP-17</td>
+<td>All three, plus Google sign-in.</td>
+</tr>
+<tr>
+<td>APP-18</td>
+<td>Account Settings: Profile, Password, Session. Plan and trial are on the Payment tab.</td>
+</tr>
+<tr>
+<td>APP-19</td>
+<td>Start (next steps) and My Relationships (filters, status per card), with Templates as its own tab.</td>
+</tr>
+<tr>
+<td>APP-20</td>
+<td>Cards show name, other person, a status chip and the next step; Gap counts, Mode, Setting and dates are not on the list.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="status">Status</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Requirement</th>
+<th>Status</th>
+<th>Acceptance (MVP)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>APP-12</td>
+<td>A visitor can create an account with name, email and password.</td>
+<td><strong>★ Over-Delivered</strong></td>
+<td><code>/register</code> creates an account and returns the person to their draft.</td>
+</tr>
+<tr>
+<td>APP-13</td>
+<td>A unique username is the account identifier.</td>
+<td><strong>⇄ Offset</strong></td>
+<td>n/a: replaced.</td>
+</tr>
+<tr>
+<td>APP-14</td>
+<td>Collect age at sign-up for future age-based templates.</td>
+<td><strong>◌ Tentative</strong></td>
+<td>n/a until decided.</td>
+</tr>
+<tr>
+<td>APP-15</td>
+<td>Sign-up sends an email verification link.</td>
+<td><strong>◌ Tentative</strong></td>
+<td>A new email/password account receives a verification email.</td>
+</tr>
+<tr>
+<td>APP-16</td>
+<td>Optional phone, CC email, text notifications and 2FA.</td>
+<td><strong>◌ Tentative</strong></td>
+<td>n/a until decided.</td>
+</tr>
+<tr>
+<td>APP-17</td>
+<td>Sign in, sign out and reset a forgotten password.</td>
+<td><strong>✓ Delivered</strong></td>
+<td><code>/login</code>, <code>/forgot-password</code> → <code>/reset/&lt;token&gt;</code> work; Sign Out is in the account menu.</td>
+</tr>
+<tr>
+<td>APP-18</td>
+<td>A signed-in person can edit their profile and password.</td>
+<td><strong>✓ Delivered</strong></td>
+<td><code>/settings</code> saves Profile and Password and lists the session.</td>
+</tr>
+<tr>
+<td>APP-19</td>
+<td>After sign-in, people land on a list of their relationships with access to templates.</td>
+<td><strong>✓ Delivered</strong></td>
+<td>Signed-in landing lists every relationship with its status; Templates is one click away.</td>
+</tr>
+<tr>
+<td>APP-20</td>
+<td>The relationship list shows Gap counts, Mode, Setting and last change per relationship.</td>
+<td><strong>◐ Partial</strong></td>
+<td>Each card shows Gap count, Mode, Setting and last-updated date.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>★ Over-Delivered:</strong> APP-12: Two-step sign-up (email, then name and password) plus Google sign-in; return to the draft after sign-in.</p>
+<p><strong>◐/◌ Gap or Tentative:</strong> APP-14 (Needs Walt: collect age now (privacy cost, no reader) or when age-based templates ship.). APP-15 (Verify on prod in one loop.). APP-16. APP-20.</p>
+<h2 id="evidence">Evidence</h2>
+<ul>
+<li><strong>APP-12</strong> · <code>data/pages/register.ts:36</code>; <code>lib/auth/google-flow.ts:80</code>; <a href="../guides/initiator/create-your-account.html">guides/initiator/create-your-account.md</a> · Docs: <a href="../guides/initiator/create-your-account.html">Create Your Account</a></li>
+<li><strong>APP-13</strong> · <code>data/pages/register.ts:38</code></li>
+<li><strong>APP-14</strong> · <code>data/pages/register.ts:39</code></li>
+<li><strong>APP-15</strong> · <code>lib/forms/auth-paths.ts:53</code></li>
+<li><strong>APP-16</strong> · <code>data/pages/register.ts:39</code></li>
+<li><strong>APP-17</strong> · <code>app/(auth)/forgot-password/page.tsx:13</code>; <a href="../guides/account/account-menu.html">guides/account/account-menu.md</a> · Docs: <a href="../guides/account/account-menu.html">Account Menu</a></li>
+<li><strong>APP-18</strong> · <code>app/(mainlayout)/settings/page.tsx:2</code>; <a href="../guides/account/profile-and-password.html">guides/account/profile-and-password.md</a> · Docs: <a href="../guides/account/profile-and-password.html">Profile And Password</a></li>
+<li><strong>APP-19</strong> · <a href="../guides/initiator/my-relationships-and-start.html">guides/initiator/my-relationships-and-start.md</a> · Docs: <a href="../guides/initiator/my-relationships-and-start.html">My Relationships And Start</a></li>
+<li><strong>APP-20</strong> · <a href="../guides/initiator/my-relationships-and-start.html">guides/initiator/my-relationships-and-start.md</a></li>
+</ul>
+<p><em>Status words: ✓ Delivered · ★ Over-Delivered · ◐ Partial · ⇄ Offset (replaced; see the row) · ◌ Tentative (not built, deferred or awaiting a decision) · ⊘ Out of Scope (removed, with a citation). Code citations are file:line on main @ <code>601ce26</code>.</em></p>
+        </article>
+        
+      </main>
+    </div>
+  </div>
+  <script src="/theme.js"></script>
+</body>
+</html>
