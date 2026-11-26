@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>/docs separation — plan eval</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font: 14px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--foreground); background: transparent; }
+  h1 { font-size: 19px; font-weight: 650; margin: 0 0 2px; letter-spacing:-.01em; }
+  h2 { font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .07em; color: var(--muted-foreground); margin: 22px 0 8px; }
+  .sub { color: var(--muted-foreground); font-size: 12.5px; margin-bottom: 14px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .col { flex:1 1 240px; min-width: 220px; border:1px solid var(--border); border-radius:10px; padding:10px 11px; background: var(--card); }
+  .col h3 { font-size:12.5px; margin:0 0 7px; display:flex; align-items:center; gap:6px; }
+  .dot { width:8px; height:8px; border-radius:99px; display:inline-block; }
+  ul { margin:0; padding-left:15px; }
+  li { margin:2px 0; font-size:12.5px; }
+  code { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; background: color-mix(in srgb, var(--foreground) 7%, transparent); padding:1px 4px; border-radius:4px; }
+  table { width:100%; border-collapse: collapse; font-size:12.5px; }
+  th, td { text-align:left; padding:5px 7px; border-bottom:1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted-foreground); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.05em; }
+  .num { font-variant-numeric: tabular-nums; white-space:nowrap; }
+  .bar { height:6px; border-radius:99px; background: color-mix(in srgb, var(--foreground) 12%, transparent); position:relative; min-width:60px; }
+  .bar > i { position:absolute; inset:0 auto 0 0; border-radius:99px; background: var(--accent); }
+  .win { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .pill { display:inline-block; font-size:10.5px; font-weight:650; letter-spacing:.03em; padding:1px 6px; border-radius:99px; border:1px solid var(--border); color: var(--muted-foreground); text-transform:uppercase; }
+  .ok { color:#16a34a; border-color: color-mix(in srgb,#16a34a 45%, transparent); }
+  .warn { color:#d97706; border-color: color-mix(in srgb,#d97706 45%, transparent); }
+  .bad { color:#dc2626; border-color: color-mix(in srgb,#dc2626 45%, transparent); }
+  .flow { display:flex; gap:6px; flex-wrap:wrap; align-items:stretch; }
+  .step { flex:1 1 150px; border:1px solid var(--border); border-radius:9px; padding:8px 9px; background: var(--card); }
+  .step b { display:block; font-size:12px; }
+  .step span { font-size:11.5px; color: var(--muted-foreground); }
+  .why { border-left:2px solid var(--accent); padding:2px 0 2px 9px; font-size:12.5px; margin:6px 0; }
+  .q { font-size:12.5px; margin:4px 0 0; }
+</style></head><body>
+
+<h1>«Separate content, features, functionality out of <code>/docs</code>» — evaluated against what is carded</h1>
+<div class="sub">Card <code>t_c04615de</code> + your migration list, measured against <code>origin/main</code> @ <code>79037124</code>. Every URL below was checked as a real route.</div>
+
+<div class="row" style="margin-bottom:4px">
+  <div class="col" style="flex:1 1 100%; border-color: color-mix(in srgb, var(--accent) 55%, var(--border));">
+    <h3 style="font-size:13px"><span class="dot" style="background:var(--accent)"></span>The goal, in your words</h3>
+    <div style="font-size:13.5px; margin-bottom:8px">«to be able to separate, and develop, or change <b>independent of the webapp user platform</b>.»</div>
+    <div class="flow">
+      <div class="step"><b>Phase 1 · the gate</b><span><code>product.operator</code> + <code>FLAG_PRODUCT_OPERATOR</code>, 404 not redirect. Value: it <i>enumerates</i> the operator set and can switch it off — you cannot extract a set you cannot list or turn off.</span></div>
+      <div class="step" style="border-color: color-mix(in srgb, var(--accent) 55%, var(--border));"><b>Phase 2 · the seam</b><span>A typed read contract the operator surfaces must go through (facts, never <code>pg</code> or <code>lib/db/**</code>), one dependency arrow (operator → <code>content/</code>), and a test that fails if either direction breaks. <b>That test is the independence</b> — it survives whichever home you pick.</span></div>
+      <div class="step"><b>Later · the move</b><span>In-repo package, own deployment, or own repo — cheap once the seam carries the coupling. Not decided today, and not needed today.</span></div>
+    </div>
+  </div>
+</div>
+
+
+<h2>Your list is three different problems, not one</h2>
+<div class="row">
+  <div class="col">
+    <h3><span class="dot" style="background:#dc2626"></span>Operator machinery — 9 routes</h3>
+    <ul>
+      <li><code>/admin/spec</code> · <code>/admin/spec/validation</code></li>
+      <li><code>/admin/brand</code></li>
+      <li><code>/admin/audit</code></li>
+      <li><code>/admin/review</code></li>
+      <li><code>/admin/permissions</code></li>
+      <li><code>/admin/docs/releases</code> · <code>/admin/docs/updates</code></li>
+      <li><code>/admin/email-templates</code></li>
+    </ul>
+    <div class="why">No initiator or counterparty ever needs these. Real candidates to leave the product surface.</div>
+  </div>
+  <div class="col">
+    <h3><span class="dot" style="background:#d97706"></span>Docs hub — 1 route</h3>
+    <ul>
+      <li><code>/admin/docs</code> + <code>/admin/docs/features</code> · <code>/admin/docs/[...slug]</code></li>
+      <li>external mirror: <code>alignsynch-v2-docs-preview.vercel.app</code></li>
+    </ul>
+    <div class="why">The hub is operator-facing, but the pages it serves are the product documentation you want to <b>keep</b>. Split the reader from the shelf.</div>
+  </div>
+  <div class="col">
+    <h3><span class="dot" style="background:#16a34a"></span>Product — must stay</h3>
+    <ul>
+      <li><code>/dashboard/templates</code> — 12 route files: <code>[id]/create/{mode,aspects,commit,invite}</code>, <code>propose</code>, <code>@flow</code> slots</li>
+      <li><code>/admin/console/templates</code>, <code>/admin/templates</code></li>
+    </ul>
+    <div class="why">This is <b>native template creation, versioning, lifecycle</b> — initiator-facing. Moving it into a dev package or sister repo deletes a shipped feature.</div>
+  </div>
+</div>
+
+<h2>The option space — now a phase-2 roadmap, not today's decision</h2>
+<div class="sub" style="margin:-4px 0 8px">Listed in the order the seam makes them affordable. A is not the destination; it is what makes the destination reachable.</div>
+
+<table>
+  <tr><th>option</th><th>blast radius</th><th>sync cost</th><th>reversible</th><th class="num">risk</th></tr>
+  <tr class="win"><td><b>A · capability-gate, move nothing</b> — a <code>product.operator</code> flag through <code>requireAdminProduct()</code>, the mechanism <code>product.admin</code> already uses (<code>FLAG_PRODUCT_ADMIN</code>, #509)</td><td>0 files moved; gates on ~9 pages</td><td>none</td><td>one flag</td><td class="num"><div class="bar"><i style="width:15%"></i></div>low</td></tr>
+  <tr><td><b>B · package/lib extraction</b> in-repo</td><td>imports across app; route files move</td><td>every landing</td><td>revert PR</td><td class="num"><div class="bar"><i style="width:55%"></i></div>med</td></tr>
+  <tr><td><b>C · sister repo</b> (the vercel preview becomes the home)</td><td>two repos, two gates, duplicate brand tokens</td><td>permanent, both ways</td><td>hard</td><td class="num"><div class="bar"><i style="width:85%"></i></div>high</td></tr>
+  <tr><td><b>D · local-only executor repo</b></td><td>operator tooling leaves CI entirely</td><td>drift with no test</td><td>hard</td><td class="num"><div class="bar"><i style="width:70%"></i></div>med-high</td></tr>
+  <tr><td><b>E · local-only branch mirror</b> of the webapp</td><td>a second history to rebase forever</td><td>highest</td><td>delete branch</td><td class="num"><div class="bar"><i style="width:95%"></i></div>high</td></tr>
+</table>
+<div class="why">A is the only option that is <b>free and reversible</b>, so it is phase 1 — but it is not independence, and on its own it does not meet the goal. Independence is the <b>seam</b> in phase 2: a contract the operator surfaces go through and a test that fails when they reach around it. Once that exists, B, C or D become an afternoon's decision rather than a re-architecture — which is why none of them should be chosen today.</div>
+
+
+<h2>What the four cards actually cover</h2>
+<div class="flow">
+  <div class="step"><b>t_ac06abb3</b><span><span class="pill ok">running</span> evaluate options → ADR</span></div>
+  <div class="step"><b>t_414c790c</b><span><span class="pill">todo</span> one self-contained GitHub issue</span></div>
+  <div class="step"><b>t_159fd054</b><span><span class="pill">todo</span> implement: move files, redirect, CI</span></div>
+  <div class="step"><b>t_31d3662a</b><span><span class="pill">todo</span> ingest + "grill me" pack</span></div>
+</div>
+<table style="margin-top:10px">
+  <tr><th>gap</th><th>why it matters</th></tr>
+  <tr><td><b>G1 — object mismatch</b></td><td>The cards scope a <b>directory</b> (<code>/docs</code>); your list scopes <b>11 in-app routes</b>. An implementer following <code>t_159fd054</code> can move every file and leave all 11 URLs live.</td></tr>
+  <tr><td><b>G2 — no inventory card</b></td><td><code>t_ac06abb3</code> says "using the documentation inventory from the audit task" — <b>no card produces that inventory</b>. A phantom dependency, the same shape as the card that completed empty last week.</td></tr>
+  <tr><td><b>G3 — product surface unguarded</b></td><td>Nothing excludes <code>/dashboard/templates</code> by name. "Move non-product content out of /docs" reads as permission to touch a shipped flow.</td></tr>
+  <tr><td><b>G4 — grill is last</b></td><td><code>t_31d3662a</code> grills <i>after</i> the PR exists — the most expensive moment to learn the option was wrong. It belongs before the ADR is accepted.</td></tr>
+  <tr><td><b>G5 — the mirror is a fact, not an option</b></td><td><code>v2-docs-preview.vercel.app</code> already exists, so "sister deployment" is <b>partly shipped</b>. Its health decides C, and no card reads it.</td></tr>
+</table>
+
+<h2>Grill — three questions the ADR cannot answer for you</h2>
+<p class="q"><b>1.</b> Is the goal <i>the URL disappears for a normal user</i>, or <i>the code leaves this repo</i>? Those buy very different things: a gate is reversible in one flag, a split is permanent maintenance.</p>
+<p class="q"><b>2.</b> Does <code>/dashboard/templates</code> stay a product surface? I read your note — "native template creation, versioning, metrics, lifecycle" — as a feature you are building, not dev content. If it is dev content, say so and it changes the whole option.</p>
+<p class="q"><b>3.</b> What is the v2-docs-preview deployment for — a design mirror, or the intended future home of the docs? If it is the future home, option C stops being hypothetical.</p>
+
+</body></html>

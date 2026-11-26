@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>proposed separation</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:14px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; color:var(--foreground); background:transparent; }
+  h1 { font-size:18px; margin:0 0 3px; font-weight:650; letter-spacing:-.01em; }
+  h2 { font-size:11.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted-foreground); margin:20px 0 8px; font-weight:650; }
+  .sub { color:var(--muted-foreground); font-size:12.5px; }
+  .grid { display:flex; gap:12px; flex-wrap:wrap; }
+  .panel { flex:1 1 300px; min-width:270px; border:1px solid var(--border); border-radius:10px; padding:11px 12px; background:var(--card); }
+  .panel.bad { border-color: color-mix(in srgb,#dc2626 40%, var(--border)); }
+  .panel.good { border-color: color-mix(in srgb, var(--accent) 60%, var(--border)); }
+  .panel h3 { font-size:12.5px; margin:0 0 9px; }
+  .box { border:1px solid var(--border); border-radius:7px; padding:6px 8px; font-size:12px; margin:5px 0; background: color-mix(in srgb, var(--foreground) 4%, transparent); }
+  .box b { font-size:12px; }
+  .box small { color:var(--muted-foreground); display:block; font-size:11px; }
+  .arrow { text-align:center; color:var(--muted-foreground); font-size:12px; margin:2px 0; letter-spacing:.04em; }
+  .no { border-color: color-mix(in srgb,#dc2626 45%, var(--border)); color: color-mix(in srgb,#dc2626 80%, var(--foreground)); }
+  .yes { border-color: color-mix(in srgb,var(--accent) 55%, var(--border)); }
+  code { font:11.5px ui-monospace,SFMono-Regular,Menlo,monospace; background: color-mix(in srgb,var(--foreground) 7%,transparent); padding:1px 4px; border-radius:4px; }
+  table { width:100%; border-collapse:collapse; font-size:12.5px; }
+  th,td { text-align:left; padding:5px 7px; border-bottom:1px solid var(--border); vertical-align:top; }
+  th { font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted-foreground); }
+  .pill { font-size:10px; font-weight:650; letter-spacing:.03em; text-transform:uppercase; padding:1px 6px; border-radius:99px; border:1px solid var(--border); color:var(--muted-foreground); }
+  .ok { color:#16a34a; border-color:color-mix(in srgb,#16a34a 45%,transparent); }
+  .run { color:#d97706; border-color:color-mix(in srgb,#d97706 45%,transparent); }
+</style></head><body>
+
+<h1>Where the operator surfaces sit today, and where the seam puts them</h1>
+<div class="sub">Measured on <code>origin/main</code> @ <code>79037124</code>. 31 route files under <code>app/(mainlayout)/admin/**</code>, 20 under <code>dashboard/**</code>.</div>
+
+<h2>Today — one graph, no contract</h2>
+<div class="grid">
+  <div class="panel bad">
+    <h3>operator · <code>app/(mainlayout)/admin/**</code></h3>
+    <div class="box"><b>spec · brand · audit · review · permissions · docs/releases · docs/updates · email-templates · console</b><small>9 machinery routes + the console — the set you want to own separately</small></div>
+    <div class="arrow">imports anything it likes ↕</div>
+    <div class="box"><b>product shell</b> <small><code>components/layout/**</code>, <code>components/ui/**</code>, product components</small></div>
+    <div class="arrow">↕</div>
+    <div class="box"><b>data</b> <small><code>lib/db/**</code> · <code>content/</code> schemas · <code>data/</code> fixtures</small></div>
+    <div class="arrow">↕</div>
+    <div class="box"><b>user platform</b> <small><code>dashboard/**</code> incl. <code>/dashboard/templates</code> — 12 create-flow files, excluded by name</small></div>
+    <div style="margin-top:9px; font-size:12px; color:color-mix(in srgb,#dc2626 80%,var(--foreground))">Nothing stops an operator page reaching into a product component, so a product refactor can break operator tooling — and vice versa. That coupling, not the URL, is what blocks independent change.</div>
+  </div>
+
+  <div class="panel good">
+    <h3>After — one legal direction</h3>
+    <div class="box"><b>operator surfaces</b> <small>unchanged in place; gated by <code>product.operator</code> → 404 for a visitor without it, <code>FLAG_PRODUCT_OPERATOR=1</code> reopens everything</small></div>
+    <div class="arrow">▼ reads only through</div>
+    <div class="box yes"><b><code>lib/operator/read.ts</code></b> — the contract <small>facts only: route inventory, spec records, audit rows, template versions. No <code>pg</code> handle, no <code>lib/db/**</code> internals, no product components</small></div>
+    <div class="arrow">▼ may import only</div>
+    <div class="box"><b><code>content/</code> schemas</b> <small>the model that both sides already agree on</small></div>
+    <div class="box no">✗ operator → <code>app/(mainlayout)/**</code> · <code>components/**</code><br>✗ product → operator surface<small>enforced by a test that fails on either import — that test <i>is</i> the independence</small></div>
+    <div style="margin-top:9px; font-size:12px">With the arrow one-way, changing operator tooling cannot touch the user platform. Moving it to a package, its own deployment or its own repo then becomes a mechanical afternoon — a roadmap choice, not a prerequisite.</div>
+  </div>
+</div>
+
+<h2>The chain, as it stands</h2>
+<table>
+  <tr><th>card</th><th>state</th><th>produces</th><th>owner</th></tr>
+  <tr><td><code>t_ac06abb3</code></td><td><span class="pill run">running</span></td><td>ADR — phase 1 gate + phase 2 seam design; home choice demoted to roadmap</td><td>Rio</td></tr>
+  <tr><td><code>t_31d3662a</code></td><td><span class="pill">todo</span></td><td>inventory → <code>docs/specs/operator-surfaces.md</code>, one row per route + disposition</td><td>Rio</td></tr>
+  <tr><td><code>t_414c790c</code></td><td><span class="pill">todo</span></td><td>one self-contained GitHub issue carrying both phases</td><td>me / ase-github</td></tr>
+  <tr><td><code>t_159fd054</code></td><td><span class="pill">todo</span></td><td>implementation: capability wiring only, <b>no files moved</b>, no PR merged</td><td>me / ops</td></tr>
+</table>
+
+<h2>Excluded by name — untouched by all of it</h2>
+<div class="box" style="border-color:color-mix(in srgb,#16a34a 40%,var(--border))"><b><code>/dashboard/templates</code></b> · its <code>@flow</code> slots · <code>/admin/console/templates</code> · <code>/admin/templates</code> · the <b>content</b> of <code>/admin/docs</code><small>a shipped product surface (native template creation, versioning, lifecycle) and the product documentation it serves — the hub is operator-facing, the pages are not.</small></div>
+
+</body></html>

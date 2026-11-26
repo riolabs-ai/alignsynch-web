@@ -2,32 +2,56 @@
 /**
  * Build the AlignSynch prototype catalog.
  *
- * Walks every HTML prototype under `--root`, copies each file byte-for-byte into
- * `<out>/p/<path>` and writes `<out>/index.html` + `<out>/catalog.json`.
+ * Walks every HTML prototype under the configured sources, copies each file
+ * byte-for-byte into `<out>/p/<catalog path>` and writes `<out>/index.html` +
+ * `<out>/catalog.json`.
+ *
+ * SOURCES — where the prototypes live now (#1405). The catalog's paths are the
+ * paths the live site has served since it was a snapshot, so they are declared,
+ * not derived:
+ *
+ *   prototypes                → project-spec/**, project-reqs/**   (committed here)
+ *   docs                      → quizhub/quizhub/docs/**            (this repo's docs tree)
+ *
+ * `<dir>` is walked recursively and every file lands at `<prefix>/<path inside dir>`.
+ * An empty prefix means the file keeps its path relative to the source directory.
+ * `inbox/**` is deliberately not a source: it is scratch, not product history.
  *
  * Provenance, in this order:
  *   date    — `git log -1 --format=%cs -- <path>` for tracked files;
  *             mtime only for untracked files, and those rows are marked
- *             (`dateSource: "mtime"`, `untracked: true`).
+ *             (`dateSource: "mtime"`, `untracked: true`). `--fail-on-untracked`
+ *             turns that fallback into a refusal, which is what CI runs.
  *   version — the nearest tag reachable from the commit that last touched the
- *             file: `git describe --tags --abbrev=0 <sha>`. Not a path guess.
- *             Rows with no tag are marked (`version: null`, `versionSource:
- *             "none"`) rather than filled in.
+ *             file: `git describe --tags --abbrev=0 <sha>`, plus how many
+ *             commits past that tag the file landed (`git rev-list --count`).
+ *             So `v2.0.0+12` reads "shipped after v2.0.0, twelve commits in" —
+ *             never a guess from a filename. Rows with no reachable tag are
+ *             marked (`version: null`, `versionSource: "none"`).
  *
  * The copies are verbatim: the prototypes are artefacts, not templates, and
  * in-page `#anchor` deep links must survive.
  *
  * Usage:
- *   node scripts/build-prototype-catalog.mjs --root <dir> --out <dir>
- *        [--min-entries N] [--require <path>]
+ *   node scripts/build-prototype-catalog.mjs --out <dir>
+ *        [--source <dir>[:<catalog prefix>]]... [--min-entries N]
+ *        [--require <path>]... [--fail-on-untracked]
  *
- * `--min-entries` and `--require` make an incomplete build fail loudly instead
- * of deploying a catalog that silently lost most of its rows.
+ * With no `--source`, the two sources above are used.
+ *
+ * `--min-entries`, `--require` and `--fail-on-untracked` make an incomplete or
+ * half-guessed build fail loudly instead of deploying a catalog that silently
+ * lost rows or filled a date in from a file's mtime.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
+const DEFAULT_SOURCES = [
+  { dir: "prototypes", prefix: "" },
+  { dir: "docs", prefix: "quizhub/quizhub/docs" },
+];
 
 const SKIP_DIRS = new Set([
   ".git",
@@ -45,7 +69,7 @@ const SKIP_DIRS = new Set([
 const HTML_EXT = new Set([".html", ".htm"]);
 
 function parseArgs(argv) {
-  const opts = { root: null, out: null, minEntries: 0, require: [] };
+  const opts = { sources: [], out: null, minEntries: 0, require: [], failOnUntracked: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => {
@@ -54,18 +78,28 @@ function parseArgs(argv) {
       i += 1;
       return value;
     };
-    if (arg === "--root") opts.root = next();
-    else if (arg === "--out") opts.out = next();
+    if (arg === "--source") {
+      const raw = next();
+      const split = raw.indexOf(":");
+      opts.sources.push(
+        split === -1
+          ? { dir: raw, prefix: "" }
+          : { dir: raw.slice(0, split), prefix: raw.slice(split + 1).replace(/^\/+|\/+$/g, "") },
+      );
+    } else if (arg === "--out") opts.out = next();
     else if (arg === "--min-entries") opts.minEntries = Number(next());
     else if (arg === "--require") opts.require.push(next());
+    else if (arg === "--fail-on-untracked") opts.failOnUntracked = true;
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        "usage: build-prototype-catalog.mjs --root <dir> --out <dir> [--min-entries N] [--require <path>]",
+        "usage: build-prototype-catalog.mjs --out <dir> [--source <dir>[:<prefix>]]... " +
+          "[--min-entries N] [--require <path>]... [--fail-on-untracked]",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
   }
-  if (!opts.root || !opts.out) throw new Error("--root and --out are required");
+  if (!opts.out) throw new Error("--out is required");
+  if (!opts.sources.length) opts.sources = DEFAULT_SOURCES;
   return opts;
 }
 
@@ -138,7 +172,8 @@ function titleOf(file, fallback) {
   }
 }
 
-function provenance(file, root) {
+/** The commit that last touched `rel` in `repo`, and the committer date (YYYY-MM-DD). */
+function provenance(file) {
   const repo = repoRootFor(path.dirname(file));
   if (!repo) return null;
   const rel = path.relative(repo, file).split(path.sep).join("/");
@@ -152,69 +187,99 @@ function provenance(file, root) {
 
 function main() {
   const opts = parseArgs(process.argv.slice(2));
-  const root = path.resolve(opts.root);
   const out = path.resolve(opts.out);
-  if (!fs.existsSync(root)) {
-    throw new Error(`prototype root does not exist: ${root}`);
-  }
+
+  const tagCache = new Map();
+  /**
+   * The nearest release tag reachable from `commit`, and how many commits the
+   * commit sits past it. `v2.0.0` alone would claim a file shipped in that
+   * release when it actually landed after it.
+   */
+  const describe = (repo, commit) => {
+    const key = `${repo}\u0000${commit}`;
+    if (tagCache.has(key)) return tagCache.get(key);
+    const tag = git(repo, ["describe", "--tags", "--abbrev=0", commit]);
+    let result = null;
+    if (tag) {
+      const count = git(repo, ["rev-list", "--count", `${tag}..${commit}`]);
+      const distance = Number.parseInt(count || "0", 10);
+      result = { tag, distance: Number.isFinite(distance) ? distance : 0 };
+    }
+    tagCache.set(key, result);
+    return result;
+  };
+
+  const sources = opts.sources.map((source) => {
+    const dir = path.resolve(source.dir);
+    if (!fs.existsSync(dir)) throw new Error(`prototype source does not exist: ${dir}`);
+    return { ...source, dir };
+  });
 
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, "p"), { recursive: true });
 
-  const tagCache = new Map();
-  const nearestTag = (repo, commit) => {
-    const key = `${repo}\u0000${commit}`;
-    if (tagCache.has(key)) return tagCache.get(key);
-    const tag = git(repo, ["describe", "--tags", "--abbrev=0", commit]);
-    tagCache.set(key, tag);
-    return tag;
-  };
-
-  const files = walk(root);
   const entries = [];
+  const seen = new Map();
 
-  for (const file of files) {
-    const rel = path.relative(root, file).split(path.sep).join("/");
-    const target = path.join(out, "p", rel);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.copyFileSync(file, target);
-
-    const prov = provenance(file, root);
-    const stat = fs.statSync(file);
-    let date;
-    let dateSource;
-    let version = null;
-    let versionSource = "none";
-    let commit = null;
-
-    if (prov) {
-      date = prov.date;
-      dateSource = "git";
-      commit = prov.commit;
-      const tag = nearestTag(prov.repo, prov.commit);
-      if (tag) {
-        version = tag;
-        versionSource = "tag";
+  for (const source of sources) {
+    for (const file of walk(source.dir)) {
+      const inner = path.relative(source.dir, file).split(path.sep).join("/");
+      const catalogPath = source.prefix ? `${source.prefix}/${inner}` : inner;
+      if (seen.has(catalogPath)) {
+        throw new Error(
+          `two sources claim the same catalog path ${catalogPath}: ${seen.get(catalogPath)} and ${file}`,
+        );
       }
-    } else {
-      date = new Date(stat.mtime).toISOString().slice(0, 10);
-      dateSource = "mtime";
-    }
+      seen.set(catalogPath, file);
 
-    const segments = rel.split("/");
-    entries.push({
-      path: rel,
-      title: titleOf(file, path.basename(file)),
-      size: stat.size,
-      date,
-      dateSource,
-      version,
-      versionSource,
-      untracked: dateSource !== "git",
-      commit,
-      group: segments[0],
-      sub: segments.slice(1, -1).join("/").slice(0, 120),
-    });
+      const target = path.join(out, "p", catalogPath);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(file, target);
+
+      const prov = provenance(file);
+      const stat = fs.statSync(file);
+      let date;
+      let dateSource;
+      let version = null;
+      let versionTag = null;
+      let versionDistance = null;
+      let versionSource = "none";
+      let commit = null;
+
+      if (prov) {
+        date = prov.date;
+        dateSource = "git";
+        commit = prov.commit;
+        const described = describe(prov.repo, prov.commit);
+        if (described) {
+          versionTag = described.tag;
+          versionDistance = described.distance;
+          version =
+            described.distance === 0 ? described.tag : `${described.tag}+${described.distance}`;
+          versionSource = "tag";
+        }
+      } else {
+        date = new Date(stat.mtime).toISOString().slice(0, 10);
+        dateSource = "mtime";
+      }
+
+      const segments = catalogPath.split("/");
+      entries.push({
+        path: catalogPath,
+        title: titleOf(file, path.basename(file)),
+        size: stat.size,
+        date,
+        dateSource,
+        version,
+        versionTag,
+        versionDistance,
+        versionSource,
+        untracked: dateSource !== "git",
+        commit,
+        group: segments[0],
+        sub: segments.slice(1, -1).join("/").slice(0, 120),
+      });
+    }
   }
 
   entries.sort((a, b) => b.date.localeCompare(a.date) || a.path.localeCompare(b.path));
@@ -227,14 +292,17 @@ function main() {
   };
 
   fs.writeFileSync(path.join(out, "catalog.json"), `${JSON.stringify(entries, null, 1)}\n`);
-  fs.writeFileSync(path.join(out, "index.html"), renderIndex(entries, counts, root));
+  fs.writeFileSync(path.join(out, "index.html"), renderIndex(entries, counts));
 
   const present = new Set(entries.map((e) => e.path));
   const missing = opts.require.filter((p) => !present.has(p));
+  const untracked = entries.filter((e) => e.untracked).map((e) => e.path);
+
   console.log(
     `entries: ${entries.length} | git dates: ${counts.gitDates} | mtime fallback: ${counts.mtimeDates} | tag versions: ${counts.tagVersions} | no version: ${counts.noVersion}`,
   );
   console.log(`groups: ${[...new Set(entries.map((e) => e.group))].sort().join(", ")}`);
+  console.log(`sources: ${sources.map((s) => `${s.dir}=>${s.prefix || "/"}`).join(" | ")}`);
   console.log(`out: ${out}`);
 
   if (entries.length < opts.minEntries) {
@@ -245,9 +313,14 @@ function main() {
   if (missing.length) {
     throw new Error(`required prototype(s) missing from the catalog: ${missing.join(", ")}`);
   }
+  if (opts.failOnUntracked && untracked.length) {
+    throw new Error(
+      `${untracked.length} prototype(s) are not tracked by git, so their date would be a file mtime guess: ${untracked.slice(0, 10).join(", ")}${untracked.length > 10 ? ", …" : ""}`,
+    );
+  }
 }
 
-function renderIndex(entries, counts, root) {
+function renderIndex(entries, counts) {
   const esc = (value) =>
     String(value)
       .replace(/&/g, "&amp;")
@@ -263,7 +336,7 @@ function renderIndex(entries, counts, root) {
           : `<td class=d m title="file mtime — not tracked by git">${esc(e.date)}*</td>`;
       const versionCell =
         e.versionSource === "tag"
-          ? `<td class=v title="nearest release tag">${esc(e.version)}</td>`
+          ? `<td class=v title="${esc(e.versionTag)}${e.versionDistance ? ` — ${e.versionDistance} commit${e.versionDistance === 1 ? "" : "s"} after it` : ""}">${esc(e.version)}</td>`
           : `<td class="v none" title="no release tag reachable from this file">—</td>`;
       const key = `${e.path} ${e.title} ${e.version ?? ""}`.toLowerCase();
       return `<tr data-k="${esc(key)}" data-g="${esc(e.group)}">${dateCell}${versionCell}<td><a href="p/${esc(e.path)}">${esc(e.title)}</a><div class=p>${esc(e.path)}</div></td><td class=s>${Math.round(e.size / 1024)} KB</td></tr>`;
@@ -306,7 +379,7 @@ a:hover{color:var(--acc);border-color:var(--acc)}
 <header>
 <h1>AlignSynch · prototype catalog</h1>
 <div class=sub>${entries.length} HTML prototypes · newest first · deep links preserved</div>
-<div class=legend>${counts.gitDates} date${counts.gitDates === 1 ? "" : "s"} from git · ${counts.tagVersions} version${counts.tagVersions === 1 ? "" : "s"} from release tags · <span style="color:var(--warn)">${counts.mtimeDates}*</span> untracked (date from file mtime, no tag)</div>
+<div class=legend>${counts.gitDates} date${counts.gitDates === 1 ? "" : "s"} from git · ${counts.tagVersions} version${counts.tagVersions === 1 ? "" : "s"} from release tags (<code>tag+N</code> = N commits after that tag) · <span style="color:var(--warn)">${counts.mtimeDates}*</span> untracked (date from file mtime, no tag)</div>
 <input id=q placeholder="filter by name, path, version…" autofocus>
 <div class=chips id=chips></div>
 </header>

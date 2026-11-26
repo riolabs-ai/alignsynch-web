@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Project Spec 2.0 · Validation · AlignSynch Docs</title>
+  <meta name="description" content="Delivery Certification, First Draft: every agreed requirement checked against v2.0, with its Definition of Done and release evidence." />
+  <link rel="icon" type="image/png" href="/assets/brand/alignsynch-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button class="menu-btn" type="button" aria-label="Open navigation" data-menu-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <a class="brand" href="/">
+        <img src="/assets/brand/alignsynch-logo.png" alt="" width="28" height="28" />
+        <span>AlignSynch <em>Docs</em></span>
+      </a>
+      <span class="preview-badge">v2 preview</span>
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Toggle color theme">Theme</button>
+    </header>
+    <div class="body">
+      <aside class="sidebar" id="sidebar">
+        <a class="nav-home" href="/">Overview</a>
+<div class="nav-extra">
+<a class="" href="/README.html">Docs plan</a>
+<a class="" href="/INVENTORY.html">Feature inventory</a>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Project Spec 2.0</div>
+<div class="nav-group"><div class="nav-group-label">Overview</div><ul>
+<li><a class="nav-link" href="/scope/index.html">Index</a></li>
+</ul></div>
+<div class="nav-group nav-group--fixed" data-fixed="true" aria-expanded="true"><div class="nav-group-label">Validation</div><ul>
+<li><a class="nav-link is-active" href="/scope/validation.html">Validation</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Story</div><ul>
+<li><a class="nav-link" href="/scope/01-play-with-aspects.html">01 Play With Aspects</a></li>
+<li><a class="nav-link" href="/scope/02-register.html">02 Register</a></li>
+<li><a class="nav-link" href="/scope/03-invite.html">03 Invite</a></li>
+<li><a class="nav-link" href="/scope/04-opinions.html">04 Opinions</a></li>
+<li><a class="nav-link" href="/scope/05-share.html">05 Share</a></li>
+<li><a class="nav-link" href="/scope/06-discuss.html">06 Discuss</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Around the Story</div><ul>
+<li><a class="nav-link" href="/scope/07-billing.html">07 Billing</a></li>
+<li><a class="nav-link" href="/scope/08-coaches.html">08 Coaches</a></li>
+<li><a class="nav-link" href="/scope/09-admin.html">09 Admin</a></li>
+<li><a class="nav-link" href="/scope/10-website.html">10 Website</a></li>
+<li><a class="nav-link" href="/scope/11-launch-and-operations.html">11 Launch and Operations</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Builder Docs</div>
+<div class="nav-group"><div class="nav-group-label">Introduction</div><ul>
+<li><a class="nav-link" href="/start/what-is-alignsynch.html">What Is Alignsynch</a></li>
+<li><a class="nav-link" href="/start/quickstart.html">Quickstart</a></li>
+<li><a class="nav-link" href="/start/core-concepts.html">Core Concepts</a></li>
+<li><a class="nav-link" href="/start/plans-and-trial.html">Plans and Trial</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Guides</div>
+<div class="nav-group"><div class="nav-group-label">Initiator</div><ul>
+<li><a class="nav-link" href="/guides/initiator/pick-a-template.html">Pick a Template</a></li>
+<li><a class="nav-link" href="/guides/initiator/set-up-details-settings-and-aspects.html">Set Up Details Settings and Aspects</a></li>
+<li><a class="nav-link" href="/guides/initiator/create-your-account.html">Create Your Account</a></li>
+<li><a class="nav-link" href="/guides/initiator/send-the-invite.html">Send the Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/edit-a-draft-or-sent-invite.html">Edit a Draft or Sent Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/copy-resend-or-cancel-an-invite.html">Copy Resend or Cancel an Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/if-a-draft-cant-be-created.html">If a Draft Cant Be Created</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-relationships-and-start.html">My Relationships and Start</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-templates.html">My Templates</a></li>
+<li><a class="nav-link" href="/guides/initiator/your-7-days-free.html">Your 7 Days Free</a></li>
+<li><a class="nav-link" href="/guides/initiator/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/initiator/add-a-card-or-take-your-extra-week.html">Add a Card or Take Your Extra Week</a></li>
+<li><a class="nav-link" href="/guides/initiator/payment.html">Payment</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Counterparty</div><ul>
+<li><a class="nav-link" href="/guides/counterparty/accept-or-decline-an-invite.html">Accept or Decline an Invite</a></li>
+<li><a class="nav-link" href="/guides/counterparty/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/counterparty/save-these-aspects-as-a-template.html">Save These Aspects as a Template</a></li>
+<li><a class="nav-link" href="/guides/counterparty/ask-to-be-removed.html">Ask to Be Removed</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Both People</div><ul>
+<li><a class="nav-link" href="/guides/shared/answer-the-assessment.html">Answer the Assessment</a></li>
+<li><a class="nav-link" href="/guides/shared/results-and-align.html">Results and Align</a></li>
+<li><a class="nav-link" href="/guides/shared/propose-a-change.html">Propose a Change</a></li>
+<li><a class="nav-link" href="/guides/shared/chat-and-discussion.html">Chat and Discussion</a></li>
+<li><a class="nav-link" href="/guides/shared/leave-a-relationship.html">Leave a Relationship</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Account & Settings</div><ul>
+<li><a class="nav-link" href="/guides/account/account-menu.html">Account Menu</a></li>
+<li><a class="nav-link" href="/guides/account/profile-and-password.html">Profile and Password</a></li>
+<li><a class="nav-link" href="/guides/account/delete-your-account.html">Delete Your Account</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Admin</div><ul>
+<li><a class="nav-link" href="/guides/admin/crud-and-permissions.html">Crud and Permissions</a></li>
+<li><a class="nav-link" href="/guides/admin/email-templates.html">Email Templates</a></li>
+<li><a class="nav-link" href="/guides/admin/who-sees-the-admin-rail.html">Who Sees the Admin Rail</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Reference</div>
+<div class="nav-group"><div class="nav-group-label">Stages 1–6</div><ul>
+<li><a class="nav-link" href="/reference/stages/stage-1-details.html">Stage 1 Details</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-2-settings.html">Stage 2 Settings</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-3-aspects.html">Stage 3 Aspects</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-4-account.html">Stage 4 Account</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-5-invite.html">Stage 5 Invite</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-6-align.html">Stage 6 Align</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">States & Status</div><ul>
+<li><a class="nav-link" href="/reference/states/relationship-states-by-role.html">Relationship States By Role</a></li>
+<li><a class="nav-link" href="/reference/states/status-chips.html">Status Chips</a></li>
+<li><a class="nav-link" href="/reference/states/answer-scale.html">Answer Scale</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Emails</div><ul>
+<li><a class="nav-link" href="/reference/emails/invitation.html">Invitation</a></li>
+<li><a class="nav-link" href="/reference/emails/counterparty-joined.html">Counterparty Joined</a></li>
+<li><a class="nav-link" href="/reference/emails/trial-started.html">Trial Started</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-initiator.html">Paused Initiator</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-counterparty.html">Paused Counterparty</a></li>
+<li><a class="nav-link" href="/reference/emails/release-notes-and-banners.html">Release Notes and Banners</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Copy & Glossary</div><ul>
+<li><a class="nav-link" href="/reference/copy/glossary.html">Glossary</a></li>
+<li><a class="nav-link" href="/reference/copy/retired-terms.html">Retired Terms</a></li>
+<li><a class="nav-link" href="/reference/copy/copy-rules.html">Copy Rules</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Changelog</div><ul>
+<li><a class="nav-link" href="/reference/changelog.html">Changelog</a></li>
+</ul></div>
+</div>
+      </aside>
+      <div class="overlay" data-menu-toggle hidden></div>
+      <main class="main is-wide">
+        <article class="article" id="article">
+          
+        <header class="doc-header">
+          <div class="doc-pills"><span class="pill pill-built">Local Only · Draft 19 Nov 2026</span><span class="pill pill-audience">Jaden</span><span class="pill pill-audience">Walt</span><span class="pill pill-audience">Hermes</span></div>
+          <h1>Project Spec 2.0 · Validation</h1>
+          <p class="doc-summary">Delivery Certification, First Draft: every agreed requirement checked against v2.0, with its Definition of Done and release evidence.</p>
+        </header>
+        
+          <div class="vx">
+<aside class="vx-status" aria-label="Certification status">
+  <div class="vx-card vx-cert">
+    <p class="vx-eyebrow">Phase 6 · Delivery Certification</p>
+    <div class="vx-state"><span class="vx-chip vx-partial">◐ Draft</span><span class="vx-chip vx-open">☐ Not Yet Signable</span></div>
+    <p class="vx-ver"><b>2.0.0-rc1.2</b> · main @ <code>601ce26</code></p>
+    <svg class="vx-gauge" viewBox="0 0 132 132" role="img" aria-label="44 of 76 met, 58 percent">
+  <defs><linearGradient id="vxg" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e9a46a"/><stop offset="1" stop-color="#7fa184"/></linearGradient></defs>
+  <circle cx="66" cy="66" r="52" class="vx-track"/>
+  <circle cx="66" cy="66" r="52" class="vx-arc" stroke="url(#vxg)" stroke-dasharray="189.2 326.7" transform="rotate(-90 66 66)"/>
+  <text x="66" y="64" text-anchor="middle" class="vx-gnum">58%</text>
+  <text x="66" y="84" text-anchor="middle" class="vx-gsub">44 of 76 met</text>
+</svg>
+    <p class="vx-gnote">Met = Delivered + Over-Delivered + Offset</p>
+  </div>
+  <div class="vx-card"><p class="vx-ct">By Scope</p><div class="vx-meter"><div class="vx-ml"><span>WEB · Website</span><b>7/13</b></div><div class="vx-bar"><i class="vx-fill-sage" style="width:54%"></i></div></div><div class="vx-meter"><div class="vx-ml"><span>APP · User App</span><b>30/50</b></div><div class="vx-bar"><i class="vx-fill-sage" style="width:60%"></i></div></div><div class="vx-meter"><div class="vx-ml"><span>ADMIN · Admin</span><b>5/7</b></div><div class="vx-bar"><i class="vx-fill-sage" style="width:71%"></i></div></div><div class="vx-meter"><div class="vx-ml"><span>OPS · Operations</span><b>2/6</b></div><div class="vx-bar"><i class="vx-fill-sage" style="width:33%"></i></div></div></div>
+  <div class="vx-card"><p class="vx-ct">By Status</p><ul class="vx-stats"><li><span class="vx-chip vx-met vx-sm">✓ Delivered</span><b>27</b></li><li><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span><b>8</b></li><li><span class="vx-chip vx-partial vx-sm">◐ Partial</span><b>13</b></li><li><span class="vx-chip vx-moved vx-sm">⇄ Offset</span><b>9</b></li><li><span class="vx-chip vx-open vx-sm">◌ Tentative</span><b>15</b></li><li><span class="vx-chip vx-moved vx-sm">⊘ Out of Scope</span><b>4</b></li></ul><p class="vx-gnote">Plus 12 Beyond the Agreement</p></div>
+  <div class="vx-card"><p class="vx-ct">Sections</p><nav class="vx-secnav"><a href="#s1"><span>1</span>Unfinished Work: TBD<b>28</b></a><a href="#s2"><span>2</span>Over-Spec Deliverables in v2.0<b>20</b></a><a href="#s3"><span>3</span>Under-Spec or Moved to a Future Version<b>13</b></a><a href="#s4"><span>4</span>Delivered as Specified<b>27</b></a></nav></div>
+  <div class="vx-card vx-meta"><p class="vx-ct">Meta</p>
+    <dl>
+      <dt>Register</dt><dd>v2 · 76 rows · 19 Nov 2026</dd>
+      <dt>Evidence</dt><dd>Every code and docs citation checked on disk at main @ 601ce26; open PRs read only</dd>
+      <dt>Release Map</dt><dd>PROGRESSIVE R1 → rc2, R2 → rc3; Beta not yet planned</dd>
+      <dt>Sign-Off</dt><dd>Walt Johnson, Herringbone Capital (dba AlignSynch)<br/>Jaden Black, Venture I/O</dd>
+      <dt>Fees</dt><dd>See Exhibit B</dd>
+      <dt>Sources</dt><dd><code>spec-scope-v2/DEFINED.md</code><br/><code>spec-scope-v2/CERTIFICATION.md</code><br/><code>spec-scope-v2/TRACE.csv</code><br/><code>spec-scope-v2/VALIDATION.csv</code></dd>
+    </dl>
+    <p class="vx-legend">☑ Met · ◐ Partial · ☐ Open · → Moved</p>
+  </div>
+</aside>
+<div class="vx-main">
+<p class="vx-conf">Confidential: drawn from the 2024 Consulting Agreement, under NDA (Exhibit C). Local only, never on the public preview. Fees: see Exhibit B. Review and Approval cells stay Pending until each person signs.</p>
+<section class="vx-sec vx-sec1" id="s1"><header class="vx-sech"><span class="vx-secn">1</span><div><h2>Unfinished Work: TBD</h2><p>Partial and Tentative rows, plus the OPS-01 sign-off. Each shows its next release and acceptance line.</p></div><b class="vx-secc">28</b></header><div class="vx-colhead"><span>Requirement · Definition of Done</span><span>Release Evidence</span></div><h3 class="vx-gh">Play with Aspects<span>3</span></h3><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-05</span><span class="vx-cite">p32</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Offer a Household Pet Peeves template.</p><blockquote class="vx-q">“57 Household Pet Peeves”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Template appears in the catalogue with at least 5 Aspects.</p><p class="vx-sub"><b>v2.0 today</b> Not in the catalogue. Doctor / Patient (08) is covered by Patient–Caregiver.</p><p class="vx-sub vx-next"><b>Next</b> Add a Household Pet Peeves template (content only).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/relationship-types.ts#L740" title="main @ 601ce26"><code>data/<wbr>relationship-types.ts:740</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-09</span><span class="vx-cite">p4,14</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Each template carries about a dozen Aspects.</p><blockquote class="vx-q">“record their Opinions regarding a dozen Aspects”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Each offered template has ≥ 12 Aspects, or the Initiator can add up to 12.</p><p class="vx-sub"><b>v2.0 today</b> Offered templates carry 5–7 Aspects; the Initiator can add more. My Templates caps at 8.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/flow/template-draft.ts#L34" title="main @ 601ce26"><code>lib/<wbr>flow/<wbr>template-draft.ts:34</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-11</span><span class="vx-cite">p37,111+</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Key terms carry a short help definition where they appear.</p><blockquote class="vx-q">“Each instance will provide hover text definition”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Every field in the wizard and answer screen has a help line or tooltip.</p><p class="vx-sub"><b>v2.0 today</b> Help lines under fields (for example Description, Mode). No glossary tooltip on every term.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/assessment-create.ts#L553" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>assessment-create.ts:553</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Register<span>4</span></h3><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-14</span><span class="vx-cite">p9,87</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Collect age at sign-up for future age-based templates.</p><blockquote class="vx-q">“Added Age to User Registration … Age-Based Templates in future”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> Date of birth was removed from sign-up because nothing read it. No age-based templates exist.</p><p class="vx-sub vx-next"><b>Next</b> Walt decides on collecting age.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/register.ts#L39" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>register.ts:39</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-15</span><span class="vx-cite">p88</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Sign-up sends an email verification link.</p><blockquote class="vx-q">“Create Account Button – Sends email verification link.”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A new email/password account receives a verification email.</p><p class="vx-sub"><b>v2.0 today</b> Not evidenced. The auth path list names <code>send-verification-email</code>; delivery was not verified end to end.</p><p class="vx-sub vx-next"><b>Next</b> Sign up a fresh email on prod; record whether a verification email arrives. Built → Delivered, else move to R2.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/forms/auth-paths.ts#L53" title="main @ 601ce26"><code>lib/<wbr>forms/<wbr>auth-paths.ts:53</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-16</span><span class="vx-cite">p88,121</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Optional phone, CC email, text notifications and 2FA.</p><blockquote class="vx-q">“Phone Number ??? … UNDECIDED. Is phone number required … for 2FA”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> Not built. The source marks it undecided; phone was removed from sign-up.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · Later</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/register.ts#L39" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>register.ts:39</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-20</span><span class="vx-cite">p17,102–103</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">The relationship list shows Gap counts, Mode, Setting and last change per relationship.</p><blockquote class="vx-q">“Gap Flags … Mode … Setting … Last Modified”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Each card shows Gap count, Mode, Setting and last-updated date.</p><p class="vx-sub"><b>v2.0 today</b> Cards show name, other person, a status chip and the next step; Gap counts, Mode, Setting and dates are not on the list.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/my-relationships-and-start.html">Docs · My Relationships And Start</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Invite<span>1</span></h3><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-22</span><span class="vx-cite">p88,124</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">The Initiator can add a personal note to the invitation and see what was sent.</p><blockquote class="vx-q">“Custom Text to add to email body … a Pop-up shows the Initiator a copy of the email”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Stage 5 has an optional note field; the sent state shows the email.</p><p class="vx-sub"><b>v2.0 today</b> No note field and no copy of the sent email was found. The sent state shows Invitation History.</p><p class="vx-sub vx-next"><b>Next</b> Decide: optional note field on Stage 5, or mark Out of Scope with Walt.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/dashboard-relationship-detail.ts#L924" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>dashboard-relationship-detail.ts:924</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Share and Results<span>2</span></h3><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-34</span><span class="vx-cite">p27,82</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">A results page per relationship, a heat chart, and a keepable record.</p><blockquote class="vx-q">“Relationship Analysis · Relationship Heat Chart … a nice formal record”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Align shows every Aspect&#x27;s answers and status; a record can be downloaded.</p><p class="vx-sub"><b>v2.0 today</b> Align report with a Next Step. No heat chart. The PDF record exists but downloads from Admin only.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/report/pdf.ts#L2" title="main @ 601ce26"><code>lib/<wbr>report/<wbr>pdf.ts:2</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/instances/[id]/report/export/route.ts#L90" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>instances/<wbr>[id]/<wbr>report/<wbr>export/<wbr>route.ts:90</code></a><a class="vx-ev" href="/guides/shared/results-and-align.html">Docs · Results And Align</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-35</span><span class="vx-cite">p75,98</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Celebrate when a relationship is Aligned (screen and email).</p><blockquote class="vx-q">“Congratulations Email … flying Unicorns and Fireworks”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Reaching Aligned shows a celebration and sends a congratulations email.</p><p class="vx-sub"><b>v2.0 today</b> Not built. No congratulations email in the template register.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L94" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:94</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Discuss<span>4</span></h3><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-37</span><span class="vx-cite">p90,93</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Both people can message each other in the relationship and tag an Aspect.</p><blockquote class="vx-q">“use the Aspect Chat … Chat between Parties enabled”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Messages persist across sessions and can be tagged to an Aspect.</p><p class="vx-sub"><b>v2.0 today</b> Discussion with Aspect tags is built; messages do not persist yet.</p><p class="vx-sub vx-next"><b>Next</b> Persist Discussion messages (#1189); reload keeps the thread.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/chat.ts#L51" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>chat.ts:51</code></a><a class="vx-ev" href="/guides/shared/chat-and-discussion.html">Docs · Chat And Discussion</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-39</span><span class="vx-cite">p90,91,119</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Pending changes are marked and every change is listed in a log both people can read.</p><blockquote class="vx-q">“Change Shading Color … listed … in Change Log”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> The relationship shows a dated list of proposed, accepted and opinion changes.</p><p class="vx-sub"><b>v2.0 today</b> Proposals are marked by a card, not shading. No member-visible change log was found (operators have Admin › Audit).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/audit/page.tsx#L18" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>audit/<wbr>page.tsx:18</code></a><a class="vx-ev" href="/guides/shared/propose-a-change.html">Docs · Propose A Change</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-40</span><span class="vx-cite">p74,91</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Email the other person on each proposed change and a daily summary of opinion changes.</p><blockquote class="vx-q">“Aspect Change Email … Daily Opinion Change Email”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A proposal triggers an email; opinion changes roll into one daily email.</p><p class="vx-sub"><b>v2.0 today</b> Neither email is in the template register.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L81" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:81</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-41</span><span class="vx-cite">p27,74–75</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Reminder and retention emails.</p><blockquote class="vx-q">“We will occasionally remind you … Weekly Relationship Emails”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Invite and trial reminders send; a weekly relationship email is defined.</p><p class="vx-sub"><b>v2.0 today</b> Invitation reminder and trial-ending emails exist; no weekly relationship email.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L81" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:81</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L101" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:101</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Plans and Billing<span>2</span></h3><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">APP-46</span><span class="vx-cite">p85</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">A billing page with plan, status, invoices and card.</p><blockquote class="vx-q">“Account Page – accounting of Relationship Months, balance, invoices, card”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Payment tab shows plan, trial or renewal state, card and invoice access.</p><p class="vx-sub"><b>v2.0 today</b> Payment tab shows plan, trial state and after-trial price. Invoice access was not evidenced.</p><p class="vx-sub vx-next"><b>Next</b> Show invoice/receipt link (provider portal) on the Payment tab, or record that the provider emails receipts.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/dashboard/payment/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>dashboard/<wbr>payment/<wbr>page.tsx:2</code></a><a class="vx-ev" href="/guides/initiator/payment.html">Docs · Payment</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-47</span><span class="vx-cite">p75,81</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Accept a discount code at payment.</p><blockquote class="vx-q">“Discount Coupon Codes … Includes ability to provide Discount Coupon Codes”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A valid code reduces the charge at checkout.</p><p class="vx-sub"><b>v2.0 today</b> Not built. The billing schema leaves coupons to the provider.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/db/migrations/0009_billing.sql#L16" title="main @ 601ce26"><code>db/<wbr>migrations/<wbr>0009_billing.sql:16</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Coaches and Professionals<span>2</span></h3><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-49</span><span class="vx-cite">p38,142</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">The Initiator can invite a Coach who reads the relationship and gets copied on emails.</p><blockquote class="vx-q">“DECISION MADE … Invite? YES … Identical process to inviting the Counterparty”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Relationship has Invite Coach; the coach joins read-only and is CC&#x27;d.</p><p class="vx-sub"><b>v2.0 today</b> Back-end scaffold only: invite/claim/revoke in the store and a read-only coach state; no screen sends it.</p><p class="vx-sub vx-next"><b>Next</b> Walt decides whether Coach invite is in 2.0 (scaffold exists).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/flow/store.ts#L3525" title="main @ 601ce26"><code>lib/<wbr>flow/<wbr>store.ts:3525</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/flow/answer-gate.ts#L105" title="main @ 601ce26"><code>lib/<wbr>flow/<wbr>answer-gate.ts:105</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">APP-50</span><span class="vx-cite">p31,49,82,115,124</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Branded coaches: their logo and templates, prepaid months for clients, coupon-funded relationships.</p><blockquote class="vx-q">“Branded Coach (White Label or “Private Label”) … Coach Paid”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> Not built. It depends on APP-49 and on the Account Bank, which the one-plan decision replaced.</p><p class="vx-sub vx-next"><b>Next</b> Walt confirms Branded Coach is post-2.0.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Admin<span>2</span></h3><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">ADMIN-05</span><span class="vx-cite">p5</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Staff can manage website content and blog posts.</p><blockquote class="vx-q">“Product Website content &amp; blog”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Staff can edit public page copy and publish posts without a deploy.</p><p class="vx-sub"><b>v2.0 today</b> Staff can edit email templates and send broadcasts. Public page copy and a blog are not editable from Admin.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/email-templates/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>email-templates/<wbr>page.tsx:2</code></a><a class="vx-ev" href="/guides/admin/email-templates.html">Docs · Email Templates</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">ADMIN-06</span><span class="vx-cite">p82</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Staff can change prices and maintain coupon codes.</p><blockquote class="vx-q">“Pricing changes · Discount Coupon Maintenance”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Price changes ship as config; coupons per APP-47.</p><p class="vx-sub"><b>v2.0 today</b> Prices are configuration (a reviewed change), not an admin screen. Pricing is PM-owned. Coupons are Tentative (APP-47).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/billing-plans.ts#L169" title="main @ 601ce26"><code>data/<wbr>billing-plans.ts:169</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Website<span>6</span></h3><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">WEB-06</span><span class="vx-cite">p5,81</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">A blog where the Company posts articles.</p><blockquote class="vx-q">“Community Blog (only our posting of articles)”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A <code>/blog</code> (or equivalent) lists AlignSynch posts managed from Admin.</p><p class="vx-sub"><b>v2.0 today</b> No AlignSynch blog. A <code>/news</code> route survives from the base template with quiz copy; whether it is reachable on the AlignSynch build was not verified.</p><p class="vx-sub vx-next"><b>Next</b> Decide: no blog at launch (hide <code>/news</code>) or a later loop.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/news/page.tsx#L5" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>news/<wbr>page.tsx:5</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">WEB-07</span><span class="vx-cite">p81</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Public Reviews and Glossary pages.</p><blockquote class="vx-q">“Reviews … Glossary”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> <code>/glossary</code> renders the product glossary; Reviews shows only real reviews.</p><p class="vx-sub"><b>v2.0 today</b> Glossary is written in the docs, not as a site page. No reviews page (no real reviews exist yet to publish).</p><p class="vx-sub vx-next"><b>Next</b> Publish <code>/glossary</code> from the docs glossary; Reviews waits for real reviews.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/reference/copy/glossary.html">Docs · Glossary</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">WEB-08</span><span class="vx-cite">p81,98</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Public pages carry titles, descriptions, social cards and are indexable; internal pages are not.</p><blockquote class="vx-q">“Home Main Landing … [with all the SEO tricks]”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Each public route has a title and description; OG image renders; admin routes are noindex; a sitemap lists public routes.</p><p class="vx-sub"><b>v2.0 today</b> Per-page metadata, OpenGraph image and noindex on admin pages exist. No sitemap/robots route was found under <code>app/</code>.</p><p class="vx-sub vx-next"><b>Next</b> Add <code>app/sitemap.ts</code> and <code>app/robots.ts</code> for the public routes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/layout.tsx#L63" title="main @ 601ce26"><code>app/<wbr>layout.tsx:63</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/docs/page.tsx#L46" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>docs/<wbr>page.tsx:46</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">WEB-11</span><span class="vx-cite">p30,81,93</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Unregistered views are watermarked and cannot be copied or printed.</p><blockquote class="vx-q">“Relationships are also Watermarked, No-Copy, and No-Print”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> Not built. Unregistered visitors see the catalogue and a demo labelled Example; they cannot save or answer.</p><p class="vx-sub vx-next"><b>Next</b> Walt signs off on dropping watermark/no-print.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/relationship-templates/[slug]/demo/page.tsx#L3" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>relationship-templates/<wbr>[slug]/<wbr>demo/<wbr>page.tsx:3</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">WEB-12</span><span class="vx-cite">p29</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Multi-language site.</p><blockquote class="vx-q">“we need to worry about many languages?”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> English only. The source asks the question but does not decide it.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · Later</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-open"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-open" aria-label="open">☐</span><span class="vx-id">WEB-13</span><span class="vx-cite">p82</span><span class="vx-chip vx-open vx-sm">◌ Tentative</span></div>
+  <p class="vx-req">Seven hidden pages for the Company&#x27;s other products.</p><blockquote class="vx-q">“Extra Pages for Walt&#x27;s other stuff (Hidden Page 1–7)”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a until decided.</p><p class="vx-sub"><b>v2.0 today</b> Not built; no content was supplied for them.</p><p class="vx-sub vx-next"><b>Next</b> Walt confirms hidden pages are out of 2.0.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Launch and Operations<span>2</span></h3><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">OPS-01</span><span class="vx-cite">p5,6,7</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">The 2.0 platform (website, user app, admin) is deployed and accepted.</p><blockquote class="vx-q">“Phase 6: Product Launch … signed off delivery of deployed platform and scopes”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A 2.0.0 release is tagged on main, deployed to production, and this certificate is signed.</p><p class="vx-sub"><b>v2.0 today</b> 2.0.0-rc1.2 is released and deployed. 2.0.0 GA isn&#x27;t tagged yet, and sign-off is pending (this document).</p><p class="vx-sub vx-next"><b>Next</b> Tag 2.0.0 after the open PM PRs land; deploy; collect signatures.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Fills Gap · R1</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">R1</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/CHANGELOG.md#L9" title="main @ 601ce26"><code>CHANGELOG.md:9</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-partial"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-partial" aria-label="partial">◐</span><span class="vx-id">OPS-04</span><span class="vx-cite">p140</span><span class="vx-chip vx-partial vx-sm">◐ Partial</span></div>
+  <p class="vx-req">Measure conversion, churn and retention.</p><blockquote class="vx-q">“Implement analytics … Need Help Here for Conversion, churn reduction, and Retention”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Sign-up → invite → accept → paid funnel is counted and visible to staff.</p><p class="vx-sub"><b>v2.0 today</b> Admin › Growth reads the growth model. No product analytics instrumentation was found.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">On Roadmap · R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell "><span class="vx-cl">rc3</span><span class="vx-cv">R2</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/growth/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>growth/<wbr>page.tsx:2</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div></section><section class="vx-sec vx-sec2" id="s2"><header class="vx-sech"><span class="vx-secn">2</span><div><h2>Over-Spec Deliverables in v2.0</h2><p>Delivered beyond what the agreement asked, and features it never asked for.</p></div><b class="vx-secc">20</b></header><div class="vx-colhead"><span>Requirement · Definition of Done</span><span>Release Evidence</span></div><h3 class="vx-gh">Play with Aspects<span>1</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">APP-01</span><span class="vx-cite">p14,32,81</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">A public catalogue of business and personal Relationship Templates, viewable before sign-up.</p><blockquote class="vx-q">“over a dozen pre-populated starting Templates … you can see them free”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> <code>/relationship-templates</code> lists at least 13 offered templates signed out, each opening a template page.</p><p class="vx-sub"><b>v2.0 today</b> 27 offered templates (2024 list: 16) across Office, Business, Home, Social, School, Medical and Property realms, each with who it&#x27;s for and who it&#x27;s not for.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/relationship-templates/page.tsx#L21" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>relationship-templates/<wbr>page.tsx:21</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/relationship-types.ts#L145" title="main @ 601ce26"><code>data/<wbr>relationship-types.ts:145</code></a><a class="vx-ev" href="/guides/initiator/pick-a-template.html">Docs · Pick A Template</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Register<span>1</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">APP-12</span><span class="vx-cite">p87,121</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">A visitor can create an account with name, email and password.</p><blockquote class="vx-q">“User Registration … Create Account Button”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> <code>/register</code> creates an account and returns the person to their draft.</p><p class="vx-sub"><b>v2.0 today</b> Two-step sign-up (email, then name and password) plus Google sign-in; return to the draft after sign-in.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/register.ts#L36" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>register.ts:36</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/auth/google-flow.ts#L80" title="main @ 601ce26"><code>lib/<wbr>auth/<wbr>google-flow.ts:80</code></a><a class="vx-ev" href="/guides/initiator/create-your-account.html">Docs · Create Your Account</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Invite<span>2</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">APP-23</span><span class="vx-cite">p114,125–127</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Invitations expire after 7 days and can be re-sent or voided.</p><blockquote class="vx-q">“The Invitation will expire in 1 week … Void Counterparty Invite Button”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> A link older than 7 days is refused with a clear message; Resend and Cancel work.</p><p class="vx-sub"><b>v2.0 today</b> 7-day links, Resend, Cancel Invite; v2 adds Copy Invite Link and editing a sent invite.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/invite.ts#L191" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>invite.ts:191</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/dashboard-relationship-detail.ts#L644" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>dashboard-relationship-detail.ts:644</code></a><a class="vx-ev" href="/guides/initiator/copy-resend-or-cancel-an-invite.html">Docs · Copy Resend Or Cancel An Invite</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">APP-24</span><span class="vx-cite">p74,81</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">The invited person registers from the link and lands on the relationship.</p><blockquote class="vx-q">“Invitee Registration – Counterparty or Coach Landing Registration”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Join steps 1–3 create the account and open the relationship.</p><p class="vx-sub"><b>v2.0 today</b> Join steps 1–3 and a You&#x27;ve Joined landing; v2 adds one-click Decline.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/invite/[token]/decline/route.ts#L6" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>invite/<wbr>[token]/<wbr>decline/<wbr>route.ts:6</code></a><a class="vx-ev" href="/guides/counterparty/accept-or-decline-an-invite.html">Docs · Accept Or Decline An Invite</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Admin<span>2</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">ADMIN-01</span><span class="vx-cite">p5</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">An internal admin app only staff can open.</p><blockquote class="vx-q">“Mobile Responsive Admin Application [Internal]”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Non-admins get no admin rail and admin routes refuse them.</p><p class="vx-sub"><b>v2.0 today</b> Admin rail gated by role and an allowlist, with a CRUD &amp; Permissions matrix.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/auth/admin-allowlist.ts#L2" title="main @ 601ce26"><code>lib/<wbr>auth/<wbr>admin-allowlist.ts:2</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/permissions/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>permissions/<wbr>page.tsx:2</code></a><a class="vx-ev" href="/guides/admin/who-sees-the-admin-rail.html">Docs · Who Sees The Admin Rail</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">ADMIN-07</span><span class="vx-cite">p5</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Further back-office tools as needed.</p><blockquote class="vx-q">“other functions to be determined in the finalized requirements”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a</p><p class="vx-sub"><b>v2.0 today</b> Templates, relationships, audit log, platform health, gap overview and growth model screens.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/templates/page.tsx#L3" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>templates/<wbr>page.tsx:3</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/audit/page.tsx#L18" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>audit/<wbr>page.tsx:18</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Website<span>1</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">WEB-05</span><span class="vx-cite">p5</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">User and admin documentation that explains every shipped feature.</p><blockquote class="vx-q">“Documentation”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Every feature in the inventory has a docs page with status and evidence.</p><p class="vx-sub"><b>v2.0 today</b> 51 illustrated docs pages (spec-docs-v2) with file:line evidence, plus in-app Admin › Docs.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/docs/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>docs/<wbr>page.tsx:2</code></a><a class="vx-ev" href="/README.html">Docs · Readme</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Launch and Operations<span>1</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">OPS-03</span><span class="vx-cite">p5</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">The platform is tested before launch.</p><blockquote class="vx-q">“Phase 5: Testing &amp; Stack”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Automated tests run in CI on main.</p><p class="vx-sub"><b>v2.0 today</b> 380 entries under <code>tests/</code> on main, plus QA atlases and a recorded demo-flow check.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/how-it-works/page.tsx#L6" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>how-it-works/<wbr>page.tsx:6</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Beyond the Agreement<span>12</span></h3><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-01</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Pause, read-only and one free Extra Week instead of deletion</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2 · #1235 merged #1236 merged</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/when-a-relationship-pauses.html">Docs · When A Relationship Pauses</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-02</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Leave Relationship / Ask to Be Removed (closed, never erased)</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/shared/leave-a-relationship.html">Docs · Leave A Relationship</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-03</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Delete Account (immediate)</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/account/delete-your-account.html">Docs · Delete Your Account</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-04</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">One-click Decline for the invited person</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/counterparty/accept-or-decline-an-invite.html">Docs · Accept Or Decline An Invite</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-05</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Edit a draft or sent invite; Copy Invite Link</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/edit-a-draft-or-sent-invite.html">Docs · Edit A Draft Or Sent Invite</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-06</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Counterparty can save the Aspects as their own template</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/counterparty/save-these-aspects-as-a-template.html">Docs · Save These Aspects As A Template</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-07</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">My Templates with archive / restore and template proposals</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/my-templates.html">Docs · My Templates</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-08</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Google sign-in</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/create-your-account.html">Docs · Create Your Account</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-09</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Admin CRUD &amp; Permissions matrix</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">#1245 open</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/admin/crud-and-permissions.html">Docs · Crud And Permissions</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-10</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Admin Email Templates register and override editor</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">#1242 open</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/admin/email-templates.html">Docs · Email Templates</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-11</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">Admin audit log, platform health, release notes</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/admin/who-sees-the-admin-rail.html">Docs · Who Sees The Admin Rail</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-over"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-met" aria-label="met">☑</span><span class="vx-id">B-12</span><span class="vx-cite vx-cite-new">Not in Agreement</span><span class="vx-chip vx-over vx-sm">★ Over-Delivered</span></div>
+  <p class="vx-req">51-page illustrated docs with file:line evidence</p>
+  <p class="vx-dod"><b>Definition of Done</b> Works on main as its docs page describes.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Shipped in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/start/what-is-alignsynch.html">Docs · What Is Alignsynch</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Docs page verified; no main citation recorded for this item">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div></section><section class="vx-sec vx-sec3" id="s3"><header class="vx-sech"><span class="vx-secn">3</span><div><h2>Under-Spec or Moved to a Future Version</h2><p>Offsets with what replaces them, and Out of Scope rows with their cite. Acceptance needs Walt&#x27;s sign-off.</p></div><b class="vx-secc">13</b></header><div class="vx-colhead"><span>Requirement · Definition of Done</span><span>Release Evidence</span></div><h3 class="vx-gh">Play with Aspects<span>2</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-03</span><span class="vx-cite">p93,99,141</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">A visitor can shape a relationship before registering without losing the work.</p><blockquote class="vx-q">“play with Relationship Templates, one at a time … without registration”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> Stages 1–3 work signed out; after sign-up the same draft continues at Stage 4.</p><p class="vx-sub"><b>Replaced by</b> Stages 1–3 (Details, Settings, Aspects) work signed out and the draft is carried through sign-up. Answering moved to Stage 6, after the invite, so both people answer sealed. This replaces the 30-minute timeout and the “you will lose your changes” pop-up.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/auth/demo-form.ts#L21" title="main @ 601ce26"><code>lib/<wbr>auth/<wbr>demo-form.ts:21</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/assessment/new/aspects/route.ts#L77" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>assessment/<wbr>new/<wbr>aspects/<wbr>route.ts:77</code></a><a class="vx-ev" href="/guides/initiator/set-up-details-settings-and-aspects.html">Docs · Set Up Details Settings And Aspects</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-04</span><span class="vx-cite">p32</span><span class="vx-chip vx-moved vx-sm">⊘ Out of Scope</span></div>
+  <p class="vx-req">Offer the dating templates.</p><blockquote class="vx-q">“52 Girlfriend / Boyfriend · 53 Committed Significant Others”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: removed.</p><p class="vx-sub"><b>Why out</b> Kept as records, not offered: “dating is outside this product, by the owner&#x27;s instruction.” Owner decision recorded in code; listed for Walt&#x27;s sign-off.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Future Version</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/relationship-types.ts#L1398" title="main @ 601ce26"><code>data/<wbr>relationship-types.ts:1398</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Register<span>1</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-13</span><span class="vx-cite">p87,121</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">A unique username is the account identifier.</p><blockquote class="vx-q">“UserName [we want this so that email is not the users unique identifier]”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> Email (or Google) is the identifier; sign-up asks for no username, so there is no Forgot Username to need.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/register.ts#L38" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>register.ts:38</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Opinions<span>1</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-29</span><span class="vx-cite">p9,15,40–41</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">A Stage Bar shows eight stages (A–D user, 1–4 relationship).</p><blockquote class="vx-q">“Now 8 Stages … First 4 Stages A&gt;D (Stage of User), last 4 Stages 1&gt;4”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> Six stages people can act on: Details, Settings, Aspects, Account, Invite, Align. The 1–4 relationship ladder (Invited, Connected, Sharing, Aligned) is kept in the model.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/stages.ts#L76" title="main @ 601ce26"><code>content/<wbr>stages.ts:76</code></a><a class="vx-ev" href="/reference/stages/stage-6-align.html">Docs · Stage 6 Align</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Share and Results<span>3</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-30</span><span class="vx-cite">p41,91</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">Answers become visible to both once the Counterparty shares.</p><blockquote class="vx-q">“Share &amp; Share Button … one-time only Share Opinions button”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> Submitting seals the answers; results open automatically when both have answered (Waiting on {name} → Results In). No separate Share button.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/assessment-answer.ts#L112" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>assessment-answer.ts:112</code></a><a class="vx-ev" href="/guides/shared/results-and-align.html">Docs · Results And Align</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-32</span><span class="vx-cite">p43</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">Show each Aspect&#x27;s Gap as a flag, and a green check when In Synch.</p><blockquote class="vx-q">“Gap Flag … 1 Yellow, 2 Orange, 3 Pink, 4 Red … Green Checkmark”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> Status as icon plus word: ✓ In Synch, ≈ Small Gap, ⚑ Gap, with no red and no colour-only meaning. The four severities stay in the model.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/gaps.ts#L396" title="main @ 601ce26"><code>content/<wbr>gaps.ts:396</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/chat.ts#L54" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>chat.ts:54</code></a><a class="vx-ev" href="/reference/states/status-chips.html">Docs · Status Chips</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-36</span><span class="vx-cite">p74,131–133</span><span class="vx-chip vx-moved vx-sm">⊘ Out of Scope</span></div>
+  <p class="vx-req">AI-written interpretation and per-gap analytics pages.</p><blockquote class="vx-q">“Will we use ChatGPT … version 3-00-0 … STUFF FOR LATER … ANALYTICS PAGES [Phase3]”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: later version.</p><p class="vx-sub"><b>Why out</b> Not in 2.0: the source places AI analysis in version 3 and the analytics pages under “Stuff for Later”.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Future Version</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Plans and Billing<span>3</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-42</span><span class="vx-cite">p9,30,46</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">A free full-feature trial week for new accounts.</p><blockquote class="vx-q">“Freemium full features: new 1 “Relationship Week” in Account Bank”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> 7 days free, starting when the other person accepts, then one free Extra Week before Stage 6 pauses. No card at sign-up.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">#1240 open</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/flow/payment.ts#L52" title="main @ 601ce26"><code>lib/<wbr>flow/<wbr>payment.ts:52</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/lib/relationship/membership.ts#L411" title="main @ 601ce26"><code>lib/<wbr>relationship/<wbr>membership.ts:411</code></a><a class="vx-ev" href="/guides/initiator/your-7-days-free.html">Docs · Your 7 Days Free</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-met" title="Docs page and main citation both verified on disk at 601ce26">✓ Yes</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-43</span><span class="vx-cite">p30–31,40,75</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">Prepaid Relationship Months in an Account Bank, sold as bundles.</p><blockquote class="vx-q">“Upon Subscribing/Paying, they then get Relationship Months in their Account Bank”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> One plan, Basic, monthly, for one relationship: a PM pricing decision (Family removed by PR #1237, Single Annual by PR #1241). Settled scope.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2 · #1237 merged</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">#1241 open</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/start/plans-and-trial.html">Docs · Plans And Trial</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-open" title="Docs describe Basic, the one plan; main still sells two plans until #1241 merges.">≠ No</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">APP-48</span><span class="vx-cite">p31,121–122</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">When unpaid, lock the relationship; free relationships are deleted after 30 days.</p><blockquote class="vx-q">“If Account Bank = 0, then Relationship locked &amp; watermarked … 30-day expiration … removed”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> When the trial and Extra Week end, Stage 6 pauses read-only and nothing is deleted; Add a Card resumes it.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2 · #1235 merged #1236 merged</span></div><div class="vx-cell "><span class="vx-cl">rc2</span><span class="vx-cv">#1243 open</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="/guides/initiator/when-a-relationship-pauses.html">Docs · When A Relationship Pauses</a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Website<span>1</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">WEB-10</span><span class="vx-cite">p4</span><span class="vx-chip vx-moved vx-sm">⇄ Offset</span></div>
+  <p class="vx-req">Build the platform on WordPress.</p><blockquote class="vx-q">“build a multi-scope WordPress based responsive web product platform”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: replaced.</p><p class="vx-sub"><b>Replaced by</b> Built on Next.js with Postgres (Neon) and Neon Auth, deployed on Vercel: one typed codebase for site, app and admin, with transactions and email WordPress v1 lacked (p33).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Offset in rc1.2</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/package.json#L140" title="main @ 601ce26"><code>package.json:140</code></a><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/package.json#L97" title="main @ 601ce26"><code>package.json:97</code></a></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has only one">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><h3 class="vx-gh">Launch and Operations<span>2</span></h3><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">OPS-05</span><span class="vx-cite">p98,139</span><span class="vx-chip vx-moved vx-sm">⊘ Out of Scope</span></div>
+  <p class="vx-req">Trademark, typo domain, legal and privacy review.</p><blockquote class="vx-q">“Action Items: Register Trademark, purchase AlignSync.com … need advisor here”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: Company actions.</p><p class="vx-sub"><b>Why out</b> Listed in the source as the Company&#x27;s own actions, not Consultant deliverables.</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Future Version</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div><div class="vx-row vx-t-moved"><div class="vx-mid">
+  <div class="vx-head"><span class="vx-box vx-moved" aria-label="moved">→</span><span class="vx-id">OPS-06</span><span class="vx-cite">p5,28–29</span><span class="vx-chip vx-moved vx-sm">⊘ Out of Scope</span></div>
+  <p class="vx-req">Growth (including B2B therapist outreach) and ongoing system operations.</p><blockquote class="vx-q">“The last two phases are related to all scopes … Phase 7: Growth Hacking · Phase 8: System Ops”</blockquote>
+  <p class="vx-dod"><b>Definition of Done</b> n/a: after Phase 6.</p><p class="vx-sub"><b>Why out</b> Phases 7–8 come after the Phase 6 milestone; outreach to therapists is the Company&#x27;s (p29).</p>
+</div><div class="vx-right">
+  <div class="vx-rel"><div class="vx-cell vx-v200"><span class="vx-cl">v2.0.0</span><span class="vx-cv">Future Version</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc2</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">rc3</span><span class="vx-cv">—</span></div><div class="vx-cell is-empty "><span class="vx-cl">Beta</span><span class="vx-cv">—</span></div></div>
+  <div class="vx-kv"><span class="vx-k">Evidence</span><span class="vx-v"><span class="vx-none">—</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Parity</span><span class="vx-v"><span class="vx-tag vx-na" title="Needs both a docs page and a main citation; this row has neither">· n.a.</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Review</span><span class="vx-v"><span class="vx-tag vx-pend" title="PM review and Design review: both Pending">◌ PM, Design Pending</span></span></div>
+  <div class="vx-kv"><span class="vx-k">Approval</span><span class="vx-v"><span class="vx-tag vx-pend" title="Jaden approval and Walt approval: both Pending">◌ Jaden, Walt Pending</span></span></div>
+</div></div></section><section class="vx-sec vx-sec4" id="s4"><header class="vx-sech"><span class="vx-secn">4</span><div><h2>Delivered as Specified</h2><p>Met as written. Compact checklist.</p></div><b class="vx-secc">27</b></header><h3 class="vx-gh">Play with Aspects<span>5</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-02</span><span class="vx-cite">p104,142</span></div>
+    <b>A fully answered, read-only demo relationship anyone can open.</b><span class="vx-cdod"><i>Done</i> Each template page links to a finished example report that needs no account.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/relationship-templates/[slug]/demo/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>relationship-templates/<wbr>[slug]/<wbr>demo/<wbr>page.tsx:2</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-06</span><span class="vx-cite">p17,32</span></div>
+    <b>A blank template to start from scratch.</b><span class="vx-cdod"><i>Done</i> My Templates offers Start Blank.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/dashboard-templates.ts#L203" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>dashboard-templates.ts:203</code></a><a class="vx-ev" href="/guides/initiator/my-templates.html">Docs · My Templates</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-07</span><span class="vx-cite">p111–114</span></div>
+    <b>The Initiator names the relationship and both people; roles and realm come with the template; a description is optional.</b><span class="vx-cdod"><i>Done</i> Stage 1 saves title, both first names, invite email and optional description; the relationship shows them everywhere.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/assessment-create.ts#L532" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>assessment-create.ts:532</code></a><a class="vx-ev" href="/reference/stages/stage-1-details.html">Docs · Stage 1 Details</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-08</span><span class="vx-cite">p15,116,119–120,128</span></div>
+    <b>The Initiator can edit, add, delete and reorder Aspects and their Left and Right Values before inviting.</b><span class="vx-cdod"><i>Done</i> Stage 3 edits, adds, deletes and drag-reorders Aspects; the order is saved.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/assessment/new/aspects/route.ts#L5" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>assessment/<wbr>new/<wbr>aspects/<wbr>route.ts:5</code></a><a class="vx-ev" href="/reference/stages/stage-3-aspects.html">Docs · Stage 3 Aspects</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-10</span><span class="vx-cite">p38,112</span></div>
+    <b>Per relationship, the Initiator picks Basic or Advanced Mode and Soft or Full Setting.</b><span class="vx-cdod"><i>Done</i> Stage 2 saves both; Align scores with the chosen Setting.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/assessment.ts#L93" title="main @ 601ce26"><code>content/<wbr>assessment.ts:93</code></a><a class="vx-ev" href="/reference/stages/stage-2-settings.html">Docs · Stage 2 Settings</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Register<span>3</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-17</span><span class="vx-cite">p81,85</span></div>
+    <b>Sign in, sign out and reset a forgotten password.</b><span class="vx-cdod"><i>Done</i> <code>/login</code>, <code>/forgot-password</code> → <code>/reset/&lt;token&gt;</code> work; Sign Out is in the account menu.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(auth)/forgot-password/page.tsx#L13" title="main @ 601ce26"><code>app/<wbr>(auth)/<wbr>forgot-password/<wbr>page.tsx:13</code></a><a class="vx-ev" href="/guides/account/account-menu.html">Docs · Account Menu</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-18</span><span class="vx-cite">p81,85</span></div>
+    <b>A signed-in person can edit their profile and password.</b><span class="vx-cdod"><i>Done</i> <code>/settings</code> saves Profile and Password and lists the session.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/settings/page.tsx#L2" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>settings/<wbr>page.tsx:2</code></a><a class="vx-ev" href="/guides/account/profile-and-password.html">Docs · Profile And Password</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-19</span><span class="vx-cite">p84,101</span></div>
+    <b>After sign-in, people land on a list of their relationships with access to templates.</b><span class="vx-cdod"><i>Done</i> Signed-in landing lists every relationship with its status; Templates is one click away.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="/guides/initiator/my-relationships-and-start.html">Docs · My Relationships And Start</a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Invite<span>2</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-21</span><span class="vx-cite">p88,124</span></div>
+    <b>The Initiator invites the other person by email; the email links to registration and then the relationship.</b><span class="vx-cdod"><i>Done</i> Stage 5 sends the invitation email; the link opens the join steps for that relationship.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L74" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:74</code></a><a class="vx-ev" href="/guides/initiator/send-the-invite.html">Docs · Send The Invite</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-25</span><span class="vx-cite">p74</span></div>
+    <b>The Initiator is emailed when the other person joins.</b><span class="vx-cdod"><i>Done</i> Claiming the invite sends the Initiator a joined email.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L87" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:87</code></a><a class="vx-ev" href="/reference/emails/counterparty-joined.html">Docs · Counterparty Joined</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Opinions<span>3</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-26</span><span class="vx-cite">p15,42</span></div>
+    <b>Each person gives Feel and Wish (Basic) or also Think and Guess (Advanced) per Aspect, on a 1–5 scale between its Left and Right Values.</b><span class="vx-cdod"><i>Done</i> The answer screen asks exactly the mode&#x27;s opinions per Aspect and saves 1–5.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/assessment.ts#L93" title="main @ 601ce26"><code>content/<wbr>assessment.ts:93</code></a><a class="vx-ev" href="/reference/states/answer-scale.html">Docs · Answer Scale</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-27</span><span class="vx-cite">p91,128</span></div>
+    <b>Answers stay private until both people have finished.</b><span class="vx-cdod"><i>Done</i> Neither person can read the other&#x27;s answers before both submit.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/assessment-answer.ts#L112" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>assessment-answer.ts:112</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-28</span><span class="vx-cite">p90</span></div>
+    <b>Once invited, the Aspects are locked; changes go through a proposal the other person approves.</b><span class="vx-cdod"><i>Done</i> After the invite, Aspects can&#x27;t be edited directly; a proposal flow is offered.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/dashboard-relationship-detail.ts#L347" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>dashboard-relationship-detail.ts:347</code></a><a class="vx-ev" href="/guides/shared/propose-a-change.html">Docs · Propose A Change</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Share and Results<span>2</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-31</span><span class="vx-cite">p34–36,44–45</span></div>
+    <b>The analysis computes the Feel, Wish, Initiator and Counterparty Gaps (Basic) and the four Think/Guess Gaps (Advanced).</b><span class="vx-cdod"><i>Done</i> For an answered pair, every gap kind for the mode is computed from the same function.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/gaps.ts#L63" title="main @ 601ce26"><code>content/<wbr>gaps.ts:63</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-33</span><span class="vx-cite">p74–75</span></div>
+    <b>Both people are emailed when results are ready.</b><span class="vx-cdod"><i>Done</i> When both have answered, a report-ready email goes out.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/content/email-bodies.md#L94" title="main @ 601ce26"><code>content/<wbr>email-bodies.md:94</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Discuss<span>1</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-38</span><span class="vx-cite">p90,128</span></div>
+    <b>Either person proposes a change to an Aspect or Value; the other accepts or declines.</b><span class="vx-cdod"><i>Done</i> A proposal shows to the other person, who can accept or decline it; accepted changes apply.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="/guides/shared/propose-a-change.html">Docs · Propose A Change</a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Plans and Billing<span>2</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-44</span><span class="vx-cite">p123</span></div>
+    <b>The Initiator pays through a payment gateway.</b><span class="vx-cdod"><i>Done</i> Add a Card completes a provider checkout and the plan shows as active.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/api/billing/webhook/route.ts#L48" title="main @ 601ce26"><code>app/<wbr>api/<wbr>billing/<wbr>webhook/<wbr>route.ts:48</code></a><a class="vx-ev" href="/guides/initiator/payment.html">Docs · Payment</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">APP-45</span><span class="vx-cite">p86</span></div>
+    <b>Only the Initiator pays; the Counterparty never sees price or card.</b><span class="vx-cdod"><i>Done</i> Counterparty screens contain no price, trial or card words.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/data/pages/payment.ts#L170" title="main @ 601ce26"><code>data/<wbr>pages/<wbr>payment.ts:170</code></a><a class="vx-ev" href="/guides/counterparty/when-a-relationship-pauses.html">Docs · When A Relationship Pauses</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Admin<span>3</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">ADMIN-02</span><span class="vx-cite">p5</span></div>
+    <b>Staff can see and manage user accounts.</b><span class="vx-cdod"><i>Done</i> Admin lists members and their relationships.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/console/users/page.tsx#L6" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>console/<wbr>users/<wbr>page.tsx:6</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">ADMIN-03</span><span class="vx-cite">p5,82</span></div>
+    <b>Staff can see subscription state and make grants.</b><span class="vx-cdod"><i>Done</i> Admin shows plan and provider state per relationship and can comp one.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/billing/page.tsx#L4" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>billing/<wbr>page.tsx:4</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">ADMIN-04</span><span class="vx-cite">p5</span></div>
+    <b>Staff can read and answer support requests.</b><span class="vx-cdod"><i>Done</i> A contact-form message appears in the inbox and can be replied to.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/inbox/page.tsx#L6" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>inbox/<wbr>page.tsx:6</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Website<span>5</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">WEB-01</span><span class="vx-cite">p5,81</span></div>
+    <b>A signed-out visitor can open a home page and a How It Works walkthrough that explain the product and lead to templates and sign-up.</b><span class="vx-cdod"><i>Done</i> <code>/</code> and <code>/how-it-works</code> return 200 signed out at 390 and 1280 px, each with a start CTA.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/page.tsx#L16" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>page.tsx:16</code></a><a class="vx-ev" href="/start/what-is-alignsynch.html">Docs · What Is Alignsynch</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">WEB-02</span><span class="vx-cite">p81</span></div>
+    <b>A public help centre gives FAQs, help articles and one contact form whose messages reach the support inbox.</b><span class="vx-cdod"><i>Done</i> <code>/help</code> shows FAQ and the form signed out; a submitted message appears in Admin › Inbox.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/help/page.tsx#L23" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>help/<wbr>page.tsx:23</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">WEB-03</span><span class="vx-cite">p81</span></div>
+    <b>A public pricing page shows the plan(s) on sale and leads into the template pick.</b><span class="vx-cdod"><i>Done</i> <code>/pricing</code> returns 200 signed out and lists exactly the plans the checkout sells.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/pricing/page.tsx#L18" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>pricing/<wbr>page.tsx:18</code></a><a class="vx-ev" href="/start/plans-and-trial.html">Docs · Plans And Trial</a><span class="vx-tag vx-na">· Parity No</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">WEB-04</span><span class="vx-cite">p5</span></div>
+    <b>Public Terms of Service and Privacy Policy pages.</b><span class="vx-cdod"><i>Done</i> <code>/terms</code> and <code>/privacy</code> return 200 signed out.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(marketing)/terms/page.tsx#L6" title="main @ 601ce26"><code>app/<wbr>(marketing)/<wbr>terms/<wbr>page.tsx:6</code></a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">WEB-09</span><span class="vx-cite">p5,80</span></div>
+    <b>Every public and member screen works at phone (390 px) and desktop (1280 px) widths.</b><span class="vx-cdod"><i>Done</i> Each screen has a 390 and 1280 reference with no page-level sideways scroll.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="/INVENTORY.html">Docs · Inventory</a><span class="vx-tag vx-na">· Parity n.a.</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div><h3 class="vx-gh">Launch and Operations<span>1</span></h3><div class="vx-crow">
+  <span class="vx-box vx-met">☑</span>
+  <div class="vx-ctext"><div class="vx-chead"><span class="vx-id">OPS-02</span><span class="vx-cite">p74</span></div>
+    <b>Transactional email is delivered from the platform.</b><span class="vx-cdod"><i>Done</i> Invitation, joined, report-ready and pause emails send from production.</span></div>
+  <div class="vx-cev"><a class="vx-ev" href="https://github.com/riolabs-ai/alignsynch/blob/601ce26/app/(mainlayout)/admin/broadcast/page.tsx#L84" title="main @ 601ce26"><code>app/<wbr>(mainlayout)/<wbr>admin/<wbr>broadcast/<wbr>page.tsx:84</code></a><a class="vx-ev" href="/guides/admin/email-templates.html">Docs · Email Templates</a><span class="vx-tag vx-met">✓ Parity Yes</span><span class="vx-tag vx-pend">◌ Approval Pending</span></div>
+</div></section>
+</div>
+</div>
+
+        </article>
+        
+      </main>
+    </div>
+  </div>
+  <script src="/theme.js"></script>
+</body>
+</html>
