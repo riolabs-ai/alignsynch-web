@@ -24,14 +24,23 @@
  * so a page that renders a document and its `generateMetadata` reads the 650-line manifest once.
  * `force-dynamic` on both pages means that read happens on the request, not at build: a docs change
  * is live without a rebuild, and `pnpm build` still needs no database and no request.
+ *
+ * **Where the bytes come from is `lib/docs/source.ts`, and this file does not care (#1398).** Every
+ * read below goes through that module's reader: the checkout's `docs/` by default, or a published
+ * `docs.tar.zst` verified per file when `DOCS_SOURCE=bundle` names one. Nothing else in this module
+ * learned that a bundle exists — the containment rule, the "missing is a throw" contract and the
+ * per-request memoising are unchanged, which is what makes the switch invisible to every page.
+ * `CHANGELOG.md` stays a local read on purpose: it is not under `docs/`, it is where
+ * `scripts/release.sh` writes it, and it is not part of the published tree.
  */
-import { readFileSync, readdirSync } from "node:fs";
-import { extname, join, resolve, sep } from "node:path";
+import { readFileSync } from "node:fs";
+import { extname, join } from "node:path";
 
 import { cache } from "react";
 
 import { CHANGELOG_PATH, type ChangelogEntry, parseChangelog } from "@/lib/docs/changelog";
 import { IMAGE_EXTENSIONS } from "@/lib/docs/links";
+import { DOCS_ROOT, docsSource } from "@/lib/docs/source";
 import { UpdateLedgerUnreadable, type UpdateFile } from "@/lib/docs/updates";
 import {
   DocsManifestUnreadable,
@@ -48,14 +57,19 @@ if (typeof window !== "undefined") {
   );
 }
 
-/** The tree's root. `docs/` sits at the repository root, beside `app/` and `package.json`. */
-export const DOCS_ROOT = join(process.cwd(), "docs");
+/**
+ * The tree's root: the checkout's `docs/`, owned by `lib/docs/source.ts` (#1398).
+ *
+ * Re-exported because the paths below are described against it; which tree a *process* reads is
+ * `docsSource()`'s answer, and `DOCS_SOURCE=bundle` changes that without changing this name.
+ */
+export { DOCS_ROOT };
 
 /** The generated manifest `scripts/docs-nav.mjs` writes and `scripts/docs-check.mjs` gates. */
-export const DOCS_MANIFEST_PATH = join(DOCS_ROOT, "docs.json");
+const MANIFEST_FILE = "docs.json";
 
 /** The release record `scripts/changelog-view.mjs` writes against and `pnpm changelog:check` holds. */
-export const RELEASE_RECORD_PATH = join(DOCS_ROOT, "changelog", "releases.json");
+const RELEASE_RECORD_FILE = "changelog/releases.json";
 
 /**
  * The update ledger's directory — one `<pr>.json` per merged pull request (`lib/docs/updates.ts`).
@@ -64,7 +78,7 @@ export const RELEASE_RECORD_PATH = join(DOCS_ROOT, "changelog", "releases.json")
  * change, and `data:check` E44 (the spec's E-updates) refuses a missing, unparseable, empty-spec or
  * non-ISO entry. This module opens them read-only on the request, exactly like the two files above.
  */
-export const UPDATES_ROOT = join(DOCS_ROOT, "changelog", "updates");
+const UPDATES_DIRECTORY = "changelog/updates";
 
 /** `CHANGELOG.md` at the repository root — the source of every release fact (#893). */
 export const CHANGELOG_FILE_PATH = join(process.cwd(), CHANGELOG_PATH);
@@ -102,33 +116,23 @@ export function docContentType(path: string): string | null {
 }
 
 /**
- * `path` resolved inside `docs/`, or `null` when it would leave it.
- *
- * `resolve` first, compare second, read third. The separator is appended to the root before the
- * comparison so `docs-evil/` cannot pass as `docs/`; an absolute path is refused outright rather
- * than being allowed to win the `resolve`.
- */
-function containedPath(path: string): string | null {
-  if (path === "" || path.startsWith("/") || path.includes("\0")) return null;
-  const root = resolve(DOCS_ROOT);
-  const full = resolve(root, path);
-  if (full !== root && !full.startsWith(`${root}${sep}`)) return null;
-  return full;
-}
-
-/**
  * The manifest, parsed — once per request.
  *
  * A missing file, invalid JSON and a schema drift all become `DocsManifestUnreadable` with a
  * sentence the page can draw. They are *not* swallowed into an empty list: "there are no documents"
  * and "the graph could not be built" are different statements, and only one of them is true.
+ *
+ * The read is `docsSource().readText`, so a deployment running from a published bundle answers the
+ * same sentence when the bundle is unreadable and the same value when it is not (#1398).
  */
 export const readDocsManifest = cache((): DocsManifest => {
   let text: string;
   try {
-    text = readFileSync(DOCS_MANIFEST_PATH, "utf8");
+    text = docsSource().readText(MANIFEST_FILE);
   } catch {
-    throw new DocsManifestUnreadable("docs/docs.json could not be read from the repository root");
+    throw new DocsManifestUnreadable(
+      "docs/docs.json could not be read from the docs tree (DOCS_SOURCE=bundle reads it from the published archive)",
+    );
   }
   let raw: unknown;
   try {
@@ -172,7 +176,7 @@ export const readChangelog = cache((): ChangelogEntry[] => {
 export const readReleaseRecord = cache((): ReleaseRecord => {
   let text: string;
   try {
-    text = readFileSync(RELEASE_RECORD_PATH, "utf8");
+    text = docsSource().readText(RELEASE_RECORD_FILE);
   } catch {
     throw new ReleaseRecordUnreadable("docs/changelog/releases.json could not be read");
   }
@@ -198,11 +202,9 @@ export const readReleaseRecord = cache((): ReleaseRecord => {
 export const readUpdateLedger = cache((): UpdateFile[] => {
   let names: string[];
   try {
-    names = readdirSync(UPDATES_ROOT).sort();
+    names = docsSource().listDirectory(UPDATES_DIRECTORY);
   } catch {
-    throw new UpdateLedgerUnreadable(
-      "docs/changelog/updates could not be read from the repository root",
-    );
+    throw new UpdateLedgerUnreadable("docs/changelog/updates could not be read from the docs tree");
   }
   const files: UpdateFile[] = [];
   for (const name of names) {
@@ -215,7 +217,7 @@ export const readUpdateLedger = cache((): UpdateFile[] => {
     }
     let raw: unknown;
     try {
-      raw = JSON.parse(readFileSync(join(UPDATES_ROOT, name), "utf8")) as unknown;
+      raw = JSON.parse(docsSource().readText(`${UPDATES_DIRECTORY}/${name}`)) as unknown;
     } catch {
       throw new UpdateLedgerUnreadable(`docs/changelog/updates/${name} is not valid JSON`);
     }
@@ -232,10 +234,10 @@ export const readUpdateLedger = cache((): UpdateFile[] => {
  * from the reader, not a 500 the reader cannot act on.
  */
 export function readDocDocument(path: string): string | null {
-  const full = containedPath(path);
-  if (full === null) return null;
+  const reader = docsSource();
+  if (reader.resolve(path) === null) return null;
   try {
-    return readFileSync(full, "utf8");
+    return reader.readText(path);
   } catch {
     return null;
   }
@@ -245,15 +247,15 @@ export function readDocDocument(path: string): string | null {
 export function readDocAsset(
   path: string,
 ): { bytes: Uint8Array<ArrayBuffer>; contentType: string } | null {
-  const full = containedPath(path);
-  if (full === null) return null;
-  const contentType = docContentType(full);
+  const reader = docsSource();
+  if (reader.resolve(path) === null) return null;
+  const contentType = docContentType(path);
   if (contentType === null) return null;
   try {
     // A plain `Uint8Array` over its own buffer, not the `Buffer` node hands back: `Response`'s
     // `BodyInit` is typed against `ArrayBuffer`-backed bytes, and a `Buffer` may be a view into the
     // allocator's shared pool — which would put the next file's bytes in the body.
-    const file = readFileSync(full);
+    const file = reader.readBytes(path);
     const bytes = new Uint8Array(file.byteLength);
     bytes.set(file);
     return { bytes, contentType };

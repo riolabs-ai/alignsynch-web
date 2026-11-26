@@ -1,0 +1,9 @@
+{
+  "pr": 1407,
+  "date": "2026-11-25",
+  "area": "docs",
+  "summary": "`docs/` can be published as one deterministic `docs.tar.zst` plus a per-file `manifest.json` (`pnpm docs:bundle`), and `lib/docs/tree.ts` reads either the checkout or that verified archive behind a new `DOCS_SOURCE` switch.",
+  "reader_impact": "Nobody sees a different screen yet: `DOCS_SOURCE` unset reads `docs/` from the checkout exactly as before, so `/admin/docs*` and every docs-backed page render unchanged; the archive and its CI artifact are what a deployment opts into.",
+  "specs": ["docs/reference/env-spec.md"],
+  "risk": "low"
+}

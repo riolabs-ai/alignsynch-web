@@ -29,6 +29,7 @@
     "scripts/client-graph.ts",
     "scripts/column-refs.ts",
     "scripts/worktree-prune-rules.ts",
+    "scripts/repo-hygiene-rules.ts",
     "scripts/migration-prefixes-rules.ts",
     "scripts/template-ancestor.ts",
     "scripts/ui-refs.ts",

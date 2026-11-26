@@ -44,6 +44,11 @@ next-env.d.ts
 # `git worktree list` resolves them, but they are never part of the tree.
 .worktrees/
 
+# `pnpm hygiene:apply` writes its weekly manifest here (scripts/repo-hygiene.mjs). It records what
+# this machine deleted and what needs a human, so it belongs beside the run, not in the repository —
+# committing it would publish one operator's disk state as project history.
+/archive/
+
 
 # P3 fixture generator output (gitignored; validated by data:check when present)
 data/generated/

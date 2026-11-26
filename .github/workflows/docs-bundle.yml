@@ -1,0 +1,134 @@
+name: Docs bundle
+
+# `docs/` as one versioned artifact (#1398).
+#
+# The card this file serves is the *publish boundary*: the tree stays exactly where it is, and what
+# a consumer can rely on is a file. `scripts/docs-bundle.ts` writes `docs.tar.zst` (sorted paths,
+# fixed mtime, no ownership — `lib/docs/tar.mjs`) and `manifest.json` (version, archive sha256,
+# per-file sha256, totals); this workflow runs it where the tree is, hands both files to a workflow
+# artifact on every push to `main`, and attaches the same two files to the release when the pushed
+# commit carries a tag.
+#
+# **What this file must not do**, and does not: deploy, publish to a registry, or move a file. There
+# is no `pnpm install` — the bundler imports `node:` builtins and one `.mjs` module, so the job needs
+# the pinned node and nothing else. And no check lives here that `bash scripts/verify.sh` does not
+# run: the parity of the two readers is `tests/docs-source.test.ts`, which the gate runs in every
+# code lane. What is CI-only here is the *artifact*, which is the one thing a local gate cannot do.
+#
+# **Determinism is asserted, not assumed.** The job builds the bundle twice and fails on a single
+# differing byte. A published artifact whose hash moves between identical runs is not an artifact
+# anyone can verify, so the workflow refuses to produce one.
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+# Read the tree. The one job that writes is `attach`, and it says so on itself.
+permissions:
+  contents: read
+
+concurrency:
+  # One bundle per ref: two runs of the same commit would race the artifact name and could attach
+  # two copies to one release.
+  group: docs-bundle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle:
+    name: docs bundle (deterministic archive + manifest)
+    runs-on: ubuntu-24.04 # pinned: ubuntu-latest is migrating to Ubuntu 26 during 2026
+    timeout-minutes: 15
+    outputs:
+      # Set when the commit this run built happens to be tagged — the tag `attach` uploads to.
+      tag: ${{ steps.tag.outputs.tag }}
+    steps:
+      # Full history so `git tag --points-at HEAD` sees the release tag even when the run was
+      # triggered by the push to `main` that preceded it.
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Two builds, one hash. `--out` twice rather than one build compared with a stored hash: the
+      # check has to hold on the tree that is being published, not on a manifest someone committed.
+      - name: build the bundle twice and compare
+        run: |
+          node scripts/docs-bundle.ts --out dist/docs-bundle
+          node scripts/docs-bundle.ts --out dist/docs-bundle-again
+          for file in docs.tar.zst manifest.json; do
+            first="$(sha256sum "dist/docs-bundle/$file" | cut -d' ' -f1)"
+            second="$(sha256sum "dist/docs-bundle-again/$file" | cut -d' ' -f1)"
+            if [ "$first" != "$second" ]; then
+              echo "::error title=docs bundle::two builds of $(git rev-parse --short HEAD) disagree on $file ($first vs $second)"
+              exit 1
+            fi
+            echo "$file sha256 $first — identical across both builds"
+          done
+
+      - name: census
+        run: |
+          node -e '
+            const manifest = require("./dist/docs-bundle/manifest.json");
+            console.log(`docs bundle ${manifest.version} — ${manifest.files.length} files, ` +
+              `${manifest.totals.bytes} bytes, archive sha256 ${manifest.sha}, generatedAt ${manifest.generatedAt}`);
+          '
+
+      - name: which tag names this commit, if any
+        id: tag
+        run: |
+          tag="$(git tag --points-at HEAD | head -1)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [ -z "$tag" ]; then
+            echo "no tag points at $(git rev-parse --short HEAD) — the bundle is an artifact only"
+          else
+            echo "tag $tag points at $(git rev-parse --short HEAD)"
+          fi
+
+      - name: upload the bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: docs-bundle-${{ github.sha }}
+          path: dist/docs-bundle/
+          retention-days: 30
+          if-no-files-found: error
+
+  attach:
+    # A release asset, not a deploy: the two files land beside the tag's notes so the tree a release
+    # claims is downloadable and verifiable. Published only when a tag names the commit.
+    name: attach the bundle to the release
+    needs: bundle
+    if: needs.bundle.outputs.tag != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    # The one write this workflow needs, and the reason it is its own job: upload an asset.
+    permissions:
+      contents: write
+    steps:
+      - name: download the bundle
+        uses: actions/download-artifact@v7
+        with:
+          name: docs-bundle-${{ github.sha }}
+          path: dist/docs-bundle
+
+      - name: attach it to the release when one exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.bundle.outputs.tag }}
+          REPO: ${{ github.repository }}
+        run: |
+          # A tag without a release is a rehearsal, not a failure: `scripts/release.sh` creates the
+          # release, and this workflow must not be the thing that blocks a tag push.
+          if ! gh release view "$TAG" --repo "$REPO" >/dev/null 2>&1; then
+            echo "::warning title=docs bundle::tag $TAG has no release yet — the bundle stays a workflow artifact"
+            exit 0
+          fi
+          gh release upload "$TAG" dist/docs-bundle/docs.tar.zst dist/docs-bundle/manifest.json \
+            --repo "$REPO" --clobber
+          echo "attached docs.tar.zst and manifest.json to $TAG"
