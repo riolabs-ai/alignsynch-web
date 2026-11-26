@@ -411,6 +411,30 @@ export const ENV_ROWS: readonly EnvRow[] = [
     { vault: "ALIGNSYNCH_GH_FEEDBACK_TOKEN" },
     "Files a docs-feedback issue. Unset means the feedback is stored and no issue is opened.",
   ),
+  // The docs publish boundary (#1398). All three are optional and all three default to today's
+  // behaviour: a deployment that sets nothing reads `docs/` from the checkout, which is what every
+  // screen did before the switch existed.
+  row(
+    "DOCS_SOURCE",
+    ["optional", "optional", "optional"],
+    { literal: "local" },
+    "Where /admin/docs reads the tree from (#1398): `local` (the checkout's docs/, the default) or " +
+      "`bundle` (a published docs.tar.zst named by DOCS_BUNDLE_DIR). Anything else is `local`.",
+  ),
+  row(
+    "DOCS_BUNDLE_DIR",
+    ["optional", "optional", "optional"],
+    undefined,
+    "The directory holding docs.tar.zst and manifest.json when DOCS_SOURCE=bundle (#1398); opened " +
+      "once at start, never per request, and verified against its manifest before it is read.",
+  ),
+  row(
+    "DOCS_BUNDLE_CACHE",
+    ["optional", "optional", "optional"],
+    undefined,
+    "Where a published docs bundle is unpacked and verified (#1398); defaults to the OS temp " +
+      "directory, keyed by the archive's own sha256.",
+  ),
 
   // --- Platform health ------------------------------------------------------------------------
   row(
@@ -705,6 +729,10 @@ export const OUT_OF_SCOPE: readonly OutOfScopeRow[] = [
   },
 
   // --- Build cache, release tooling and CI ----------------------------------------------------
+  {
+    name: "SOURCE_DATE_EPOCH",
+    why: "pins the docs bundle manifest's generatedAt so two builds of one tree agree (scripts/docs-bundle.ts); unset means the source commit's own date",
+  },
   { name: "QUIZHUB_BUILD_SLOT", why: "the gate slot a build holds (scripts/build-cache.mjs)" },
   { name: "QUIZHUB_CACHE", why: "enables or disables the shared build cache" },
   { name: "QUIZHUB_CACHE_DIR", why: "the shared build cache's directory" },
