@@ -46,14 +46,14 @@ This is the reason v1 is small: the hard half is already built and gated.
 
 | Capability                              | Home                                                                           | Gate                                       | Measured                                                                                 |
 | --------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Every variable, its env, its source     | `scripts/env-manifest.ts` (one table)                                          | `pnpm env:check` in **every** lane         | 45 declared · 3 `boot` · 63 out of scope · 82 names read across 1374 files               |
+| Every variable, its env, its source     | `scripts/env-manifest.ts` (one table)                                          | `pnpm env:check` in **every** lane         | 51 declared · 3 `boot` · 85 out of scope · 113 names read across 1684 files              |
 | Where each value actually lands         | `docs/operations/env-stores.md` (generated)                                    | `pnpm env:matrix --check` (local only)     | 50 names × 9 stores · 28 vault secrets · 6 vault keys no row names · 14 rows in no store |
 | Stale credentials                       | `data/env/rotations.json` + `scripts/env-drift.mjs`                            | `release:preflight` refuses the cut        | 4 rotation sets; names + dates only, never a value                                       |
 | Platform status                         | `/admin/health` → `lib/admin/platform-health.ts`                               | `requireAdminProduct()` + `requireAdmin()` | read-only, `Measured<T>`, live-vs-recorded split                                         |
 | Reads a markdown matrix at request time | `/admin/permissions` → `lib/admin/{crud-matrix,crud-matrix-file}.ts`           | same two gates                             | the pure/node split is the E34-safe pattern to copy                                      |
 | Admin writes with audit                 | `lib/admin/act.ts`                                                             | role read `FOR SHARE` in the writing txn   | one entry point, `before`/`after`, audit last                                            |
 | Roles                                   | `content/identity.ts` (`owner`/`admin`/`support`/…), `lib/admin/act.ts` floors | —                                          | —                                                                                        |
-| Route registration                      | `lib/operator/routes.ts` — 23 routes, page module per row                      | `tests/operator-seam.test.ts`              | widening is a red test                                                                   |
+| Route registration                      | `lib/operator/routes.ts` — 24 routes, page module per row                      | `tests/operator-seam.test.ts`              | widening is a red test                                                                   |
 
 **So the gap is not a table. The gap is a directory.** Nothing in the repo says, in one place, that
 `NEON_OBJSTORE_*` and `NEON_AUTH_COOKIE_SECRET` are the _same vendor with two consoles_, or that
@@ -245,7 +245,7 @@ says so), and widening it to all 16 doors is the duplicate navigation that file 
 
 ```bash
 bash scripts/verify.sh                 # green in every lane it runs
-pnpm env:check                         # census unchanged: 45 declared, 0 unresolved
+pnpm env:check                         # census unchanged: 51 declared, 0 unresolved
 curl -s -o /dev/null -w '%{http_code}' localhost:3000/admin/settings   # 307 → /login signed out
 # signed in as support:  404
 # signed in as admin:    200, and the HTML contains no value from any .env file
