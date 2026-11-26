@@ -68,6 +68,21 @@ function scratchDirectory(name: string): string {
   return path;
 }
 
+/**
+ * One bundle for the whole file, built by the CLI.
+ *
+ * Built once and shared because the tree is 130 MB: a per-describe build made the gate's `test`
+ * step spend twelve seconds packing, and the suite's neighbours paid for it in worker starvation.
+ * The generous hook timeout is the same fact stated where vitest reads it — the default 10 s is
+ * three builds of headroom, not one extracted-and-compared bundle.
+ */
+let out = "";
+
+beforeAll(() => {
+  out = scratchDirectory("out");
+  buildBundle(out);
+}, 180_000);
+
 afterAll(() => {
   for (const path of scratch) rmSync(path, { recursive: true, force: true });
 });
@@ -105,14 +120,11 @@ describe("the codec", () => {
 describe("the bundle and the checkout are one tree", () => {
   let bundle: DocsReader;
   let local: DocsReader;
-  let out: string;
 
   beforeAll(() => {
-    out = scratchDirectory("out");
-    buildBundle(out);
     bundle = bundleDocsSource(out);
     local = localDocsSource();
-  });
+  }, 120_000);
 
   it("carries every tracked path under docs/, and nothing else", () => {
     const manifest = readBundleManifest(out);
@@ -138,7 +150,7 @@ describe("the bundle and the checkout are one tree", () => {
     expect(manifest.totals.bytes).toBe(
       manifest.files.reduce((total, file) => total + file.bytes, 0),
     );
-  });
+  }, 120_000);
 
   it("differs from the checkout only by the files git does not carry", () => {
     const tracked = new Set(trackedDocsPaths().map((path) => path.replace(/^docs\//, "")));
@@ -196,9 +208,6 @@ describe("the bundle and the checkout are one tree", () => {
 
 describe("the switch", () => {
   it("defaults to the checkout's tree, and follows DOCS_SOURCE", () => {
-    const out = scratchDirectory("switch");
-    buildBundle(out);
-
     vi.stubEnv("DOCS_SOURCE", "");
     vi.stubEnv("DOCS_BUNDLE_DIR", "");
     resetDocsSource();
@@ -216,7 +225,7 @@ describe("the switch", () => {
 
     vi.unstubAllEnvs();
     resetDocsSource();
-  });
+  }, 60_000);
 
   it("says what is missing when the bundle directory is not set", () => {
     vi.stubEnv("DOCS_SOURCE", "bundle");
