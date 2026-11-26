@@ -250,15 +250,36 @@ Proven by test, not by reading:
 - `tests/admin-settings-no-secret.test.ts` — the rendered tree of a fixture-provider set contains no
   value string and no `"use client"` module reaches `lib/admin/settings/read.ts` (E34's rule).
 
-## 11. Deferred, explicitly
+## 11. The verbs the brief asked for, and where each already lives
+
+Worth stating plainly, because the answer is "mostly already built": the guardian the brief describes
+is not a new engine, it is a **face** on four commands that exist and are gated.
+
+| the brief's word | what already does it                                                                       | gate                                |
+| ---------------- | ------------------------------------------------------------------------------------------ | ----------------------------------- |
+| verifier         | `pnpm env:check` — the manifest against the code, both directions                          | every lane                          |
+| validator        | `pnpm data:check`, `pnpm db:verify` — fixtures and rows                                    | gate · manual                       |
+| rotator          | `pnpm env:drift` + `data/env/rotations.json` — a governed variable older than its rotation | `release:preflight` refuses the cut |
+| census           | `pnpm env:matrix` — the nine stores, no values                                             | local only                          |
+| rotator (write)  | `pnpm env:sync --write` / `env:render` — the writes themselves                             | manual, operator only               |
+
+v1 adds the surface that _reports_ them. Nothing above is reimplemented.
+
+**Tool values are four, and `mcp` is one of them.** `data/integrations.ts` declares `tool` as
+`cli | api | webhook | mcp`. No AlignSynch provider uses `mcp` today — Hermes' own MCP servers are an
+agent surface, not an app credential — but the value exists so a template that adopts one does not
+need a schema change.
+
+## 12. Deferred, explicitly
 
 **D6-B — the write path** (the named follow-up, not built here): a `setting` table, a read path with
 `env > setting > default` precedence, a `shadowed by env` badge, the form, and an `act()` assertion
 that the audit row carries both sides. One card, blocked on this one landing.
 
 Provider validity probes (§8.2) · credential scope inventory (§8.1) · a `/admin/settings/<provider>`
-detail route · onboarding wizards (Hermes `pm install` / Vercel "New Project" style) · secret rotation
-from the UI · MCP/plugin marketplace parity. Each is a card that cites this page, not a paragraph here.
+detail route · onboarding wizards (Hermes `pm install` / Vercel "New Project" style) — the interactive
+form that _creates_ a credential, as opposed to reporting one · secret rotation from the UI · an MCP
+server exposing these rows. Each is a card that cites this page, not a paragraph here.
 
 <!-- docs-nav:begin -->
 
