@@ -35,9 +35,24 @@
  *
  * Literal-free: every word is `data/pages/assessment-answer.ts` (E23) except the Opinion names,
  * which are the glossary's own (`OPINION_LABELS`).
+ *
+ * **The four question lines are the founder's, not the bundle's (#1362).** Each legend is the bold
+ * opinion word from the glossary followed by one sentence from the fixture — `How do YOU FEEL it is
+ * now?`, `How do YOU WISH it to SLOWLY change?`, and the same for Think and Guess in Advanced Mode.
+ * The bundle that drew this screen
+ * (`docs/specs/v2-bundles/10-spec-design-page-assessment-v2/assessment.html`) glossed only Feel and
+ * Wish, with `How it is now` / `How you want it`; that is the record of what was approved then and
+ * the founder's wording supersedes it. The bundle HTML is deliberately untouched — it records an
+ * approval, it is not live copy — and the rendered read lives in
+ * `tests/answer-sheet-question-wording.test.tsx`.
  */
-import { OPINION_LABELS, opinionKindsFor, type AssessmentMode } from "@/content/assessment";
-import type { PageCopy } from "@/content/pages";
+import {
+  OPINION_LABELS,
+  opinionKindsFor,
+  type AssessmentMode,
+  type OpinionKind,
+} from "@/content/assessment";
+import type { PageCopy, PageCopySection } from "@/content/pages";
 import { SCORE_MAX, SCORE_MIN } from "@/content/record";
 import type { FlowAspect } from "@/lib/flow/screen";
 import { fillLabel, itemLabel, sectionOf } from "@/lib/page-copy";
@@ -69,6 +84,32 @@ const CELL = [
 
 /** The write's state, as the progress row prints it. */
 type SaveState = "idle" | "saving" | "saved" | "failed";
+
+/**
+ * The sentence printed after one opinion's word — all four kinds, because Advanced Mode asks four
+ * (#1362).
+ *
+ * A `switch` rather than a `Record<OpinionKind, string>` of item ids: `itemLabel(card, "think-gloss")`
+ * written out is a reference `data:check` E23 can see, so a renamed or missing id fails the gate
+ * instead of rendering an empty legend at runtime. The return type has no `undefined` arm because
+ * the four cases are the whole of `OpinionKind` — a fifth kind is a type error here, which is the
+ * reminder that it also needs a sentence in the fixture.
+ *
+ * Basic Mode asks two kinds, so it draws two lines; Advanced asks four and draws four. Which kinds
+ * are asked is `opinionKindsFor(mode)`, never this table.
+ */
+function glossFor(card: PageCopySection, kind: OpinionKind): string {
+  switch (kind) {
+    case "feel":
+      return itemLabel(card, "feel-gloss");
+    case "wish":
+      return itemLabel(card, "wish-gloss");
+    case "think":
+      return itemLabel(card, "think-gloss");
+    case "guess":
+      return itemLabel(card, "guess-gloss");
+  }
+}
 
 export function AspectAnswerCard({
   copy,
@@ -192,18 +233,13 @@ export function AspectAnswerCard({
         <div className="space-y-6 px-4 pb-6 lg:px-6">
           {kinds.map((kind) => {
             const rowId = `aspect-poles-${kind}-${aspect.itemId}`;
-            const gloss =
-              kind === "feel"
-                ? itemLabel(card, "feel-gloss")
-                : kind === "wish"
-                  ? itemLabel(card, "wish-gloss")
-                  : null;
+            const gloss = glossFor(card, kind);
 
             return (
               <fieldset key={kind} className="space-y-2" data-kind={kind}>
                 <legend className="flex flex-wrap items-baseline gap-x-2 text-sm">
                   <span className="font-semibold text-primary">{OPINION_LABELS[kind]}</span>
-                  {gloss === null ? null : <span className="text-muted-foreground">{gloss}</span>}
+                  <span className="text-muted-foreground">{gloss}</span>
                 </legend>
 
                 <div className="grid grid-cols-5 overflow-hidden rounded-md ring-1 ring-inset ring-foreground/10">

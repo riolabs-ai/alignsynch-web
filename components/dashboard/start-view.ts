@@ -13,6 +13,7 @@
  * Relationships; this file only resolves Start's own words for it.
  */
 import type { PageCopy } from "@/content/pages";
+import { MODE_LABELS, SETTING_LABELS } from "@/content/assessment";
 import { createRelationshipPath, sessionPath, relationshipPath } from "@/lib/flow/paths";
 import type { TemplateSummary } from "@/lib/flow/store";
 import type { AlignmentSummary } from "@/lib/member/alignment-summary";
@@ -45,6 +46,15 @@ export function cardWordsOf(copy: PageCopy): RelationshipCardWords {
       smallGap: itemLabel(cardCopy, "legend-small"),
       gap: itemLabel(cardCopy, "legend-gap"),
     },
+    /*
+     * #1274 — the Mode and Setting chips. These two are **not** screen copy: "Basic Mode",
+     * "Advanced Mode", "Soft" and "Full" are the glossary's nouns, authored once in
+     * `content/assessment.ts` and already printed that way on the answer sheet, the report and the
+     * console. A fixture copy here would be a second spelling of a word the model owns, and
+     * `data:check` would not be able to tell which one the product means.
+     */
+    mode: MODE_LABELS,
+    setting: SETTING_LABELS,
     waitingNext: itemLabel(cardCopy, "waiting-next"),
     draftNext: itemLabel(cardCopy, "draft-next"),
     pausedNext: itemLabel(cardCopy, "paused-next"),

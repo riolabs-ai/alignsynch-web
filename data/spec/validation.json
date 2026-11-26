@@ -235,7 +235,7 @@
       "quote": null,
       "requirement": "The relationship list shows Gap counts, Mode, Setting and last change per relationship.",
       "definitionOfDone": "Each card shows Gap count, Mode, Setting and last-updated date.",
-      "today": "Cards show name, other person, a status chip and the next step; Gap counts, Mode, Setting and dates are not on the list.",
+      "today": "Cards show name, other person, a status chip, the five-mark Gap bar with its legend counts, and the round's Mode and Setting as chips; the last-change date is still not on the list.",
       "release": {
         "v200": "On Roadmap · R2",
         "rc2": "—",
@@ -258,7 +258,7 @@
         "jaden": "Pending",
         "walt": "Pending"
       },
-      "next": null,
+      "next": "Draw the last-change date on the card — the one fact of this row's four the list does not carry.",
       "note": null
     },
     {

@@ -247,6 +247,39 @@ describe("the relationships list", () => {
     expect(chipChunks(html)[0]).toContain('aria-selected="false"');
   });
 
+  it("states each card's Mode and Setting (#1274), and draws neither for a relationship with no round", () => {
+    const html = render([
+      row({
+        id: "rel-shaped",
+        status: "active",
+        relationshipTitle: "Weekly check-in",
+        sessionRecordId: "session-shaped",
+        view: "invite-claimed",
+        mode: "advanced",
+        setting: "full",
+      }),
+      row({ id: "rel-no-round", relationshipTitle: "No round yet" }),
+    ]);
+
+    /*
+     * The pair is drawn from the values the read parsed — `advanced` + `full` print the glossary's
+     * own words, and the markers carry the value rather than the label, so a test can tell a chip
+     * that moved from one that was merely restyled.
+     */
+    expect(html).toContain('data-relationship-mode="advanced"');
+    expect(html).toContain('data-relationship-setting="full"');
+    expect(html).toContain("Advanced Mode");
+    expect(html).toContain("Full");
+
+    /* …and a relationship with no session states neither, because it has no round to state them for. */
+    const noRound =
+      html.split('data-relationship-card="').find((chunk) => chunk.startsWith("rel-no-round")) ??
+      "";
+    expect(noRound).not.toContain("data-relationship-mode=");
+    expect(noRound).not.toContain("data-relationship-setting=");
+    expect(noRound).not.toContain("Basic Mode");
+  });
+
   it("counts a chip as the rows that draw as that state", () => {
     const cases: [StateFilter, number][] = [
       ["all", 6],

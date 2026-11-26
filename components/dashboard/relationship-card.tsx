@@ -23,8 +23,17 @@
  * **The marks are the Align screen's own colours.** `bg-synch-mark`, `bg-small-gap-mark` and
  * `bg-gap-mark` are the v2 tokens (`app/globals.css`), so the five marks under a card and the
  * numbered Aspect cards on the Align screen cannot drift into two palettes.
+ *
+ * **#1274 — the card states its own shape: who is in it, then how it is played.** Two chips under
+ * the names carry the round's Mode and Setting (`Basic Mode` / `Advanced Mode`, `Soft` / `Full`),
+ * because the register's row asks the list to show them and a reader choosing between four
+ * relationships needs the difference before opening one. They are `neutral` chips — a fact, the
+ * same tone the state chip uses — so the card gains no fifth colour, and they are drawn **only when
+ * a session exists**: a relationship with no round has no Mode to state, and `basic`/`soft` are what
+ * a publish would write rather than a choice it has made.
  */
 import { Chip } from "@/components/ui/badge";
+import type { AlignmentSetting, AssessmentMode } from "@/content/assessment";
 import { fillLabel } from "@/lib/page-copy";
 import type { RelationshipCardState } from "@/lib/member/start";
 import { Check, Equal, Flag } from "lucide-react";
@@ -47,6 +56,17 @@ export interface RelationshipCardLabels {
   readonly next: string;
   readonly open: string;
   readonly legend: { readonly inSynch: string; readonly smallGap: string; readonly gap: string };
+  /**
+   * #1274 — the Mode and Setting chips' words, keyed by the model's own values.
+   *
+   * The two vocabularies are authored **once**, in `content/assessment.ts` (`MODE_LABELS`,
+   * `SETTING_LABELS`), because they are the glossary's nouns and not screen copy: "Basic Mode" and
+   * "Soft" mean the same thing on the answer sheet, the report and this card. The route resolves
+   * them into this object, so the component still holds no words of its own (E23 counts zero
+   * literals here) and a screen cannot print a third spelling of them.
+   */
+  readonly mode: { readonly basic: string; readonly advanced: string };
+  readonly setting: { readonly soft: string; readonly full: string };
 }
 
 /** Everything the card draws, as data — no record is read inside the component. */
@@ -73,6 +93,17 @@ export interface RelationshipCardView {
   } | null;
   /** The trial lapsed: the bar stays and says so. */
   readonly readOnly: boolean;
+  /**
+   * #1274 — the Mode and the Setting the relationship plays under, from the latest round.
+   *
+   * `null` when there is no session to read them from, and the card then draws **no chip** rather
+   * than a default: `basic`/`soft` are what a *publish* would write, not a choice this relationship
+   * has made, and a chip that says `Basic Mode` on a relationship nobody has configured is the same
+   * defect as a bar of grey marks. Optional for the reason the row's fields are — a view literal
+   * written before the read existed draws the card it drew before.
+   */
+  readonly mode?: AssessmentMode | null;
+  readonly setting?: AlignmentSetting | null;
 }
 
 /** The five cells, per mark — the token pair each one paints. */
@@ -137,6 +168,17 @@ export function RelationshipCard({
 
   const summary = view.summary;
   const counts = summary === null ? null : tallyMarks(summary.marks);
+  /*
+   * #1274 — the two session chips, and the one decision they make. A relationship with no session
+   * has no Mode and no Setting to state (`null`), and the row is **absent** rather than defaulted:
+   * the same rule the bar follows, because "Basic Mode" on a relationship nobody has configured is
+   * a claim about a choice that was never made. The words are the route's (`RelationshipCardLabels`),
+   * the values are the model's, and this file holds neither.
+   */
+  const mode = view.mode ?? null;
+  const setting = view.setting ?? null;
+  const modeWord = mode === null ? null : labels.mode[mode];
+  const settingWord = setting === null ? null : labels.setting[setting];
 
   return (
     <article
@@ -163,6 +205,20 @@ export function RelationshipCard({
           {view.partyName === null ? null : (
             <p className="mt-0.5 text-xs text-muted-foreground">
               {fillLabel(labels.with, { name: view.partyName })}
+            </p>
+          )}
+          {modeWord === null && settingWord === null ? null : (
+            <p className="mt-1.5 flex flex-wrap items-center gap-1.5">
+              {modeWord === null || mode === null ? null : (
+                <Chip variant="neutral" data-relationship-mode={mode}>
+                  {modeWord}
+                </Chip>
+              )}
+              {settingWord === null || setting === null ? null : (
+                <Chip variant="neutral" data-relationship-setting={setting}>
+                  {settingWord}
+                </Chip>
+              )}
             </p>
           )}
         </div>
