@@ -180,6 +180,14 @@
       "roleFloor": "admin"
     },
     {
+      "href": "/admin/settings",
+      "file": "app/(mainlayout)/admin/settings/page.tsx",
+      "group": "(mainlayout)",
+      "boundary": "any",
+      "console": true,
+      "roleFloor": "admin"
+    },
+    {
       "href": "/admin/spec",
       "file": "app/(mainlayout)/admin/spec/page.tsx",
       "group": "(mainlayout)",

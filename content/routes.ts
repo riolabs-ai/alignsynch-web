@@ -65,6 +65,10 @@ const STATIC_ROUTES = [
   // artifact (`data/demo/growth-model.json`), with the sampled operational set beside it.
   "/admin/growth",
   "/admin/health",
+  // #1443 — the integration directory: one card per provider, the variables each owns with source
+  // and status only, and where a change happens. Read-only; the store census and the rotation
+  // ledger are read per request, and no value is ever rendered.
+  "/admin/settings",
   "/admin/instances",
   // #665 — the console's review shelf: published artifacts, their to-dos and their feedback.
   "/admin/review",

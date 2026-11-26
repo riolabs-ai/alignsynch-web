@@ -6,8 +6,18 @@
 
 <!-- docs-nav:end -->
 
-Status: **initial spec, not built.** Scope is deliberately one screen and one data file. Issue:
-to be filed from this page (feature.md headings below).
+Status: **built** — `/admin/settings` ships with issue #1443. Scope was deliberately one screen and
+one data file, and stayed that way; what §11 names is still deferred. Two notes where the build
+settled an open point, both recorded here rather than in a card:
+
+- **§4 carries an eighth card, `repo`.** The seven vendor accounts cannot be total over the table: a
+  literal (`BRAND`), a derived value (`APP_VERSION`) and a tooling knob (`PARITY_UPDATE`) have no
+  vendor console at all. Rather than drop them (a row with no account is the silence §5 refuses),
+  they get a card whose console **is** the manifest row in this tree — which is exactly the answer §4
+  band 4 already gives for a `literal` source.
+- **§4 band 2 is folded into band 1.** The matrix and the cards carry the same eight facts per
+  variable, and drawing both would be a second table of the same variables — the thing §7 forbids.
+  The card is the table: `name · source · local · preview · production · freshness · validity`.
 
 ## 1. The decision
 
@@ -85,6 +95,7 @@ credential inventory that does not exist yet.
 | `github` | GitHub                    | agent   | API       | `alignsynch-fleet` App, `GH_FEEDBACK_TOKEN`, feedback→issue |
 | `google` | Google                    | human   | webhook   | OAuth client — **configured in Neon Auth, not in env**      |
 | `stripe` | Stripe                    | service | webhook   | test keys per key-set, webhook secret                       |
+| `repo`   | This repository           | agent   | git       | literals, derived values and tooling knobs — no vendor      |
 
 Each card carries: account handle + console link (from `data/integrations.ts`), a count line
 (`11 variables · 9 in vault · 0 stale · 0 absent`), the environment chips, and every variable it owns
@@ -126,12 +137,12 @@ from a prefix in a second place.
 
 **Status is four badges, each from one source:**
 
-| badge      | source                   | rule                                                                                                                     |
-| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `declared` | manifest                 | the row exists and the code reads it                                                                                     |
-| `present`  | `env-stores.md` census   | the store holds the name for that scope (`+` present · `o` present but empty · `·` absent · `?` store unread)            |
-| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                                                               |
-| `valid`    | census, for `vault` rows | the vault answered **and** the key resolves: `readable` / `empty` / `unreachable` — the census already records all three |
+| badge      | source                   | rule                                                                                                                                                                                                                |
+| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `declared` | manifest                 | the row exists and the code reads it                                                                                                                                                                                |
+| `present`  | `env-stores.md` census   | the store holds the name for that scope (`+` present · `o` present but empty · `·` absent · `?` store unread)                                                                                                       |
+| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                                                                                                                                                          |
+| `valid`    | census, for `vault` rows | the vault answered **and** the key resolves: `readable` / `present, empty` / `vault unread` / `not in the vault` — a measurement carrying the census's date, and `not measured` when no census was read. Never `ok` |
 
 **`vault` validity is observable offline, and that is the v1 answer to "BWS status".** The census is
 the only place the repo says whether the vault answered at all (`Vault: 28 secret(s) readable in

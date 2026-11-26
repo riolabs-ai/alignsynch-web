@@ -103,17 +103,18 @@ function isAdminView(path: string): boolean {
 const REDIRECT_DOORS = ["app/(mainlayout)/admin/spec/ui-v2/page.tsx"];
 
 describe("the admin console's shared column", () => {
-  it("exists — thirty-three pages today, and every one of them is a page module", () => {
+  it("exists — thirty-four pages today, and every one of them is a page module", () => {
     // Eighteen from #717's wave, plus the documentation hub and one document (#892), plus the
     // growth console (#920) and the brand and audience profile (#906), plus the features index and
     // the release shelf (#893), plus the CRUD & Permissions matrix (#1126), plus the transactional-
     // mail register and one template's editor (#1138), plus #1252's three spec routes (Overview,
     // Validation, one group's page), plus the update ledger (the owner ask of 2026-11-21), plus the
-    // read-only landing (#1374), plus the v2 drafts door (2026-11-26). The count is a floor on the
+    // read-only landing (#1374), plus the v2 drafts door (2026-11-26) and the integration directory
+    // (#1443). The count is a floor on the
     // walk, not a list: the two cases below derive the pages and hold each one to the rule, so a
-    // thirty-fourth page inherits it.
+    // thirty-fifth page inherits it.
     const pages = adminPages();
-    expect(pages.length).toBe(33);
+    expect(pages.length).toBe(34);
   });
 
   it("is what every admin page renders inside — the product's container or the operator's, by surface", () => {

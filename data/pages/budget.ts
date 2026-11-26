@@ -226,6 +226,17 @@ export const pageCopyBudget: PageCopyBudget = zPageCopyBudget.parse({
     fixture: "data/pages/admin-permissions",
     budget: 0,
   },
+  // #1443 — the integration directory. Budget 0 from the first commit: the four badges, the two
+  // column names, the counts templates, the census and ledger captions and the failure panel are
+  // `data/pages/admin-settings.ts`, so the next literal written in `components/admin/settings/**` is
+  // a red build. Attribution is the component subdirectory, because `/admin/review` and
+  // `/admin/templates` already own the whole `components/admin` number.
+  "/admin/settings": {
+    page: "app/(mainlayout)/admin/settings/page.tsx",
+    dirs: ["components/admin/settings"],
+    fixture: "data/pages/admin-settings",
+    budget: 0,
+  },
   // #1138 — the transactional-mail register. Budget 0: the six column labels, the three state
   // words, the five recipient words, the two class words and the fifteen refusal sentences are
   // `data/pages/admin-email-templates.ts`, so the next literal written in `email-template-registry.tsx`
