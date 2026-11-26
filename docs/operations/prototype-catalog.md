@@ -66,7 +66,7 @@ Two failure modes, deliberately different:
 Every build prints the counts it judged, so a catalogue whose pages have nothing to check cannot pass
 by having nothing to check:
 
-```
+```text
 assets: 411 copied (27.1 MB) | pages with no local refs: 49
 assets checked: 1664 | assets broken: 0 | dead refs: 33 (reported, not failing)
 ```
