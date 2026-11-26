@@ -72,20 +72,6 @@ const MANIFEST_FILE = "docs.json";
 /** The release record `scripts/changelog-view.mjs` writes against and `pnpm changelog:check` holds. */
 const RELEASE_RECORD_FILE = "changelog/releases.json";
 
-/**
- * The update ledger's directory — one `<pr>.json` per merged pull request (`lib/docs/updates.ts`).
- *
- * **Not a docs-tree path since #1413.** The ledger moved to `data/changelog/updates`: it is the
- * app's own record of what each merge changed, and the published tree (`docs.tar.zst`, which is
- * what `docsSource()` serves under `DOCS_SOURCE=bundle`) must not carry it. So this one reader is
- * a plain `fs` read at the repository root and does **not** go through `lib/docs/source.ts`, while
- * every `specs[]` path a row cites still resolves against the docs tree.
- *
- * Not a generated view and not a manifest page either: the entries are authored in the PR that
- * makes the change, and `data:check` E44 (the spec's E-updates) refuses a missing, unparseable,
- * empty-spec or non-ISO entry.
- */
-
 /** `CHANGELOG.md` at the repository root — the source of every release fact (#893). */
 export const CHANGELOG_FILE_PATH = join(process.cwd(), CHANGELOG_PATH);
 
@@ -196,7 +182,14 @@ export const readReleaseRecord = cache((): ReleaseRecord => {
 });
 
 /**
- * The update ledger, read — once per request.
+ * The update ledger, read — once per request. One `<pr>.json` per merged pull request
+ * (`lib/docs/updates.ts`).
+ *
+ * **Not a docs-tree path since #1413.** The ledger lives at `data/changelog/updates`: it is the
+ * app's own record of what each merge changed, and the published tree (`docs.tar.zst`, which is
+ * what `docsSource()` serves under `DOCS_SOURCE=bundle`) must not carry it. So this one reader is
+ * a plain `fs` read at the repository root and does **not** go through `lib/docs/source.ts`, while
+ * every `specs[]` path a row cites still resolves against the docs tree.
  *
  * A missing directory, a file that is not JSON and an entry that does not satisfy the schema are all
  * `UpdateLedgerUnreadable` with a sentence the page draws. They are *not* swallowed into an empty
