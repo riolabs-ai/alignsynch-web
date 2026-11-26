@@ -2104,7 +2104,7 @@ if (!existsSync(navInventoryPath)) {
  * shares the diagnostic vocabulary with every other rule.
  *
  * Two halves, and they fail for different reasons. The ledger on disk is validated whatever the
- * change is: every `docs/changelog/updates/<pr>.json` parses, names its own PR, carries an ISO date
+ * change is: every `data/changelog/updates/<pr>.json` parses, names its own PR, carries an ISO date
  * and one sentence each of summary and reader impact, and lists at least one `docs/specs/` path that
  * really exists. The coverage half asks the question a reader cares about: a `feat` or `fix` commit
  * in `<base>..HEAD` must have added an entry. `scripts/updates-check.ts` owns both and says so out

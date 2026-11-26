@@ -3,7 +3,7 @@
  *
  * The census was the rc2 note's whole content — "4 commits: …" — while the facts a reader needed
  * (who notices, and where the rule now lives) sat in card comments. The ledger
- * (`docs/changelog/updates/<pr>.json`, #1346) holds exactly those two fields per merged PR, so
+ * (`data/changelog/updates/<pr>.json`, #1346) holds exactly those two fields per merged PR, so
  * `scripts/release.sh` joins them into the bullet it generates.
  *
  * `scripts/release.sh` is the only generation path in the repo (`scripts/release-cut.mjs --prepare`
@@ -59,7 +59,7 @@ afterEach(() => {
 });
 
 interface Fixture {
-  /** `docs/changelog/updates/<pr>.json`, keyed by PR number; `null` writes a broken file. */
+  /** `data/changelog/updates/<pr>.json`, keyed by PR number; `null` writes a broken file. */
   readonly ledger?: Record<number, unknown>;
   /** The `## [1.0.0]` base entry's Known limits bullets. */
   readonly limits?: string;
@@ -99,7 +99,7 @@ function commit(dir: string, subject: string) {
 function makeTree(fixture: Fixture = {}): string {
   const dir = mkdtempSync(join(tmpdir(), "release-ledger-"));
   trees.push(dir);
-  for (const sub of ["scripts", "lib/docs", "docs/changelog/updates", "docs/specs"]) {
+  for (const sub of ["scripts", "lib/docs", "data/changelog/updates", "docs/specs"]) {
     mkdirSync(join(dir, sub), { recursive: true });
   }
   cpSync(RELEASE_SH, join(dir, "scripts", "release.sh"));
@@ -194,7 +194,7 @@ describe("the entry joins the update ledger", () => {
     // with the limits file's own newline plus the generator's, and the entry's body is the contract.
     expect(dryRun(dir).trimEnd()).toBe(`## [1.1.0] - ${DATE}
 
-> **Ledger coverage — 2 \`feat\`/\`fix\` commit(s) in this range carry no \`docs/changelog/updates/<pr>.json\` entry:** \`a subject with no pull request marker\`, #13. Their bullets read as the commit subject alone. The ledger entry — its \`reader_impact\` and the \`specs[]\` the rule now lives in — is written in the pull request that makes the change, so this is a finding about the range, never a refusal of the cut.
+> **Ledger coverage — 2 \`feat\`/\`fix\` commit(s) in this range carry no \`data/changelog/updates/<pr>.json\` entry:** \`a subject with no pull request marker\`, #13. Their bullets read as the commit subject alone. The ledger entry — its \`reader_impact\` and the \`specs[]\` the rule now lives in — is written in the pull request that makes the change, so this is a finding about the range, never a refusal of the cut.
 
 ### Added
 
@@ -353,7 +353,7 @@ describe("an unrecorded change is a finding, not a stop", () => {
     const dir = makeTree({ ledger: {} });
     const entryText = dryRun(dir);
     expect(entryText).toContain("## [1.1.0]");
-    expect(entryText).toContain("carry no `docs/changelog/updates/<pr>.json` entry");
+    expect(entryText).toContain("carry no `data/changelog/updates/<pr>.json` entry");
     expect(entryText).toContain("never a refusal of the cut");
   });
 });
@@ -366,6 +366,6 @@ describe("the ledger's home is one string", () => {
   it("agrees between release.sh and lib/docs/updates.ts", () => {
     const script = readFileSync(RELEASE_SH, "utf8");
     expect(script).toContain(`LEDGER_DIR="${UPDATES_DIR}"`);
-    expect(UPDATES_DIR).toBe("docs/changelog/updates");
+    expect(UPDATES_DIR).toBe("data/changelog/updates");
   });
 });

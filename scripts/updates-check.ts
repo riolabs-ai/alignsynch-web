@@ -4,7 +4,15 @@
  *
  * **Three questions, one report.** Which entries are on disk and does each one parse; does every
  * `specs[]` path it names actually exist; and does *this change* owe an entry it did not write. The
- * first two are `fs`; the third is `git`, and it is the half the spec calls **E-updates**.
+ * first is `fs`, the second is **the docs tree** and the third is `git` — and it is the third half
+ * the spec calls **E-updates**.
+ *
+ * **Which filesystem, and why that is two answers (#1413).** The ledger itself lives at
+ * `data/changelog/updates` in this checkout, so it is read with plain `fs` at `root`. A `specs[]`
+ * path is a `docs/…` path, so it is resolved through `lib/docs/source.ts` — the same reader the app
+ * uses, which means a `DOCS_SOURCE=bundle` lane checks the published tree it is about to serve
+ * rather than a checkout a deployment will not read. A path that leaves the tree is refused by that
+ * reader's containment rule; a path the tree does not carry is this check's own finding.
  *
  * **The coverage half never guesses.** It reads `base..HEAD`'s commit subjects and the change's
  * added files. When the base ref cannot be resolved — a fresh clone with no `origin/main`, a tree
@@ -16,13 +24,15 @@
  * entry's `data:check` output beside a good one's.
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { DOCS_DIRECTORY, docsSource, localDocsSource, type DocsReader } from "../lib/docs/source";
 import {
   UPDATES_DIR,
   coverageProblem,
   parseUpdateLedger,
+  specDocPath,
   updateEntryProblems,
   type UpdateEntry,
   type UpdateFile,
@@ -38,7 +48,10 @@ export interface CommandResult {
 export type Runner = (args: readonly string[], cwd: string) => CommandResult;
 
 export interface UpdatesCheckOptions {
-  /** The repository root the ledger and its spec paths are read from. */
+  /**
+   * The repository root the ledger is read from, and whose `docs/` a `specs[]` path is resolved
+   * against. Omitted means the process's own root and its `DOCS_SOURCE` tree.
+   */
   readonly root?: string;
   /** The ref this change is read against. Defaults to `UPDATES_BASE`, then `origin/main`. */
   readonly base?: string;
@@ -72,9 +85,22 @@ function lines(output: string): string[] {
     .filter((line) => line.trim() !== "");
 }
 
+/**
+ * The docs tree a `specs[]` path is resolved against.
+ *
+ * A named `root` is that tree's own `docs/` (a test's fixture, a probe checkout). The gate's own
+ * run passes none, and then this follows `DOCS_SOURCE` exactly as the app does — `scripts/docs-nav.mjs`
+ * and `scripts/gen-glossary.mjs` make the same distinction, for the same reason: a bundle lane must
+ * check the tree it is about to serve.
+ */
+function docsTree(root: string | undefined): DocsReader {
+  return root === undefined ? docsSource() : localDocsSource(join(root, DOCS_DIRECTORY));
+}
+
 /** The ledger's files, parsed — or the problem that stopped it. */
 function readLedger(
   root: string,
+  reader: DocsReader,
 ): { entries: UpdateEntry[]; files: UpdateFile[]; problems: string[] } | { problems: string[] } {
   const dir = join(root, UPDATES_DIR);
   let names: string[];
@@ -113,13 +139,25 @@ function readLedger(
   } catch (error) {
     return { problems: [error instanceof Error ? error.message : `${UPDATES_DIR} is invalid`] };
   }
-  // A path the entry names must be a file in this tree: the whole point of the field is that a
-  // reader can follow it, and the check is here rather than in the pure layer because it needs `fs`.
+  // A path the entry names must be a file in the docs tree: the whole point of the field is that a
+  // reader can follow it. The check is here rather than in the pure layer because it needs a tree,
+  // and the tree is `lib/docs/source.ts`'s — never a bare `join(root, spec)`, which would read a
+  // checkout that a `DOCS_SOURCE=bundle` deployment does not serve.
+  let tree: Set<string>;
+  try {
+    tree = new Set(reader.listFiles());
+  } catch {
+    return {
+      problems: [
+        `the ${DOCS_DIRECTORY}/ tree could not be listed (${reader.name} source), so no \`specs\` path can be checked`,
+      ],
+    };
+  }
   for (const [index, file] of files.entries()) {
     const entry = entries[index];
     if (entry === undefined) continue;
     for (const spec of entry.specs) {
-      if (!existsSync(join(root, spec))) {
+      if (!tree.has(specDocPath(spec))) {
         problems.push(`${UPDATES_DIR}/${file.name}: \`specs\` names ${spec}, which does not exist`);
       }
     }
@@ -137,7 +175,7 @@ function readLedger(
 export function updatesCheck(options: UpdatesCheckOptions = {}): UpdatesCheck {
   const root = options.root ?? process.cwd();
   const run = options.run ?? runGit;
-  const ledger = readLedger(root);
+  const ledger = readLedger(root, docsTree(options.root));
   const entries = "entries" in ledger ? ledger.entries : [];
   const problems = [...ledger.problems];
 

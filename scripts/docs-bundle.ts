@@ -36,6 +36,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { constants as zlibConstants, zstdCompressSync } from "node:zlib";
 
+import type { BundleFile, BundleManifest } from "../lib/docs/source";
 import { tarEntries } from "../lib/docs/tar.mjs";
 
 /** The archive's name inside `--out`. The reader looks for exactly this. */
@@ -46,26 +47,6 @@ export const BUNDLE_MANIFEST_NAME = "manifest.json";
 
 /** The tree the bundle publishes. Repo-relative, and the one spelling of it. */
 const DOCS_DIRECTORY = "docs";
-
-/** One row of `manifest.files`. */
-export interface BundleFile {
-  /** Repo-relative, `/`-separated: `docs/specs/flow-stages.md`. */
-  readonly path: string;
-  readonly bytes: number;
-  readonly sha256: string;
-}
-
-/** `manifest.json`, whole. The five keys are the card's contract; nothing else is invented. */
-export interface BundleManifest {
-  /** `<package.json version>+<source commit, 7>` — a bundle names the tree it came from. */
-  readonly version: string;
-  /** sha256 of `docs.tar.zst` — what a consumer verifies before extracting. */
-  readonly sha: string;
-  /** The source commit's own committer date, ISO-8601; never the wall clock. */
-  readonly generatedAt: string;
-  readonly files: readonly BundleFile[];
-  readonly totals: { readonly files: number; readonly bytes: number };
-}
 
 /** sha256 of a buffer, hex. The one digest the bundle and the reader both use. */
 export function sha256(bytes: Uint8Array): string {

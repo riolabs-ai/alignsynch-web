@@ -1,5 +1,13 @@
 /**
- * The update ledger — one validated entry per pull request (`docs/changelog/updates/<pr>.json`).
+ * The update ledger — one validated entry per pull request (`data/changelog/updates/<pr>.json`).
+ *
+ * **The ledger is the app's record, not the published tree (#1413).** Its rows moved out of
+ * `docs/` and into `data/` so a physical split of the published tree cannot take the ledger with
+ * it: `docs/` is what `scripts/docs-bundle.ts` packs and `DOCS_SOURCE=bundle` serves, and an admin
+ * screen that renders one row per merge belongs to the app that ships it. `UPDATES_SPEC_PREFIX`
+ * deliberately did **not** move — a row still cites the `docs/` document its rule now lives in, and
+ * that path is resolved against the docs tree (`lib/docs/source.ts`), never against the ledger's own
+ * directory.
  *
  * **Why a ledger and not per-commit mail.** A commit is an implementation unit; a reader unit is
  * "what changed, who notices, where the rule now lives". Mailing every commit trains people to
@@ -27,7 +35,7 @@
  */
 
 /** Where an entry lives, relative to the repository root. The one spelling of it. */
-export const UPDATES_DIR = "docs/changelog/updates";
+export const UPDATES_DIR = "data/changelog/updates";
 
 /**
  * Every `specs[]` path starts here — a document in the tree, never an arbitrary file.

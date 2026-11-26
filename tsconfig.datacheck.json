@@ -37,6 +37,7 @@
     "scripts/nav-inventory.ts",
     "scripts/updates-check.ts",
     "lib/docs/updates.ts",
+    "lib/docs/source.ts",
     "scripts/metric-refs.ts",
     "scripts/metric-invariants.ts",
     "scripts/taxonomy-refs.ts",

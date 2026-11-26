@@ -103,7 +103,7 @@ export const adminDocsFeaturesPageCopy: PageCopy = zPageCopy.parse({
  *
  * One row per merged pull request, newest first: the date, the area, the summary, who notices and
  * where, and the documents the rule now lives in. The body prints the rule rather than a promise:
- * the entries are authored in the PR that makes the change (`docs/changelog/updates/<pr>.json`) and
+ * the entries are authored in the PR that makes the change (`data/changelog/updates/<pr>.json`) and
  * validated by `data:check` E44, so a reader who can read the rule can audit every row instead of
  * trusting the list. `empty` says why the first deploy may be short, and says it plainly: nothing is
  * backfilled.
