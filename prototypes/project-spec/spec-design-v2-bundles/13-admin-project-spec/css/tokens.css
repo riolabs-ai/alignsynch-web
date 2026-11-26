@@ -1,0 +1,33 @@
+/* AlignSynch v2 Admin shell tokens, as the running build resolves them on main @ 601ce26.
+   Brand-painted roles come from data/brands/alignsynch.ts:97-125 through lib/brand-theme.ts:53-73;
+   the rest are app/globals.css :root defaults. Status tones are app/globals.css:88-96. */
+:root {
+  --background: #ffffff;        /* data/brands/alignsynch.ts:98 */
+  --foreground: #363d49;        /* data/brands/alignsynch.ts:99 */
+  --primary: #37474f;           /* data/brands/alignsynch.ts:100 */
+  --accent: #08add5;            /* data/brands/alignsynch.ts:102 (hover surface only) */
+  --accent-foreground: #363d49; /* data/brands/alignsynch.ts:103 */
+  --action: #37474f;            /* data/brands/alignsynch.ts:104 */
+  --action-hover: #2a373e;      /* data/brands/alignsynch.ts:105 */
+  --action-foreground: #ffffff; /* data/brands/alignsynch.ts:106 */
+  --nav-active: #37474f;        /* data/brands/alignsynch.ts:107 */
+  --mist: #f5f7f8;              /* data/brands/alignsynch.ts:119 */
+  --line: #d9e0e3;              /* data/brands/alignsynch.ts:121 */
+  --deep: #156898;              /* data/brands/alignsynch.ts:124 */
+  --pale: #e5f5fa;              /* data/brands/alignsynch.ts:122 */
+  --border: #ddd6d0;            /* app/globals.css:102  hsl(30 16% 84%) */
+  --muted: #f1f5f9;             /* app/globals.css:93   hsl(210 40% 96.1%) */
+  --muted-foreground: #596c88;  /* app/globals.css:94   hsl(215 21% 44%) */
+  --radius: 0.3125rem;          /* app/globals.css:137 */
+  --synch: #2f6a4b;  --synch-tint: #e8f6ec;  --synch-mark: #1f9d55;          /* app/globals.css:88-89, 94 */
+  --small-gap: #665624; --small-gap-tint: #fdf5d6; --small-gap-mark: #f2b705; /* app/globals.css:90-91, 95 */
+  --gap: #7f5219; --gap-tint: #fdeddc; --gap-mark: #d96a00;                   /* app/globals.css:92-93, 96 */
+  --counterparty-ink: #33636e; --counterparty-tint: #edf5f6; --counterparty-line: #b9d5da; /* app/globals.css:67-71 */
+  --initiator: #c8735a; --initiator-tint: #fbf1ec; --initiator-line: #ecc6b6;  /* app/globals.css:62-66 */
+  --rail-w: 250px;   /* components/layout/sidebar.tsx:90, :104  xl:w-[250px] */
+  --rail-icon-w: 64px; /* components/layout/sidebar.tsx:102-103  md:w-16 */
+  --header-h: 4rem;  /* components/layout/header.tsx:359 h-16; sidebar.tsx:365 h-16 */
+  --submenu-w: 208px; /* new in this bundle */
+  --font: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; /* app/layout.tsx:7, :12 */
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
