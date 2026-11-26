@@ -25,11 +25,17 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { Client } from "pg";
 import { loadEnv, repoRoot, writeDatabaseUrl } from "./load-env.mjs";
-import {
-  findMigrationPrefixFindings,
-  formatPrefixFindings,
-  grandfatheredPrefixes,
-} from "./migration-prefixes-rules.ts";
+import { requireDeclaredNode } from "./require-node.mjs";
+
+// The engine check runs before the rules module is loaded, and that module is therefore a dynamic
+// import: a static one is resolved at link time, before this line would run, so a direct
+// `node scripts/db-migrate.mjs` on an older engine died in Node's loader with
+// `ERR_UNKNOWN_FILE_EXTENSION` instead of naming the runtime the tree declares (#1410).
+requireDeclaredNode();
+
+const { findMigrationPrefixFindings, formatPrefixFindings, grandfatheredPrefixes } = await import(
+  "./migration-prefixes-rules.ts"
+);
 
 const MIGRATIONS = join(repoRoot, "db", "migrations");
 

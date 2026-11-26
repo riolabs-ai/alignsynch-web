@@ -508,8 +508,21 @@ wrong file.** The script imports a `.ts` rules module, which Node 24 loads by st
 18 cannot load at all: on a host whose `node` is below the `engines.node` this tree declares (`24.x`),
 `pnpm hygiene` died inside Node's module loader with `ERR_UNKNOWN_FILE_EXTENSION` — before reaching a
 line of its own logic, and pointing at a file that was never wrong (#1410). The script was fine; the
-message was the defect. So `prehygiene` runs `scripts/require-node.mjs`, which names the declared range
-and the running version and shows the wrapper that supplies the pin, and
+message was the defect. The check therefore has **two layers**, because the command reaches the script
+two ways:
+
+| Path                            | Layer                                                | Why the other one cannot cover it                                                                |
+| ------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `pnpm hygiene`                  | `prehygiene` runs `scripts/require-node.mjs`         | Node 18 aborts on `--disable-warning=…` while parsing argv, so the script's own check never runs |
+| `node scripts/repo-hygiene.mjs` | the entry point calls `requireDeclaredNode()` itself | a direct `node` has no `pre` hook at all                                                         |
+
+The entry point loads its rules module with a **dynamic** `await import(...)` placed after that call,
+because a static import is resolved while Node links the module — before the first statement runs — so
+a static import kept the direct path dying in the loader, which is the one case the guard existed for
+(#1410). `scripts/__tests__/repo-hygiene-guard.test.ts` proves the refusal on a **simulated** old
+engine (a `--import` preload redefines `process.versions.node`), proves it happens before the rules
+module is resolved at all (the fixture leaves that module out, so a static import would fail to link),
+and fails if any entry point goes back to a static `.ts` import.
 `scripts/__tests__/repo-hygiene-entry.test.ts` runs the entry point as `package.json` documents it, in
 a throwaway repository, so the suite can no longer be green over a command that cannot start.
 

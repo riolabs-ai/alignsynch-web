@@ -1,0 +1,9 @@
+{
+  "pr": 1416,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "`pnpm hygiene`, `pnpm worktrees:prune` and `pnpm db:migrate` check the runtime before loading their `.ts` rules module; a direct `node scripts/<entry>.mjs` names both versions instead of a loader error naming the wrong file.",
+  "reader_impact": "Nobody outside the repository — operator scripts; on a host below the declared engine the people who run them get one sentence naming both versions, from `pnpm` through the pre-hook and from a bare `node` through the entry point.",
+  "specs": ["docs/operations/branch-triage.md"],
+  "risk": "low"
+}
