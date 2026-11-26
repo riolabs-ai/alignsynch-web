@@ -40,9 +40,17 @@
  *
  * Every word is a prop: the caller resolves it from `data/pages/assessment-create.ts` (E23), so
  * this file holds no copy and a label cannot drift from the sentence a refusal is composed from.
+ *
+ * **The Initiator's two halves arrive answered when the viewer is signed in (#1360).** The pair is
+ * a *default*, resolved on the server from the person's own name (`lib/flow/initiator-name.ts`) and
+ * handed down as `initiatorPrefill`, because a client component cannot read a session or a profile
+ * row. It seeds `names` **at mount only** — the state initialiser is the whole mechanism — so an
+ * answer outranks it twice over: a draft the flow already saved wins because the seed only fills
+ * the half the draft left empty, and a keystroke wins because a re-render never re-reads the seed.
+ * A visitor is handed nothing, which is the same component drawing empty fields exactly as before.
  */
 import { useState } from "react";
-import { derivedTitle } from "@/lib/flow/names";
+import { derivedTitle, EMPTY_NAME_PARTS, type NameParts } from "@/lib/flow/names";
 
 /** The strings Stage 1 draws, resolved from the page fixture by the server component. */
 export interface StageOneCopy {
@@ -167,10 +175,38 @@ function invalidProps(
   return { "aria-describedby": problemId(field), "aria-invalid": true };
 }
 
+/**
+ * The names the stage opens with: the draft's own answer where it has one, and the viewer's
+ * profile name in the half the draft left empty (#1360).
+ *
+ * One function rather than an inline literal, because the rule it encodes — **an answer beats a
+ * default** — is the thing `tests/stage-one-name-prefill.test.tsx` pins, and a rule written once
+ * cannot disagree with itself across the two halves. `StageOneFields` calls it as its state
+ * initialiser, so it runs at mount and never again: a later render cannot reach back over a
+ * keystroke.
+ */
+function seedNames(
+  values: StageOneValues,
+  prefill: NameParts,
+): {
+  initiatorFirst: string;
+  initiatorLast: string;
+  counterpartyFirst: string;
+  counterpartyLast: string;
+} {
+  return {
+    initiatorFirst: values.initiatorFirst !== "" ? values.initiatorFirst : prefill.first,
+    initiatorLast: values.initiatorLast !== "" ? values.initiatorLast : prefill.last,
+    counterpartyFirst: values.counterpartyFirst,
+    counterpartyLast: values.counterpartyLast,
+  };
+}
+
 export function StageOneFields({
   copy,
   values,
   descriptionDefault,
+  initiatorPrefill = EMPTY_NAME_PARTS,
   problems = {},
 }: {
   copy: StageOneCopy;
@@ -178,17 +214,18 @@ export function StageOneFields({
   /** The template's own summary — the description's default, never a second fixture. */
   descriptionDefault: string;
   /**
+   * The signed-in viewer's own name, as the two halves this stage asks for (#1360). Absent for a
+   * visitor, and empty for a member whose account holds no name — the same two states as far as
+   * the fields are concerned, which is the point: nothing is invented to fill them.
+   */
+  initiatorPrefill?: NameParts;
+  /**
    * The refused fields, keyed by `data-field` id, each with the sentence the fixture composes for
    * it. Absent on arrival: the stage is quiet until somebody presses the advance.
    */
   problems?: Readonly<Record<string, string>>;
 }) {
-  const [names, setNames] = useState({
-    initiatorFirst: values.initiatorFirst,
-    initiatorLast: values.initiatorLast,
-    counterpartyFirst: values.counterpartyFirst,
-    counterpartyLast: values.counterpartyLast,
-  });
+  const [names, setNames] = useState(seedNames(values, initiatorPrefill));
   const [title, setTitle] = useState(values.title);
   /**
    * Has anybody typed in the title? A stored title means yes — it is the answer the flow

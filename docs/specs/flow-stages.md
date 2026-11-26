@@ -183,8 +183,19 @@ one column** (title | pair, pair | email) and it collapses to one control each b
 help line sits **under the pair**, never under one half of it, because half a column is too narrow
 to read a sentence in.
 
-Three rules follow from the inventory:
+Four rules follow from the inventory:
 
+- **The Initiator's two halves arrive answered for a signed-in member, and only ever as a default**
+  (#1360). The pair is prefilled from the viewer's own name — `user_profile.display_name` when they
+  have saved a profile, else the name the auth provider holds, split at the first space so
+  `Walt de la Cruz` is `Walt` / `de la Cruz` — and it stays **editable**: the pair is the fields'
+  initial state, so a keystroke outranks it and a re-render never re-applies it. A draft the flow
+  already saved outranks it too, half by half. **A visitor is handed nothing** — the prefill is a
+  session fact, never a fixture, a cookie or a stored default — and an account with no name anywhere
+  (a brand-new account has an auth user and no profile row) gets empty fields rather than the
+  email's local part, because a wrong name in an editable field is worse than a blank one. Fields
+  2–3 feed the title's derivation, so a prefilled seat starts the title at `Walt U` until the
+  Counterparty is named.
 - **The title's default is derived, and it yields to the typist.** It reads `First L – First L`
   (`Daniel V – Rowan M`) from fields 2–5, recomputed on every keystroke, and it stops the moment
   someone types in the title itself. It is a default, never a value that overwrites an answer — and
@@ -418,6 +429,11 @@ nothing sends exactly the invitation this product sent before the field existed.
   derives as `Daniel V – Rowan M`, drops an initial when a last name is missing, and **stops**
   following the names the moment somebody types in it — and the module it drives names no browser
   storage, so the derivation cannot survive a reload by writing one.
+- `tests/stage-one-name-prefill.test.tsx` holds the Initiator's default (#1360): one display name
+  splits into `Walt` / `de la Cruz`, a saved profile outranks the provider's name, a visitor and an
+  account with no name are prefilled with nothing, and the pair is only ever initial state — a
+  draft's own name and a keystroke both outrank it, and a re-render that hands the same prefill
+  down does not clobber either.
 - `data:check` E10 still holds every flow `href` to the route manifest, so a retired
   `/…/create/account` route cannot quietly return, and a `/…/ongoing` route cannot arrive.
 - `tests/pricing-plan-carry.test.tsx` holds the whole carry (#1043): which pairs a card may carry,
