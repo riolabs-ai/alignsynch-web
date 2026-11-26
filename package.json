@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:ready": "node --import ./scripts/ts-modules.mjs --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/dev-ready.mjs",
     "build": "next build",
     "start": "next start",
     "typecheck": "next typegen && node scripts/build-cache.mjs tsc",
