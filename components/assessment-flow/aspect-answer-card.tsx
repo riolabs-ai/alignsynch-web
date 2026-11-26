@@ -15,6 +15,11 @@
  *                    once this Aspect's kinds are all picked and the row landed. A failed write is
  *                    stated (`Not saved — pick again`) instead of being swallowed — a screen that
  *                    says "saved" over a failed write is the silent-success bug with better manners.
+ *                    **A write refused because the sheet has closed is not a failed save** (#1355):
+ *                    `frozen` (this seat accepted elsewhere) and `voided` (an operator ended the
+ *                    session) are reported upward through `onClosed`, because "pick again" invites
+ *                    a retry that cannot work — the sheet that draws that chip swaps to its sealed
+ *                    pane and the fixture's own sentence instead.
  *   one Aspect        the bundle's own rule: the card is `Aspect n of 5`, and the footer's primary
  *                    button is `Next Aspect` (or `Review Answers` past the last one).
  *   blocked until whole  `Next Aspect` is disabled while a kind is unpicked, and the hint says what
@@ -74,6 +79,7 @@ export function AspectAnswerCard({
   draftAction,
   incomplete,
   onSaved,
+  onClosed,
 }: {
   copy: PageCopy;
   aspect: FlowAspect;
@@ -86,6 +92,12 @@ export function AspectAnswerCard({
   /** The route bounced this Aspect back because its kinds were not all picked. */
   incomplete: boolean;
   onSaved: (state: SaveState) => void;
+  /**
+   * The write was refused because the sheet no longer takes answers (`frozen`: this seat accepted
+   * elsewhere; `voided`: an operator ended the session). The sheet draws the refusal and stops
+   * offering picks; a transient failure stays with `onSaved` (`Not Saved · Pick Again`).
+   */
+  onClosed?: (code: "frozen" | "voided") => void;
 }) {
   const card = sectionOf(copy, "aspect");
   const kinds = opinionKindsFor(mode);
@@ -134,10 +146,16 @@ export function AspectAnswerCard({
           headers: { accept: "application/json" },
           credentials: "same-origin",
         });
-        const body: { ok?: boolean; complete?: boolean } | null = await response
+        const body: { ok?: boolean; complete?: boolean; code?: string } | null = await response
           .json()
           .catch(() => null);
         if (!response.ok || body?.ok !== true) {
+          /* #1355 — a sheet the server has closed is not a failed save. Reporting it upward is
+             what lets the page stop drawing the scale a keystroke too late. */
+          if (body?.code === "frozen" || body?.code === "voided") {
+            onClosed?.(body.code);
+            return;
+          }
           onSaved("failed");
           return;
         }

@@ -114,6 +114,17 @@ export function AnswerSheet({
   const coach = sectionOf(copy, "coach");
   const backLabel = pageLabel(copy);
   const [saved, setSaved] = useState<SaveState>("idle");
+  /**
+   * The code the **server** refused an open sheet with (#1355).
+   *
+   * A sheet that was already open when the other seat's acceptance (or an operator's void) closed
+   * it keeps drawing its scale, because that page was rendered before the freeze. The first pick
+   * then comes back `409 frozen`, and until this state existed the card printed `Not Saved · Pick
+   * Again` — advice that cannot work, and the exact "I spent the time and *then* found out" the
+   * issue reports. The refusal code is the sentence the whole-sheet POST already answers with, so
+   * the sheet draws it in place of the form: the words, and no control left to invite a retry.
+   */
+  const [closedBy, setClosedBy] = useState<string | null>(null);
 
   const answered = answeredCount(aspects);
   const aspectHrefFor = (aspect: number | "review"): string => `${sheetPath}?aspect=${aspect}`;
@@ -224,6 +235,16 @@ export function AnswerSheet({
    * the Gap, not the pairing.
    */
   const writable = gate.action !== null;
+  /**
+   * Whether this render still offers the form.
+   *
+   * `writable` is what the page was rendered with; `closedBy` is what the server said since. A
+   * sheet the server has refused takes no keystroke for the rest of this document's life — the
+   * person has to reload to get the sealed surface, and reloading is honest the moment they try.
+   */
+  const writableNow = writable && closedBy === null;
+  /** The sealed pane is what a frozen sheet is; a voided session is not "yours to have accepted". */
+  const showSealed = closedBy === null || closedBy === "frozen";
 
   /** The Counterparty's copy, which never carries a billing word (the locked rule for this page). */
   const counterpartySeat = viewer.role === "counterparty";
@@ -336,7 +357,7 @@ export function AnswerSheet({
       {paused}
       {privacyNote}
 
-      {!writable || answered === 0 || position.review ? null : (
+      {!writableNow || answered === 0 || position.review ? null : (
         <div
           data-resume=""
           role="status"
@@ -363,16 +384,17 @@ export function AnswerSheet({
       )}
 
       {refused === undefined ? null : (
-        <p
-          data-refused={refused}
-          role="alert"
-          className="rounded-md border border-billing-line bg-billing p-3 text-sm text-foreground"
-        >
-          {refusalSentence(copy, refused, counterpartySeat)}
-        </p>
+        <RefusalBand code={refused} copy={copy} seat={counterpartySeat} />
       )}
 
-      {writable ? (
+      {/* #1355 — the refusal the server answered *this open sheet* with. Drawn above the pane it
+          replaces, so the reader's last click is answered in the same words a fresh load would
+          have used before it happened. */}
+      {closedBy === null ? null : (
+        <RefusalBand code={closedBy} copy={copy} seat={counterpartySeat} />
+      )}
+
+      {writableNow ? (
         <>
           <SheetBand
             label={fillLabel(itemLabel(progress, "position"), {
@@ -408,12 +430,13 @@ export function AnswerSheet({
               draftAction={draftAction}
               incomplete={incomplete === true}
               onSaved={setSaved}
+              onClosed={setClosedBy}
             />
           )}
         </>
-      ) : (
+      ) : showSealed ? (
         sealed
-      )}
+      ) : null}
 
       <p>
         <a href={backHref} className="text-sm font-medium text-action hover:underline">
@@ -563,6 +586,34 @@ function Glyph({ state }: { readonly state: ChipState }) {
       <path d="M17 21v-8H7v8" />
       <path d="M7 3v5h8" />
     </>
+  );
+}
+
+/**
+ * A refusal sentence from the fixture, drawn as the sheet's own band.
+ *
+ * Two callers, one shape: `?refused=<code>` (the draft route bounces a no-JavaScript post back
+ * with it) and the code the sheet's own pick was just refused with (#1355). Keeping one band means
+ * a reader who reloads and one who does not see the same sentence in the same place.
+ */
+function RefusalBand({
+  code,
+  copy,
+  seat,
+}: {
+  readonly code: string;
+  readonly copy: PageCopy;
+  /** The Counterparty reads a sentence with no billing word in it, when the fixture has one. */
+  readonly seat: boolean;
+}) {
+  return (
+    <p
+      data-refused={code}
+      role="alert"
+      className="rounded-md border border-billing-line bg-billing p-3 text-sm text-foreground"
+    >
+      {refusalSentence(copy, code, seat)}
+    </p>
   );
 }
 
