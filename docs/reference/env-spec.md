@@ -392,6 +392,33 @@ and the 404 body is the extreme case: Next renders it once, into `/_not-found`, 
 build-time value there exactly as it is for the sidebar. A flip therefore needs a rebuild for the
 advertising to follow; only the route's 404/200 answer moves on a restart.
 
+## 10. Deployment variables — declared in one table, not in prose (#1384)
+
+The authority for "which variable does this deployment hold, and where does its value come from" is
+`scripts/env-manifest.ts`, held against the tree by `pnpm env:check` in **every** gate lane.
+`.env.example` is rendered from it (`pnpm env:example`) and `docs/operations/env-stores.md` is the
+census of where each row lands (`pnpm env:matrix`). Nothing in this page is a second table, on
+purpose — this section records the two decisions that made the account-deletion path work.
+
+**`NEON_PROJECT_ID` is a required row with a literal source.** `lib/account/purge.ts` deletes a
+deleted account's managed-auth user through Neon's project API, which needs the project id in the
+path. It cannot be discovered at request time: the deployment's `NEON_API_KEY` is project-scoped, so
+`GET /projects` answers `404 not allowed to perform actions outside the project this key is scoped
+to`, and for an org-scoped key the same call answers `400 org_id is required` (measured 2026-11-26).
+Both were measured on the deployment, so the row moved from `optional`/`carried` — a row nothing
+wrote — to `required` with `scripts/neon-endpoints.mjs::LIVE_PROJECT` as its value: `env:render`
+writes it into all three files and `env:sync` pushes it to each Vercel scope, and a deployment that
+lacks it is refused at render time rather than at the last step of somebody's account deletion.
+
+**The branch comes from the auth host, not from the label.** The delete path is
+`/projects/{project}/branches/{branch}/auth/users/{user}`, and the auth users live on the branch
+whose endpoint `NEON_AUTH_BASE_URL` names — `ep-square-glade-bd2fcmjv` (`main`) in production,
+`ep-fancy-bar-bd0pzuz0` (`demo`) on the demo. `NEON_BRANCH` stays an override, but a label that
+names no branch (`production`, which the project does not have) no longer decides anything: one
+`GET /projects/{id}/endpoints` maps the host to its `branch_id`. The rule is the one every demo
+writer already enforces — the host is the fact, `NEON_BRANCH` is a word somebody typed
+(`scripts/db-seed.mjs`, `scripts/demo-env.mjs`).
+
 ## Related
 
 - [GATE.md](../operations/gate.md) — the gate this spec's P1–P4 phases were judged against.
