@@ -1,5 +1,5 @@
 {
-  "pr": 1424,
+  "pr": 1425,
   "date": "2026-11-26",
   "area": "ops",
   "summary": "`pnpm env:render` writes every value as a single-quoted shell literal (`NAME='…'`, an embedded `'` written `'\\''`), re-parses each line it emits, and refuses a value carrying a line break instead of emitting a file that half-loads.",
