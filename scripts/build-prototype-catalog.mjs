@@ -32,10 +32,31 @@
  * The copies are verbatim: the prototypes are artefacts, not templates, and
  * in-page `#anchor` deep links must survive.
  *
+ * ASSETS ARE PART OF THE PAGE (#1436). The builder used to copy only what it
+ * globbed — `.html` — so a page landed without the stylesheet, script, images
+ * and fonts beside it and the catalogue rendered every V2 prototype unstyled
+ * while its row count stayed green. Two things changed together:
+ *
+ *   copy  — every relative ref on a copied page is resolved and the file it
+ *           names is copied to the same catalogue path, so
+ *           `prototypes/project-spec/x/css/tokens.css` publishes at
+ *           `p/project-spec/x/css/tokens.css` exactly where `align.html` looks.
+ *           Stylesheets are followed one hop further (`url(…)`) because the
+ *           tokens sheet points at `../fonts/*.woff2`.
+ *   gate  — after the build, every published page's refs are re-read from the
+ *           built site and each must exist. A missing non-HTML target is
+ *           `broken` and fails the run (budget: 0); a missing `.html` target is
+ *           a `dead` ref — a link to a page that exists nowhere — and is
+ *           printed, named, but not failed, because no copy can fix it and the
+ *           prototype's owner is the one who can.
+ *
+ * `--min-assets N` is the floor under the gate, so a build that checked nothing
+ * cannot pass by having nothing to check.
+ *
  * Usage:
  *   node scripts/build-prototype-catalog.mjs --out <dir>
  *        [--source <dir>[:<catalog prefix>]]... [--min-entries N]
- *        [--require <path>]... [--fail-on-untracked] [--allow-empty]
+ *        [--min-assets N] [--require <path>]... [--fail-on-untracked] [--allow-empty]
  *
  * With no `--source`, the two sources above are used.
  *
@@ -62,6 +83,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import { isHtml, isStyle, localRefs, styleRefs } from "./lib/prototype-refs.mjs";
+
 const DEFAULT_SOURCES = [
   { dir: "prototypes", prefix: "" },
   { dir: "docs", prefix: "quizhub/quizhub/docs" },
@@ -87,6 +110,7 @@ function parseArgs(argv) {
     sources: [],
     out: null,
     minEntries: 0,
+    minAssets: 0,
     require: [],
     failOnUntracked: false,
     allowEmpty: false,
@@ -109,13 +133,14 @@ function parseArgs(argv) {
       );
     } else if (arg === "--out") opts.out = next();
     else if (arg === "--min-entries") opts.minEntries = Number(next());
+    else if (arg === "--min-assets") opts.minAssets = Number(next());
     else if (arg === "--require") opts.require.push(next());
     else if (arg === "--fail-on-untracked") opts.failOnUntracked = true;
     else if (arg === "--allow-empty") opts.allowEmpty = true;
     else if (arg === "--help" || arg === "-h") {
       console.log(
         "usage: build-prototype-catalog.mjs --out <dir> [--source <dir>[:<prefix>]]... " +
-          "[--min-entries N] [--require <path>]... [--fail-on-untracked] [--allow-empty]",
+          "[--min-entries N] [--min-assets N] [--require <path>]... [--fail-on-untracked] [--allow-empty]",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -205,6 +230,83 @@ function provenance(file) {
   const date = git(repo, ["log", "-1", "--format=%cs", "--", rel]);
   if (!commit || !date) return null;
   return { repo, rel, commit, date };
+}
+
+/** The source file backing a catalogue path, or null when no declared source has it. */
+function sourceFileFor(sources, catalogPath) {
+  const ordered = [...sources].sort((a, b) => b.prefix.length - a.prefix.length);
+  for (const source of ordered) {
+    if (source.prefix && !catalogPath.startsWith(`${source.prefix}/`)) continue;
+    const inner = source.prefix ? catalogPath.slice(source.prefix.length + 1) : catalogPath;
+    const file = path.join(source.dir, inner);
+    if (fs.existsSync(file) && fs.statSync(file).isFile()) return file;
+  }
+  return null;
+}
+
+/**
+ * Copy every file a published page points at, to the path it points at (#1436).
+ *
+ * The page is read out of the built site, not the source tree, so what is copied is exactly what
+ * the published bytes say they need. Stylesheets are followed one hop further, because
+ * `@font-face` lives in the CSS: a page can be fully served and still draw every heading in a
+ * fallback face. A stylesheet target with no source file is returned as `missing` — the page-level
+ * equivalent is classified by the gate below.
+ */
+function copyAssets(sources, out, pagePaths) {
+  const copied = [];
+  const missing = [];
+  const present = new Set(pagePaths);
+  const queue = [...pagePaths];
+  while (queue.length) {
+    const from = queue.shift();
+    const built = path.join(out, "p", from);
+    if (!fs.existsSync(built)) continue;
+    const text = fs.readFileSync(built, "utf8");
+    const refs = isStyle(from) ? styleRefs(text, from) : isHtml(from) ? localRefs(text, from) : [];
+    for (const ref of refs) {
+      if (ref.kind !== "relative" || present.has(ref.target)) continue;
+      const source = sourceFileFor(sources, ref.target);
+      if (!source) {
+        if (isStyle(from)) missing.push({ page: from, target: ref.target });
+        continue;
+      }
+      const target = path.join(out, "p", ref.target);
+      fs.mkdirSync(path.dirname(target), { recursive: true });
+      fs.copyFileSync(source, target);
+      present.add(ref.target);
+      copied.push(ref.target);
+      if (isStyle(ref.target) || isHtml(ref.target)) queue.push(ref.target);
+    }
+  }
+  return { copied, missing };
+}
+
+/**
+ * The asset gate (#1436): every published page's local refs, re-read from the built site.
+ *
+ * `checked` counts the refs that were actually resolved, and it is printed on every build — a
+ * catalogue that publishes pages with nothing to check must not pass by having nothing to check.
+ * A missing target is classified by what it is: an `.html` sibling that exists nowhere is a
+ * **dead** ref (prototype-owner evidence, reported not failed); anything else — css, js, image,
+ * font, data — is **broken**, and broken's budget is zero.
+ */
+function checkAssets(out, entries) {
+  const broken = [];
+  const dead = [];
+  const bare = [];
+  let checked = 0;
+  for (const entry of entries) {
+    const html = fs.readFileSync(path.join(out, "p", entry.path), "utf8");
+    const refs = localRefs(html, entry.path).filter((ref) => ref.kind === "relative");
+    if (!refs.length) bare.push(entry.path);
+    for (const ref of refs) {
+      checked += 1;
+      if (fs.existsSync(path.join(out, "p", ref.target))) continue;
+      (isHtml(ref.target) ? dead : broken).push({ page: entry.path, target: ref.target });
+    }
+  }
+  return { checked, broken, dead, bare };
 }
 
 function main() {
@@ -327,6 +429,19 @@ function main() {
 
   entries.sort((a, b) => b.date.localeCompare(a.date) || a.path.localeCompare(b.path));
 
+  // Assets first, gate second: the gate reads the built site, so it judges what a browser would.
+  const assets = copyAssets(
+    sources,
+    out,
+    entries.map((entry) => entry.path),
+  );
+  const check = checkAssets(out, entries);
+  const assetBytes = assets.copied.reduce((sum, rel) => {
+    const file = path.join(out, "p", rel);
+    return sum + (fs.existsSync(file) ? fs.statSync(file).size : 0);
+  }, 0);
+  const broken = [...check.broken, ...assets.missing];
+
   const counts = {
     gitDates: entries.filter((e) => e.dateSource === "git").length,
     mtimeDates: entries.filter((e) => e.dateSource === "mtime").length,
@@ -347,10 +462,31 @@ function main() {
   console.log(`groups: ${[...new Set(entries.map((e) => e.group))].sort().join(", ")}`);
   console.log(`sources: ${sources.map((s) => `${s.dir}=>${s.prefix || "/"}`).join(" | ")}`);
   console.log(`out: ${out}`);
+  console.log(
+    `assets: ${assets.copied.length} copied (${(assetBytes / 1e6).toFixed(1)} MB) | pages with no local refs: ${check.bare.length}`,
+  );
+  console.log(
+    `assets checked: ${check.checked} | assets broken: ${broken.length} | dead refs: ${check.dead.length} (reported, not failing)`,
+  );
+  for (const ref of check.dead) console.log(`dead: ${ref.page} -> ${ref.target}`);
 
   if (entries.length < opts.minEntries) {
     throw new Error(
       `catalog has ${entries.length} entries, expected at least ${opts.minEntries} — refusing to publish an incomplete catalog`,
+    );
+  }
+  if (check.checked < opts.minAssets) {
+    throw new Error(
+      `the asset gate checked ${check.checked} refs across ${entries.length} pages, expected at least ${opts.minAssets} — a catalogue whose pages have nothing to check cannot prove they render`,
+    );
+  }
+  if (broken.length) {
+    const named = broken
+      .slice(0, 10)
+      .map((ref) => `${ref.page} -> ${ref.target}`)
+      .join(", ");
+    throw new Error(
+      `${broken.length} published asset ref(s) resolve to nothing in the built site: ${named}${broken.length > 10 ? ", …" : ""}`,
     );
   }
   if (missing.length) {

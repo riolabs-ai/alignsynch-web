@@ -333,3 +333,105 @@ describe("the prototype catalogue's provenance", () => {
     expect(existsSync(join(root, "out3", "catalog.json"))).toBe(false);
   });
 });
+
+/**
+ * The assets beside the pages (#1436).
+ *
+ * The catalogue published 170 pages and none of their styling: the builder globbed `.html`, the
+ * check counted rows, and every stylesheet on the live site was a 404 while the run stayed green.
+ * These cases pin the three halves of the repair — the copy, the gate that would have caught it,
+ * and the dead-link report that must not be able to hide inside the gate.
+ */
+function writeBytesAndCommit(root: string, rel: string, bytes: string | Buffer, message: string) {
+  const full = join(root, rel);
+  mkdirSync(dirname(full), { recursive: true });
+  writeFileSync(full, bytes);
+  git(root, "add", "--", rel);
+  git(root, "commit", "-q", "-m", message);
+}
+
+describe("the catalogue carries the assets its pages point at", () => {
+  it("copies css, js, images and the fonts a stylesheet names, at the paths the page looks for", () => {
+    const root = repoFixture();
+    const css = `@font-face{font-family:Inter;src:url(../fonts/inter-1.woff2) format("woff2")}\n`;
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]);
+    const font = Buffer.from([0, 1, 2, 3, 4]);
+    writeBytesAndCommit(root, "prototypes/project-spec/x/css/tokens.css", css, "css");
+    writeBytesAndCommit(root, "prototypes/project-spec/x/js/proto.js", "window.proto=1;\n", "js");
+    writeBytesAndCommit(root, "prototypes/project-spec/x/images/logo.png", png, "png");
+    writeBytesAndCommit(root, "prototypes/project-spec/x/fonts/inter-1.woff2", font, "font");
+    writeAndCommit(
+      root,
+      "prototypes/project-spec/x/align.html",
+      `<!doctype html><html><head><title>align</title><link rel="stylesheet" href="css/tokens.css"></head><body><img src="images/logo.png" alt=""><script src="js/proto.js"></script></body></html>\n`,
+      "page",
+    );
+
+    const out = join(root, "out");
+    const run = build(root, "--out", out, "--source", "prototypes");
+    expect(run.stderr).toBe("");
+    expect(run.status).toBe(0);
+
+    const at = (rel: string) => join(out, "p", "project-spec", "x", rel);
+    expect(readFileSync(at("css/tokens.css"), "utf8")).toBe(css);
+    expect(readFileSync(at("js/proto.js"), "utf8")).toBe("window.proto=1;\n");
+    expect(readFileSync(at("images/logo.png"))).toEqual(png);
+    // One hop through the stylesheet: without this every page draws in a fallback face while the
+    // page-level gate stays green, because a `url()` inside the CSS is not a ref on the page.
+    expect(readFileSync(at("fonts/inter-1.woff2"))).toEqual(font);
+
+    expect(run.stdout).toContain("assets: 4 copied");
+    expect(run.stdout).toContain("assets checked: 3");
+    expect(run.stdout).toContain("assets broken: 0");
+    expect(run.stdout).toContain("dead refs: 0");
+  });
+
+  it("fails when a page points at an asset nothing in the tree provides", () => {
+    const root = repoFixture();
+    writeAndCommit(
+      root,
+      "prototypes/project-spec/x/align.html",
+      `<!doctype html><html><head><title>align</title><link rel="stylesheet" href="css/gone.css"></head><body></body></html>\n`,
+      "page",
+    );
+
+    const run = build(root, "--out", join(root, "out"), "--source", "prototypes");
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain("resolve to nothing in the built site");
+    expect(run.stderr).toContain("project-spec/x/align.html -> project-spec/x/css/gone.css");
+  });
+
+  it("prints a dead page link instead of failing, because no copy can fix it", () => {
+    const root = repoFixture();
+    writeAndCommit(
+      root,
+      "prototypes/project-spec/x/align.html",
+      `<!doctype html><html><head><title>align</title></head><body><a href="sibling.html">sibling</a><a href="/pricing">pricing</a></body></html>\n`,
+      "page",
+    );
+
+    const run = build(root, "--out", join(root, "out"), "--source", "prototypes");
+    expect(run.status).toBe(0);
+    expect(run.stdout).toContain("dead refs: 1");
+    expect(run.stdout).toContain("dead: project-spec/x/align.html -> project-spec/x/sibling.html");
+    // A root-relative route is the app's, not the catalogue's: not counted, not copied, not failed.
+    expect(run.stdout).toContain("assets checked: 1");
+  });
+
+  it("refuses a build that would pass by checking nothing", () => {
+    const root = repoFixture();
+    writeAndCommit(root, "prototypes/project-spec/x/plain.html", page("plain"), "page");
+
+    const run = build(
+      root,
+      "--out",
+      join(root, "out"),
+      "--source",
+      "prototypes",
+      "--min-assets",
+      "5",
+    );
+    expect(run.status).toBe(1);
+    expect(run.stderr).toContain("the asset gate checked 0 refs");
+  });
+});
