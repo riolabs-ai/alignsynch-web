@@ -435,6 +435,11 @@
           "question": "How do I preview the Help Center, and which three files make up the page?"
         },
         {
+          "path": "specs/settings-integrations.md",
+          "title": "Settings & integrations",
+          "question": "Which providers does the app depend on, which variables do they own, and where does an operator change them?"
+        },
+        {
           "path": "specs/stages.md",
           "title": "Stages",
           "question": "What are Invited, Connected, Sharing and Aligned, and who decides each?"
