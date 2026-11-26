@@ -133,6 +133,19 @@ const rows: readonly SurfaceColumn[] = [
   { path: "/admin/spec", mode: "column" },
   { path: "/admin/spec/validation", mode: "column" },
   { path: "/admin/spec/[group]", mode: "column" },
+  /**
+   * The v2 drafts door (2026-11-26) — the rail's `UI Specs v2` row, a 307 to the draft pages on
+   * another origin. `wide` is the honest row of the three: the page renders **no screen at all**,
+   * so it draws no column and there is no body to place, while `column` is a claim that the page
+   * renders `StageColumn`/`OperatorFrame` and this one renders neither (the redirect-door exemption
+   * `tests/admin-column.test.tsx` names, asserted there positively).
+   */
+  {
+    path: "/admin/spec/ui-v2",
+    mode: "wide",
+    reason:
+      "A redirect door, not a surface: it gates and answers `redirect(ADMIN_SPEC_DOCS_URL)`, so it draws no column of its own — there is no body to place in one. Registered so the tree and this table stay in step; `wide` because the one thing it cannot be is `column`.",
+  },
   { path: "/admin/review", mode: "column" },
   // #1374 — the read-only landing. `StageColumn` like every other console page: a KPI row and a
   // directory of rows, both read at the console's measure rather than a board's.

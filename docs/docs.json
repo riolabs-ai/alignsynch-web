@@ -255,6 +255,11 @@
           "question": "What happens to a shared record when one person deletes their account?"
         },
         {
+          "path": "specs/admin-rail-doors.md",
+          "title": "The rail's doors",
+          "question": "How may the Admin sidebar reach a destination on another origin — and how does the click say it leaves?"
+        },
+        {
           "path": "specs/catalogue.md",
           "title": "Template catalogue",
           "question": "How is the catalogue grouped, and what does each category mean?"

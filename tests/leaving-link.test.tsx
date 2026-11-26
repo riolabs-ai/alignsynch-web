@@ -11,6 +11,11 @@
  *   - every in-app destination carries **neither**, because in-app navigation stays in the tab —
  *     the rule is about leaving, and a row that opens a second tab onto a page already in the app
  *     is friction of exactly the kind the card exists to remove;
+ *   - a row the **document** marks `leaving` is a departure even though its href is internal
+ *     (2026-11-26): the v2 draft pages are another origin with no route in this tree, so the rail
+ *     reaches them through `/admin/spec/ui-v2`, and the href alone cannot say the click leaves.
+ *     `leavesApp()` only knows the marketing routes, so the document's flag is the second
+ *     declaration of a departure and this file holds both to the same markup;
  *   - the footer's behaviour is the mount's decision: the same component leaves from the
  *     dashboard and stays in the tab on the marketing routes it renders into.
  */
@@ -28,7 +33,19 @@ import { AppNav } from "@/components/layout/nav-menus";
 import type { BrandId } from "@/data/brand";
 import { shellPageCopy } from "@/data/pages/shell";
 import { leavesApp } from "@/lib/marketing-routes";
-import { type NavViewer, PLATFORM_VIEWER } from "@/lib/nav";
+import { type NavViewer, PLATFORM_VIEWER, navViewer } from "@/lib/nav";
+import { allItems } from "@/lib/nav-menu";
+
+/**
+ * The destinations the rail's own document marks `leaving` — the second way a row says its click
+ * leaves the app, because an off-origin door has an internal href (`/admin/spec/ui-v2`, the v2
+ * draft pages) and `leavesApp()` cannot see that.
+ */
+const DOCUMENT_DEPARTURES = new Set(
+  allItems()
+    .filter((item) => item.leaving === true)
+    .map((item) => item.href),
+);
 
 /** Every anchor in a rendered tree: its href, its target, its rel and its accessible name. */
 function anchorsOf(html: string) {
@@ -87,9 +104,38 @@ describe("the rail", () => {
         else expect(leaving).toEqual([]);
       });
 
+      /**
+       * 2026-11-26 — the departure whose href is an internal door.
+       *
+       * `UI Specs v2` points at `/admin/spec/ui-v2`, and that route redirects to the v2 draft
+       * pages on another origin. `leavesApp()` is right to call the href in-app (there *is* a page
+       * in this tree); the document's `leaving` is what says the page then sends the reader away.
+       * Both brands are checked, and the alignment rail is the one with a row to check.
+       */
+      it("opens the document's own departures in a new tab, announced", () => {
+        // The alignment rail draws its staff rows for a staff viewer, so this case renders the
+        // surface an operator actually gets rather than the member menu the describe's viewer sees.
+        const drawn =
+          brandId === "alignsynch" ? anchorsOf(navHtml(brandId, navViewer("admin"))) : anchors;
+        const marked = drawn.filter((anchor) => DOCUMENT_DEPARTURES.has(anchor.href));
+        if (brandId === "alignsynch") {
+          expect(marked.map((anchor) => anchor.href)).toEqual([...DOCUMENT_DEPARTURES]);
+        }
+        for (const anchor of marked) {
+          expect(anchor.target, `${anchor.href} target`).toBe("_blank");
+          expect(anchor.rel, `${anchor.href} rel`).toBe("noopener noreferrer");
+          expect(anchor.label, `${anchor.href} name`).toMatch(/opens in a new tab$/);
+        }
+      });
+
       it("keeps every in-app destination in this tab", () => {
         const inside = anchors.filter(
-          (anchor) => anchor.href.startsWith("/") && !leavesApp(anchor.href),
+          (anchor) =>
+            anchor.href.startsWith("/") &&
+            !leavesApp(anchor.href) &&
+            // A door the document marks `leaving` looks in-app by its href and is not: it redirects
+            // off-origin, and the case above holds it to the departure's markup.
+            !DOCUMENT_DEPARTURES.has(anchor.href),
         );
         expect(inside.length).toBeGreaterThan(0);
         for (const anchor of inside) {

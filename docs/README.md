@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**210 documents in 9 sections.** Every page carries the same nav block, generated
+**211 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -41,7 +41,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
 - [Operations](#operations) — 26 documents
-- [Specs & design briefs](#specs-design-briefs) — 88 documents
+- [Specs & design briefs](#specs-design-briefs) — 89 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
@@ -115,6 +115,7 @@ The gate, releasing, deploying, iteration and the history behind them.
 What the product promises, written down before it was built.
 
 - [`specs/account-deletion-spec.md`](specs/account-deletion-spec.md) — **Account deletion** — What happens to a shared record when one person deletes their account?
+- [`specs/admin-rail-doors.md`](specs/admin-rail-doors.md) — **The rail's doors** — How may the Admin sidebar reach a destination on another origin — and how does the click say it leaves?
 - [`specs/catalogue.md`](specs/catalogue.md) — **Template catalogue** — How is the catalogue grouped, and what does each category mean?
 - [`specs/flow-emails.md`](specs/flow-emails.md) — **Transactional email lifecycle** — Which emails send, when, and to whom?
 - [`specs/flow-reinvite.md`](specs/flow-reinvite.md) — **Re-invite** — What happens when an invitation expires — and why not a void?

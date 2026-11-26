@@ -415,6 +415,8 @@ function tree(role: UserRole, brand: BrandId, source: NavSource): number {
       const marks: string[] = [item.needs];
       if (item.capability !== undefined) marks.push(`cap:${item.capability}`);
       if (item.exact === true) marks.push("exact");
+      // v6 — a door whose click leaves the app: another origin behind an internal href.
+      if (item.leaving === true) marks.push("leaves");
       if (item.tourAnchor !== undefined) marks.push(`tour:${item.tourAnchor}`);
       console.log(
         `${trunk}${lastRow ? "└─" : "├─"} ${pageCopy.itemLabel(navSection, item.id).padEnd(labelWidth)}  ${item.href.padEnd(hrefWidth)}  [${marks.join(", ")}]`,

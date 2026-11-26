@@ -19,6 +19,21 @@ export const ADMIN_SPEC_PATH = "/admin/spec";
 export const ADMIN_SPEC_VALIDATION_PATH = "/admin/spec/validation";
 
 /**
+ * The v2 draft pages' **internal door** (2026-11-26) — the rail's `UI Specs v2` row, and not the
+ * pages themselves.
+ *
+ * The drafts are a separate deployment (`ADMIN_SPEC_DOCS_URL`, `data/pages/admin-spec.ts`) with no
+ * route in this tree, so the rail cannot hold their address: every row's href must resolve against
+ * `content/routes.ts` and be accounted for by the ordinary route walk (E43). This address is the
+ * route that redirects, which is what makes an off-origin door a rail row at all — one hop, no
+ * second copy of the pages, and the destination stays written once, in the fixture above.
+ *
+ * It sits on `/admin/spec/` beside `[group]`, exactly as `validation` does: a static segment under
+ * the same parent wins, so Next resolves this page before a story segment called `ui-v2` could.
+ */
+export const ADMIN_SPEC_UI_V2_PATH = "/admin/spec/ui-v2";
+
+/**
  * One group's story page (s03) — `/admin/spec/07-billing` and its ten siblings.
  *
  * The `[group]` segment is resolved by the page in the next card (the reader). In this spine the

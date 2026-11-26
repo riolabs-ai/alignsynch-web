@@ -21,11 +21,11 @@ How a template picks from this page — the order a new surface is decided in �
 
 ## Summary
 
-- routes: **107** — 68 static, 39 dynamic, from `app/**/page.tsx`
+- routes: **108** — 69 static, 39 dynamic, from `app/**/page.tsx`
 - component domains: **46** — 410 files under `components/`, 401 of them `.tsx`
 - route handlers: **33** — `app/**/route.ts`, listed below and not a UI surface
-- status: **mock** 17 · **fixture** 81 · **db** 46 · **live** 8 · **prototype** 1
-- templates: Both templates 55 · AlignSynch 54 · QuizHub 42 · No template yet 2
+- status: **mock** 17 · **fixture** 82 · **db** 46 · **live** 8 · **prototype** 1
+- templates: Both templates 55 · AlignSynch 55 · QuizHub 42 · No template yet 2
 - capability written as `undocumented`: **0**
 
 Status is the judgement half and the wiring is what checks it: `db` reaches `lib/db/`, `live` reaches an `/api` write, `fixture` reaches a module under `data/`, and `mock` reaches no `lib/db/` module and no record fixture — the media registry is an asset and page copy is copy, so a surface whose numbers are literals is still a stand-in.
@@ -437,6 +437,12 @@ None: every catalogued surface has a `capability` sentence. A surface nobody has
   - components: `components/admin`, `components/layout`, `components/operator`, `components/ui`
   - reads: Postgres — `lib/db/client.ts`, `lib/db/profile-rows.ts`, `lib/db/rows.ts`, `lib/db/user-profiles.ts` · an `/api` path — `data/brand.ts`, `data/brands/alignsynch.ts`, `lib/auth/paths.ts`, `lib/auth/request-context.ts`, `lib/auth/server.ts`, `lib/build-info.ts`, `lib/spec/issues-cache.ts`, `lib/spec/issues-paths.ts`
   - notes: #1252 (reader: t_f5458e3d) — the third route of the same family, the same two gates and the same per-request register. **The segment is a story slug** (`07-plans-and-billing`), resolved by `specStoryOf`; a segment no story claims renders the fixture's honest panel — 'no story page is called …' plus the way to the matrix — because a 404 here would be indistinguishable from the _gate's_ 404, and the gate's is the one answer that must stay unambiguous. `params` is awaited before the gate (Next 16), so the `next` handed to `/login` is the address the person actually asked for. The empty-group case is drawn, not skipped: 'No mockup in the agreement for this group.' `force-dynamic`, the same headers, the same fixture at E23 budget 0.
+
+- `/admin/spec/ui-v2` — **fixture**
+  - capability: The door to the v2 draft pages — **no screen at all**: it gates like the spec family and answers a 307 to `ADMIN_SPEC_DOCS_URL`, so the rail's `UI Specs v2` row reaches a destination on another origin without an external `href` in `data/nav-menu.json`.
+  - components: none — the page body is written in the route file
+  - reads: Postgres — `lib/db/client.ts`, `lib/db/profile-rows.ts`, `lib/db/rows.ts`, `lib/db/user-profiles.ts` · an `/api` path — `data/brand.ts`, `data/brands/alignsynch.ts`, `data/pages/shell.ts`, `lib/auth/paths.ts`, `lib/auth/request-context.ts`, `lib/auth/server.ts`
+  - notes: 2026-11-26 — the owner's move of the Project Spec submenu's last row (`Docs — draft pages`, a `LeavingLink`) into the rail's Specs & docs group. **This route exists for the gate, not for the reader**: every rail row's `href` must resolve in `content/routes.ts` (`nav:menu --check`) and every page under `app/(mainlayout)` is accounted for by `data:check` E43, so an off-origin destination becomes a row only through an internal door. **The departure is announced before the click**: the row carries `leaving: true` (document v6), so `NavRow` draws it through `LeavingLink` — a new tab, `rel="noopener noreferrer"`, the external marker and a name ending "opens in a new tab" — instead of teleporting the reader off-site in the tab they were working in, which is why a plain `redirect()` here is honest. The destination is written once, in `data/pages/admin-spec.ts`; nothing in this route or in the document spells it. `status: fixture` because the only thing it reads is that fixture constant. Registered `wide` in `data/surface-columns.ts` (it draws no column — there is no body to place), excluded from the operator surface in `lib/operator/routes.ts` (an address, not a screen), and its one word, `UI Specs v2`, is `data/pages/shell.ts::nav-alignsynch`'s like every other rail label. `tests/admin-spec-ui-v2.test.ts` holds the route, the redirect, the gate order and the one-door claim.
 
 - `/admin/spec/validation` — **fixture**
   - capability: The Validation matrix: a sticky status box (the met gauge, a meter per scope, a count per status, the register's metadata and legend) beside four sections in the agreement's order — 28 / 20 / 13 / 27 rows — each row carrying its ID, page, status chip, requirement, Definition of Done, v2.0 note, next acceptance, release map and evidence links to main at the recorded sha, plus the row's GitHub issue where one was filed: its number as a link that leaves the app, its state, its milestone, its tier and the two reviewer pills. The app's version and the register snapshot print as two labelled facts, and the page says which half is a snapshot and which is live (#1439).
