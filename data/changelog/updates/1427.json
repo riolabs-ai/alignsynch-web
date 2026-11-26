@@ -1,0 +1,9 @@
+{
+  "pr": 1427,
+  "date": "2026-11-26",
+  "area": "home",
+  "summary": "The home page's four model questions read in the founder's wording — FEEL `How do YOU FEEL it is now?`, WISH `How do YOU WISH it to SLOWLY change?`, THINK and GUESS likewise `THEY FEEL` / `THEY WISH` — in place of the four gap sentences.",
+  "reader_impact": "A visitor reading the \"Four ways a gap can form\" band sees the questions the assessment itself asks, SLOWLY included, not a paraphrase of them.",
+  "specs": ["docs/specs/spec-as2-style-home-redesign/README.md"],
+  "risk": "low"
+}
