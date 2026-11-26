@@ -1,5 +1,5 @@
 {
-  "pr": 1404,
+  "pr": 1407,
   "date": "2026-11-25",
   "area": "docs",
   "summary": "`docs/` can be published as one deterministic `docs.tar.zst` plus a per-file `manifest.json` (`pnpm docs:bundle`), and `lib/docs/tree.ts` reads either the checkout or that verified archive behind a new `DOCS_SOURCE` switch.",
