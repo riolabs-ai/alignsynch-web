@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Prototype wiring · prev [Prototype copy saves](prototype-save.md) · next [Specifications index](README.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Prototype wiring · prev [Prototype copy saves](prototype-save.md) · next [Recovered branches](recovered-branches-triage.md)
 
 <!-- docs-nav:end -->
 
@@ -382,6 +382,6 @@ still has a subject.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Prototype wiring · prev [Prototype copy saves](prototype-save.md) · next [Specifications index](README.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Prototype wiring · prev [Prototype copy saves](prototype-save.md) · next [Recovered branches](recovered-branches-triage.md)
 
 <!-- docs-nav:end -->

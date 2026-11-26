@@ -325,6 +325,11 @@
           "question": "What of the one prototype screen moves into the build, and in what order?"
         },
         {
+          "path": "specs/recovered-branches-triage.md",
+          "title": "Recovered branches",
+          "question": "Which unlinked branches still matter, and what proves it?"
+        },
+        {
           "path": "specs/README.md",
           "title": "Specifications index",
           "question": "What are these research specs, and what do they have in common?"
