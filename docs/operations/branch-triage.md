@@ -481,6 +481,75 @@ running in, a detached HEAD, anything registered outside `<repo>/.worktrees/`, a
 registration. It deletes **no branch, local or remote** — `git worktree remove` deregisters a
 directory and leaves `refs/heads` alone.
 
+## The whole week — `pnpm hygiene`
+
+The pruner is one half of the job. A branch is a ref it never deletes, an install outlives the
+worktree that needed it, and a hand sweep fixed the size once and left no tool — so
+`scripts/repo-hygiene.mjs` (#1404) runs the four things a weekly offboarding owes: prune merged work,
+clear the caches nobody is using, report what it will not act on, and write a manifest with a `df`
+delta. `pnpm hygiene` is the report; `pnpm hygiene:apply` is the work.
+
+```console
+$ pnpm hygiene                     # the same run, nothing deleted
+  worktrees to remove (1) — via scripts/worktree-prune.mjs
+  .worktrees/t_aaaaaaaa     card t_aaaaaaaa · ancestor
+  branches to delete (1) — `git branch -d`, never -D
+  merged-work               ancestor of origin/main · its last commit is today
+  caches to clear (1)
+  .worktrees/t_cccccccc     node_modules, .turbo    card done and untouched for 3 d
+  needs a human (5)
+  branch   old/orphan              local-only · 1 ahead / 0 behind · 39 d old
+  worktree .worktrees/t_bbbbbbbb   tree is dirty (1 changed path, untracked included)
+  stash    stash@{0}               19 d old · On main: fixture: stale stash
+```
+
+**The order is not cosmetic.** Worktrees go first, then the branches they were pinning, then
+`git worktree prune` last. A merged branch cannot be deleted while a worktree holds it checked out, so
+a branch half that ran first would reclaim nothing and report the pinning as permanent.
+
+**Four rules make it safe to leave running unattended.**
+
+| Rule                                  | Why                                                                                                                                                      |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Nothing written to in 24 h is touched | A finished card's worktree is where a QA server and a re-run of the gate are left standing; a live card's is touched minutes before the run              |
+| `git branch -d` only, never `-D`      | A squash-merged branch is never an ancestor of `main`, so `-d` is modest here — and the rest is reported with its ahead/behind rather than force-deleted |
+| The reclaim figure is the `df` delta  | pnpm's symlink farms overcount `du` by ~20× (19.3 G claimed, ~1 G real), so a summed figure would read as a very successful run and be a lie             |
+| Exit 0 with a report                  | "Nothing to do" is the normal outcome of a weekly job, not a failure                                                                                     |
+
+**The guard's witness is the reflog, not the index.** `git status` refreshes a clean tree's index, so
+measuring "last touched" on it would let this job's own _reading_ count as someone's work and hold
+every tree for a day against a run that deleted nothing. The newest write is taken from the directory,
+its direct children (cache directories excluded — an old `node_modules` is not activity) and
+`logs/HEAD`, which only a commit, merge or checkout appends to.
+
+**What it deletes is written down.** `archive/repo-hygiene-<date>.txt` (gitignored — it is one
+operator's disk state, not project history) records every branch, worktree and cache set removed, the
+`df` before/after, and the rows that need a human: local-only branches older than 30 days, worktrees
+with no card, dirty worktrees, stashes older than 14 days, and a `git gc` blocked by a stale
+`.git/gc.log`.
+
+Proven on a fixture repository built for it — one merged-and-clean worktree, one merged-but-dirty, one
+unmerged-and-clean, one on a still-running card, a 39-day local-only branch and a 19-day stash:
+
+```console
+$ pnpm hygiene:apply
+  deleted branch   merged-work
+  cleared caches   .worktrees/t_cccccccc (node_modules, .turbo)
+  worktrees removed  1
+  branches deleted   1
+  caches cleared     1
+  manifest           archive/repo-hygiene-2026-11-26.txt
+repo-hygiene: freed 46.4 MB (df delta) · 1 branch deleted · 1 worktree removed · 1 cache set cleared · 5 need a human
+$ pnpm hygiene:apply              # a second consecutive run
+  worktrees removed  0
+  branches deleted   0
+  caches cleared     0
+```
+
+The dirty worktree, the unmerged branch and the running card's tree all survived by name, and the
+second run changed nothing — which is the property the schedule depends on. The weekly trigger itself
+is Hermes cron, owned by the CHO's lane, not this script.
+
 <!-- docs-nav:begin -->
 
 [Docs hub](../README.md) › **Operations** › Branch triage · next [Two brands, one tree](brand-release.md)
