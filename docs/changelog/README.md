@@ -48,7 +48,7 @@ pnpm changelog:check    # fail, naming the page and line, when one has drifted
 
 - **Released** 2026-11-26
 - **Tag** [`v2.1.0`](https://github.com/riolabs-ai/alignsynch/releases/tag/v2.1.0)
-- **Pull requests named** 30
+- **Pull requests named** 40
 - **Theme:** the operator surface
 - **Headline:** `feat(operator)` — an operator's tooling can now change without editing the user platform, and a new coupling fails a test — one read contract, one arrow, a baseline that only shrinks (#1391) (#1395)
 
