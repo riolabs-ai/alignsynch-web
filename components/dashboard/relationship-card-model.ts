@@ -110,5 +110,14 @@ export function cardViewOf(
     summary: summary === null ? null : { aligned: summary.aligned, total: summary.total, marks },
     /* A paused relationship keeps its bar and relabels it; nothing else is read-only here. */
     readOnly: state === "paused",
+    /*
+     * #1274 — the Mode and Setting travel with the row rather than being decided here: they are
+     * `session` columns the read already parsed through the model's own enums (`?? null` because a
+     * view literal written before they existed carries neither), and `null` is the honest answer
+     * for a relationship whose round does not exist yet. This module interpolates no word about
+     * them — the card's labels object does — so both member screens still print one spelling.
+     */
+    mode: row.mode ?? null,
+    setting: row.setting ?? null,
   };
 }
