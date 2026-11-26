@@ -30,5 +30,19 @@ export default defineConfig({
       "scripts/__tests__/mention-watch.test.ts",
     ],
     environment: "node",
+    /**
+     * Vitest's default is 5 s, and this suite has several cases whose cost is *work* — a `next`
+     * render per document, a PNG inflate per raster, a `git` subprocess — not a wait. On the
+     * full suite (~385 files, ~16 fork workers on an 8-core box, `user` time ≈ 3.6 × `real`) those
+     * measurements run 3–4.6× slower than they do alone: measured, `tests/docs-source.test.ts`
+     * 1.9 s alone → 5.9 s in the run, `tests/release-ledger.test.ts` 1.3 s → 5.2 s. Both crossed
+     * the default and were reported as red tests, which is how a CPU-bound measurement turns into
+     * a "flake" that blocks a release cut.
+     *
+     * 20 s is ~10× the slowest case's solo cost and 3.4× its worst observed cost inside the run —
+     * enough that the box's load can no longer decide the verdict, small enough that a genuinely
+     * hung case still fails.
+     */
+    testTimeout: 20_000,
   },
 });

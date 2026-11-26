@@ -1,0 +1,9 @@
+{
+  "pr": 1418,
+  "date": "2026-11-26",
+  "area": "ci",
+  "summary": "The icon-fill case decodes each raster once and reads the mark's aspect once per brand, and `pnpm test` runs under a 20 s per-case bound instead of vitest's 5 s default — a 2.3 s measurement was being reported as a failed assertion.",
+  "reader_impact": "Nobody sees a different screen: the ink floors and every measured fraction are unchanged, and a swapped raster still reddens the case. Release cuts stop refusing a sha over a CPU-bound measurement on a loaded box.",
+  "specs": ["docs/operations/gate.md"],
+  "risk": "low"
+}
