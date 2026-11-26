@@ -46,9 +46,10 @@
  *     a path CHECK (`0019`), so the honest write is the `SUPPRESSION_SOURCE` marker: it says why
  *     the row is out of every audience query without inventing a NULL the schema refuses.
  *
- * Server-only by construction, like `lib/db/client.ts`: it reads `DATABASE_URL` and
- * `NEON_API_KEY`, neither of which is in `next.config.mjs`'s `env` block, and only the server
- * action (`app/(mainlayout)/settings/delete-account-actions.ts`) imports it.
+ * Server-only by construction, like `lib/db/client.ts`: it reads `DATABASE_URL`, `NEON_API_KEY`
+ * and `NEON_PROJECT_ID` (a `required` row in `scripts/env-manifest.ts`, #1384), none of which is in
+ * `next.config.mjs`'s `env` block, and only the server action
+ * (`app/(mainlayout)/settings/delete-account-actions.ts`) imports it.
  */
 import type { QueryResultRow } from "pg";
 
@@ -473,43 +474,95 @@ async function neon(method: string, path: string): Promise<{ status: number; bod
 }
 
 /**
- * The project the key is scoped to.
+ * The project this deployment runs on, named by `NEON_PROJECT_ID` (#1384).
  *
- * **`NEON_PROJECT_ID` is the deployment's answer, and on this project it is the only one that
- * works.** `NEON_API_KEY` is a *project-scoped* key: `GET /projects` answers `404`
- * `not allowed to perform actions outside the project this key is scoped to`, so listing is not a
- * fallback a project key can use — measured 2026-11-07 while building this. The list branch below
- * therefore stays for an org-scoped key (one project visible), and a refusal names the variable to
- * set instead of pretending the project does not exist.
+ * **The row is `required` in the env table, and the value is rendered — never guessed.** The list
+ * fallback this function used to carry could not answer on either shape of key: `NEON_API_KEY` is
+ * *project-scoped* on this deployment, so `GET /projects` answers `404 not allowed to perform
+ * actions outside the project this key is scoped to`; and for an org-scoped key the same call now
+ * answers **`400 org_id is required`** (measured 2026-11-26), because the control plane made the
+ * org an explicit argument. `scripts/env-manifest.ts` therefore declares the row `required` with
+ * the project id as its source (`scripts/neon-endpoints.mjs::LIVE_PROJECT`), `pnpm env:render`
+ * writes it into all three env files and `pnpm env:sync` pushes it to each Vercel scope — so a
+ * deployment that lacks it is refused at render time instead of at the last step of somebody's
+ * account deletion, which is where it used to die.
  */
-async function projectId(): Promise<string> {
-  const named = process.env.NEON_PROJECT_ID?.trim();
-  if (named !== undefined && named !== "") return named;
-  const { status, body } = await neon("GET", "/projects");
-  if (status !== 200) {
-    throw new AuthUserDeleteError(
-      `NEON_PROJECT_ID is not set and GET /projects answered ${String(status)} — a project-scoped NEON_API_KEY cannot list projects, so set NEON_PROJECT_ID to the project this app runs on`,
-      status,
-    );
-  }
-  const projects = (body as { projects?: { id?: string }[] } | null)?.projects ?? [];
-  const only = projects.length === 1 ? projects[0]?.id : undefined;
-  if (only === undefined) {
-    throw new AuthUserDeleteError(
-      `NEON_API_KEY sees ${String(projects.length)} project(s) — set NEON_PROJECT_ID so the deletion names one`,
-      status,
-    );
-  }
-  return only;
+function projectId(): string {
+  const named = process.env.NEON_PROJECT_ID?.trim() ?? "";
+  if (named !== "") return named;
+  throw new AuthUserDeleteError(
+    "NEON_PROJECT_ID is not set: the deletion cannot name the project its auth user is deleted " +
+      "from, so nothing was scrubbed — run `pnpm env:render` (the row is declared in " +
+      "scripts/env-manifest.ts) or set it in this deployment",
+    null,
+  );
+}
+
+/** One branch row, as the two resolvers below read it. */
+interface BranchRow {
+  id?: string;
+  name?: string;
+  default?: boolean;
 }
 
 /**
- * The branch this deployment's auth server lives on.
+ * The endpoint label a URL addresses: `ep-square-glade-bd2fcmjv` out of
+ * `https://ep-square-glade-bd2fcmjv-pooler.c-8.us-east-2.aws.neon.tech/neondb`. The `-pooler`
+ * suffix is dropped because a branch's pooled and direct hosts share the endpoint. `null` when the
+ * value is absent or not a host, so a caller can stay total instead of throwing on a bad URL.
+ */
+function endpointLabelOf(url: string | undefined): string | null {
+  const raw = url?.trim() ?? "";
+  if (raw === "") return null;
+  const host = raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "").split(/[/?#]/)[0] ?? "";
+  const label = (host.split(":")[0] ?? "").split(".")[0] ?? "";
+  const bare = label.endsWith("-pooler") ? label.slice(0, -"-pooler".length) : label;
+  return /^ep-[a-z0-9-]+$/i.test(bare) ? bare : null;
+}
+
+/**
+ * The branch this deployment's **auth server** lives on, read from the endpoint in
+ * `NEON_AUTH_BASE_URL`.
  *
- * Read from `NEON_BRANCH` when it is set, else resolved from the endpoint in
- * `NEON_AUTH_BASE_URL` — the auth host names the branch's endpoint (`ep-…neonauth…`), and that is
- * the branch whose users this app can actually sign in. The endpoint → branch mapping is the
- * control-plane's, not ours, so it is asked rather than assumed.
+ * The auth users a deletion removes are per branch, so the **host is the fact and `NEON_BRANCH` is
+ * a word somebody typed** — the rule `scripts/db-seed.mjs` and `scripts/demo-env.mjs` already
+ * enforce for every demo writer. Production's `.env` carries `NEON_BRANCH=production`, and the
+ * project has no such branch (measured 2026-11-26: it has `main`, `demo`, `demo-base`), so the
+ * label alone cannot answer there. One `GET /projects/{id}/endpoints` maps every endpoint host to
+ * its `branch_id`, which is the value the delete path takes.
+ */
+async function branchOfAuthHost(
+  project: string,
+  branches: readonly BranchRow[],
+): Promise<string | null> {
+  const label = endpointLabelOf(process.env.NEON_AUTH_BASE_URL);
+  if (label === null) return null;
+  const { status, body } = await neon("GET", `/projects/${encodeURIComponent(project)}/endpoints`);
+  if (status !== 200) return null;
+  const endpoints =
+    (body as { endpoints?: { host?: string; branch_id?: string }[] } | null)?.endpoints ?? [];
+  const endpoint = endpoints.find((candidate) => endpointLabelOf(candidate.host) === label);
+  const branch = branches.find(
+    (candidate) => candidate.id !== undefined && candidate.id === endpoint?.branch_id,
+  );
+  return branch?.id ?? null;
+}
+
+/**
+ * The branch whose users this deployment can sign in — and therefore the one the delete runs on.
+ *
+ * Resolution order, and each step exists because the one before it could not answer:
+ *
+ *   1. **`NEON_BRANCH` naming a real branch** is the operator's explicit answer, and it is used —
+ *      but only when the auth host agrees. A label and a host pointing at different branches is a
+ *      misconfiguration, and deleting from either one would be a guess, so that case refuses and
+ *      names both.
+ *   2. **The auth host** (`branchOfAuthHost`) decides when the label names no branch — production's
+ *      `NEON_BRANCH=production` is exactly that case, and refusing there killed the deletion after
+ *      the project had already been named.
+ *   3. **The project's default branch** stays as the last answer, for a run with neither value set.
+ *      It is never used while a host is readable: the default is `main`, which on a demo deployment
+ *      is the wrong branch.
  */
 async function branchId(project: string): Promise<string> {
   const { status, body } = await neon("GET", `/projects/${encodeURIComponent(project)}/branches`);
@@ -519,20 +572,33 @@ async function branchId(project: string): Promise<string> {
       status,
     );
   }
-  const branches =
-    (body as { branches?: { id?: string; name?: string; default?: boolean }[] } | null)?.branches ??
-    [];
-  const named = process.env.NEON_BRANCH?.trim();
-  if (named !== undefined && named !== "") {
-    const match = branches.find((branch) => branch.name === named);
-    if (match?.id === undefined) {
+  const branches = (body as { branches?: BranchRow[] } | null)?.branches ?? [];
+  const named = process.env.NEON_BRANCH?.trim() ?? "";
+  const namedBranch = named === "" ? undefined : branches.find((row) => row.name === named);
+  const hostBranch = await branchOfAuthHost(project, branches);
+
+  if (namedBranch?.id !== undefined) {
+    if (hostBranch !== null && hostBranch !== namedBranch.id) {
+      const hostName = branches.find((row) => row.id === hostBranch)?.name ?? hostBranch;
       throw new AuthUserDeleteError(
-        `NEON_BRANCH names "${named}" and this project has no such branch`,
+        `NEON_BRANCH names "${named}" and NEON_AUTH_BASE_URL names "${hostName}" — the auth users live on one branch, so the deletion refuses to pick one`,
         status,
       );
     }
-    return match.id;
+    return namedBranch.id;
   }
+
+  if (hostBranch !== null) return hostBranch;
+
+  if (named !== "") {
+    throw new AuthUserDeleteError(
+      `NEON_BRANCH names "${named}" and this project has no such branch (it has: ${branches
+        .map((row) => row.name)
+        .join(", ")}), and NEON_AUTH_BASE_URL did not name one either`,
+      status,
+    );
+  }
+
   const fallback = branches.find((branch) => branch.default === true) ?? branches[0];
   if (fallback?.id === undefined) {
     throw new AuthUserDeleteError(`project ${project} has no branch to delete from`, status);

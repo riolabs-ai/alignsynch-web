@@ -1,0 +1,9 @@
+{
+  "pr": 1426,
+  "date": "2026-11-26",
+  "area": "account,ops",
+  "summary": "`NEON_PROJECT_ID` is a required env row sourced from `neon-endpoints.mjs::LIVE_PROJECT`, so `env:render` writes it; the purge resolves its branch from the `NEON_AUTH_BASE_URL` endpoint when `NEON_BRANCH` names none.",
+  "reader_impact": "Someone deleting their own account reaches the delete instead of an error after typing the confirmation phrase, and an operator is refused at `env:render` when the project id is missing rather than at the last step of a deletion.",
+  "specs": ["docs/reference/env-spec.md"],
+  "risk": "medium"
+}
