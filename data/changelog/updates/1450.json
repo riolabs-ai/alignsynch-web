@@ -1,5 +1,5 @@
 {
-  "pr": 1447,
+  "pr": 1450,
   "date": "2026-11-26",
   "area": "admin",
   "summary": "`/admin/settings` is a read-only integration directory: one card per provider, with the account handle per deployment, the console and docs addresses, and each variable it owns by source, presence and freshness — never a value.",
