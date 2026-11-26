@@ -126,12 +126,43 @@ from a prefix in a second place.
 
 **Status is four badges, each from one source:**
 
-| badge      | source                   | rule                                                                        |
-| ---------- | ------------------------ | --------------------------------------------------------------------------- |
-| `declared` | manifest                 | the row exists and the code reads it                                        |
-| `present`  | `env-stores.md` census   | the store holds the name for that scope                                     |
-| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                  |
-| `valid`    | **nothing yet**          | phase 2: a provider probe. An absent probe prints `not checked`, never `ok` |
+| badge      | source                   | rule                                                                                                                     |
+| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| `declared` | manifest                 | the row exists and the code reads it                                                                                     |
+| `present`  | `env-stores.md` census   | the store holds the name for that scope (`+` present · `o` present but empty · `·` absent · `?` store unread)            |
+| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                                                               |
+| `valid`    | census, for `vault` rows | the vault answered **and** the key resolves: `readable` / `empty` / `unreachable` — the census already records all three |
+
+**`vault` validity is observable offline, and that is the v1 answer to "BWS status".** The census is
+the only place the repo says whether the vault answered at all (`Vault: 28 secret(s) readable in
+project alignsynch-web`), whether a name resolved to an empty value (`o`) and whether the store could
+be read (`?`). An `unreachable` vault is a _fact about the token_, printed as such — not an `ok`.
+A **live provider** key check (does Resend accept this key) is not v1: it is a network call with a
+cache, a timeout and a rate limit, and it belongs to the phase-2 probes (§8.2). The page must never
+say `valid` about a non-vault value it has not asked a provider about.
+
+## 5a. The project-agnostic seam (`app/lib/pkg`)
+
+The brief asks for a deliverable that is not AlignSynch-shaped. The split is the one this page's
+files already make, stated as a rule:
+
+| generic — ships in the template                                   | project data — the template supplies                                         |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| the four badges and their precedence rules (`providers.ts`, pure) | `data/integrations.ts` — provider ids, labels, account handles, console URLs |
+| the provider-grouped layout, the matrix, the two honest panels    | `scripts/env-manifest.ts` — the rows                                         |
+| the pure/node split and the E34 guard                             | the census generator (`env-matrix`) and the rotation ledger                  |
+| the route `/admin/settings`, its gates and its tests              | which providers exist at all                                                 |
+
+Concretely: `lib/admin/settings/*` and `components/admin/settings/*` take the registry and the
+readings **as arguments** — no import reaches `data/integrations.ts` from the generic half. A
+template with one provider, or none, renders the same page with a smaller directory and an honest
+empty state (the `templates: []` doctrine from `AGENTS.md`: a new surface is registered generic and
+adopted, never deleted for being unused).
+
+**Why it is a file and not a table.** `data/integrations.ts` being data is what makes the surface
+project-agnostic in practice: the same registry can back `pnpm settings` (a Hermes-`doctor`-shaped
+CLI face) and the page, with no second copy and no schema — and it diffs, so a change is reviewable
+and portable to the next expression of the core.
 
 ## 6. Menus that move together — measured
 
