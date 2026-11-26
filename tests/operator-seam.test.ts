@@ -10,7 +10,7 @@
  *
  * What is asserted, in the order the ADR states it:
  *
- *   1. **the surface** — `lib/operator/routes.ts` names 23 page modules, every one of them is a
+ *   1. **the surface** — `lib/operator/routes.ts` names 24 page modules, every one of them is a
  *      file in this tree under `app/(mainlayout)/admin/`, and none of them is an excluded surface;
  *   2. **the arrow, operator → product** — no operator file imports `app/**` or a `components/**`
  *      module outside `components/{admin,ui,operator}/**`;
@@ -137,10 +137,10 @@ function format(violations: readonly { file: string; specifier: string; rule: st
 }
 
 describe("the operator surface is enumerated, not remembered", () => {
-  it("names 23 page modules serving 23 URLs", () => {
-    expect(OPERATOR_ROUTES.length).toBe(23);
-    expect(new Set(OPERATOR_PAGE_FILES).size).toBe(23);
-    expect(new Set(OPERATOR_ROUTES.map((route) => route.path)).size).toBe(23);
+  it("names 24 page modules serving 24 URLs", () => {
+    expect(OPERATOR_ROUTES.length).toBe(24);
+    expect(new Set(OPERATOR_PAGE_FILES).size).toBe(24);
+    expect(new Set(OPERATOR_ROUTES.map((route) => route.path)).size).toBe(24);
   });
 
   it("every named page module is a file in this tree, under the admin subtree", () => {
@@ -265,7 +265,7 @@ describe("the read contract", () => {
       "specFacts",
       "templateVersionFacts",
     ]);
-    expect(read.routeFacts().length).toBe(23);
+    expect(read.routeFacts().length).toBe(24);
   });
 
   it("answers a missing register as a value, not an exception", () => {

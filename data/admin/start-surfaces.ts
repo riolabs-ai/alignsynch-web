@@ -42,6 +42,16 @@ export const ADMIN_START_SURFACES: readonly AdminStartSurface[] = [
     note: "The last recorded gate, release and deployment measurements, and the alarm when they disagree.",
   },
   {
+    // #1443 — "is the platform up" (health) is followed by "is the platform wired": one card per
+    // provider, the variables each owns with source and status only, and where a change happens.
+    // The door exists beside the shared submenu's pill because the landing is where an operator
+    // looks for a surface they have not used yet; the wider reorganisation is a second card.
+    id: "settings",
+    href: "/admin/settings",
+    title: "Settings",
+    note: "Every integration this deployment depends on, the variables each owns, and where a change happens.",
+  },
+  {
     id: "instances",
     href: "/admin/instances",
     title: "Relationships",

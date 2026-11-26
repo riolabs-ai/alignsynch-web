@@ -65,6 +65,7 @@ import {
   quizProductShipped,
 } from "@/lib/brand-boundary";
 import { isEnabled, envNameFor } from "@/lib/flags";
+import { OPERATOR_ROUTES } from "@/lib/operator/routes";
 
 /**
  * The brand this process is. Set by `scripts/parity.mjs`, alongside `BRAND` — which is what
@@ -784,10 +785,11 @@ describe("brand parity", () => {
         ).not.toContain(pattern);
       }
 
-      // The set is the issue's twenty-three, not a number that drifts: a route added here without a
-      // call site is what the loop above catches, and a duplicate is what the size check does.
-      expect(OPERATOR_PATTERNS).toHaveLength(23);
-      expect(new Set(OPERATOR_PATTERNS).size).toBe(23);
+      // The set is the operator route table's own set, not a number that drifts: a route added
+      // there without a call site is what the loop above catches, a duplicate is what the size
+      // check does, and the table's count is pinned once, in `tests/operator-seam.test.ts`.
+      expect(OPERATOR_PATTERNS).toHaveLength(OPERATOR_ROUTES.length);
+      expect(new Set(OPERATOR_PATTERNS).size).toBe(OPERATOR_ROUTES.length);
     });
 
     /**

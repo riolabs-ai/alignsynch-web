@@ -27,7 +27,7 @@
  */
 
 /** The pages this row is about. A closed union, so a page cannot pass a handle that is not a row. */
-export type AdminSubmenuId = "start" | "console" | "instances" | "health" | "audit";
+export type AdminSubmenuId = "start" | "console" | "instances" | "health" | "settings" | "audit";
 
 /** One pill: where it goes, and the name that page prints for itself. */
 export interface AdminSubmenuLink {
@@ -51,6 +51,10 @@ export const ADMIN_SUBMENU_LINKS: readonly AdminSubmenuLink[] = [
   { id: "console", href: "/admin/console", label: "Admin Console" },
   { id: "instances", href: "/admin/instances", label: "Relationships" },
   { id: "health", href: "/admin/health", label: "Platform health" },
+  // #1443 — the integration directory sits between the platform's health and its audit log: "is the
+  // platform up", then "is the platform wired", then "what changed". One pill, and the dashboard's own
+  // door beside it; moving more navigation than that is a second card.
+  { id: "settings", href: "/admin/settings", label: "Settings" },
   { id: "audit", href: "/admin/audit", label: "Audit log" },
 ];
 

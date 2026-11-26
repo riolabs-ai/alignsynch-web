@@ -116,6 +116,9 @@ const rows: readonly SurfaceColumn[] = [
   // band that could have been wide stays at the console's width like every other admin page.
   { path: "/admin/growth", mode: "column" },
   { path: "/admin/health", mode: "column" },
+  // #1443 — the integration directory. `column` like every other admin page: the cards are a stack
+  // inside the console's own width, not a wide band.
+  { path: "/admin/settings", mode: "column" },
   { path: "/admin/inbox", mode: "column" },
   { path: "/admin/instances", mode: "column" },
   { path: "/admin/instances/[id]", mode: "column" },

@@ -48,6 +48,7 @@ import AdminReportPage from "@/app/(mainlayout)/admin/instances/[id]/report/page
 import AdminSessionsPage from "@/app/(mainlayout)/admin/instances/page";
 import AdminPermissionsPage from "@/app/(mainlayout)/admin/permissions/page";
 import AdminReviewPage from "@/app/(mainlayout)/admin/review/page";
+import AdminSettingsPage from "@/app/(mainlayout)/admin/settings/page";
 import AdminSpecPage from "@/app/(mainlayout)/admin/spec/page";
 import AdminSpecGroupPage from "@/app/(mainlayout)/admin/spec/[group]/page";
 import AdminSpecValidationPage from "@/app/(mainlayout)/admin/spec/validation/page";
@@ -340,7 +341,7 @@ export const ADMIN_PRODUCT_PATTERNS: readonly string[] = adminProductRoutes.map(
  *
  * The same status question as the two lists above, for the capability that sits *beside*
  * `product.admin`: a build can have a console and no back office. The table is the issue's §2.2 set
- * (23 page modules) and it is the one machine-readable home for it — the parity block below reads
+ * (24 page modules, #1443 added the settings directory) and it is the one machine-readable home for it — the parity block below reads
  * it, and the phase-1 PR's `curl` table was generated from it, so the list cannot drift from what
  * was proven.
  *
@@ -367,7 +368,8 @@ export type OperatorRoute = {
 };
 
 /**
- * The twenty-three routes, in the order the issue's §2.2 table names them.
+ * The twenty-four routes, in the order the issue's §2.2 table names them; `/admin/settings` was added
+ * by #1443 and sits where the route lives in the directory walk.
  *
  * `/admin/brand` is here even though it answers 404 on `quizhub` for an unrelated reason
  * (`requireAlignmentProduct()`, #906) — it belongs to the operator set and closes with it; the two
@@ -420,6 +422,10 @@ export const operatorRoutes: readonly OperatorRoute[] = [
   },
   { route: "/admin/permissions", page: AdminPermissionsPage as unknown as ParityPage, params: {} },
   { route: "/admin/review", page: AdminReviewPage as unknown as ParityPage, params: {} },
+  // #1443 — the integration directory. `product.operator` is the capability that closes it (the page
+  // calls `requireAdminProduct()` first, then `requireOperator()`), which is why it is listed here
+  // rather than in `adminProductRoutes`: a build can claim the console and not the operator tooling.
+  { route: "/admin/settings", page: AdminSettingsPage as unknown as ParityPage, params: {} },
   { route: "/admin/spec", page: AdminSpecPage as unknown as ParityPage, params: {} },
   {
     route: "/admin/spec/[group]",

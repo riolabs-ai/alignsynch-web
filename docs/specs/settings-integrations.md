@@ -6,8 +6,18 @@
 
 <!-- docs-nav:end -->
 
-Status: **initial spec, not built.** Scope is deliberately one screen and one data file. Issue:
-to be filed from this page (feature.md headings below).
+Status: **built** — `/admin/settings` ships with issue #1443. Scope was deliberately one screen and
+one data file, and stayed that way; what §11 names is still deferred. Two notes where the build
+settled an open point, both recorded here rather than in a card:
+
+- **§4 carries an eighth card, `repo`.** The seven vendor accounts cannot be total over the table: a
+  literal (`BRAND`), a derived value (`APP_VERSION`) and a tooling knob (`PARITY_UPDATE`) have no
+  vendor console at all. Rather than drop them (a row with no account is the silence §5 refuses),
+  they get a card whose console **is** the manifest row in this tree — which is exactly the answer §4
+  band 4 already gives for a `literal` source.
+- **§4 band 2 is folded into band 1.** The matrix and the cards carry the same eight facts per
+  variable, and drawing both would be a second table of the same variables — the thing §7 forbids.
+  The card is the table: `name · source · local · preview · production · freshness · validity`.
 
 ## 1. The decision
 
@@ -36,14 +46,14 @@ This is the reason v1 is small: the hard half is already built and gated.
 
 | Capability                              | Home                                                                           | Gate                                       | Measured                                                                                 |
 | --------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Every variable, its env, its source     | `scripts/env-manifest.ts` (one table)                                          | `pnpm env:check` in **every** lane         | 45 declared · 3 `boot` · 63 out of scope · 82 names read across 1374 files               |
+| Every variable, its env, its source     | `scripts/env-manifest.ts` (one table)                                          | `pnpm env:check` in **every** lane         | 51 declared · 3 `boot` · 85 out of scope · 113 names read across 1684 files              |
 | Where each value actually lands         | `docs/operations/env-stores.md` (generated)                                    | `pnpm env:matrix --check` (local only)     | 50 names × 9 stores · 28 vault secrets · 6 vault keys no row names · 14 rows in no store |
 | Stale credentials                       | `data/env/rotations.json` + `scripts/env-drift.mjs`                            | `release:preflight` refuses the cut        | 4 rotation sets; names + dates only, never a value                                       |
 | Platform status                         | `/admin/health` → `lib/admin/platform-health.ts`                               | `requireAdminProduct()` + `requireAdmin()` | read-only, `Measured<T>`, live-vs-recorded split                                         |
 | Reads a markdown matrix at request time | `/admin/permissions` → `lib/admin/{crud-matrix,crud-matrix-file}.ts`           | same two gates                             | the pure/node split is the E34-safe pattern to copy                                      |
 | Admin writes with audit                 | `lib/admin/act.ts`                                                             | role read `FOR SHARE` in the writing txn   | one entry point, `before`/`after`, audit last                                            |
 | Roles                                   | `content/identity.ts` (`owner`/`admin`/`support`/…), `lib/admin/act.ts` floors | —                                          | —                                                                                        |
-| Route registration                      | `lib/operator/routes.ts` — 23 routes, page module per row                      | `tests/operator-seam.test.ts`              | widening is a red test                                                                   |
+| Route registration                      | `lib/operator/routes.ts` — 24 routes, page module per row                      | `tests/operator-seam.test.ts`              | widening is a red test                                                                   |
 
 **So the gap is not a table. The gap is a directory.** Nothing in the repo says, in one place, that
 `NEON_OBJSTORE_*` and `NEON_AUTH_COOKIE_SECRET` are the _same vendor with two consoles_, or that
@@ -85,6 +95,7 @@ credential inventory that does not exist yet.
 | `github` | GitHub                    | agent   | API       | `alignsynch-fleet` App, `GH_FEEDBACK_TOKEN`, feedback→issue |
 | `google` | Google                    | human   | webhook   | OAuth client — **configured in Neon Auth, not in env**      |
 | `stripe` | Stripe                    | service | webhook   | test keys per key-set, webhook secret                       |
+| `repo`   | This repository           | agent   | git       | literals, derived values and tooling knobs — no vendor      |
 
 Each card carries: account handle + console link (from `data/integrations.ts`), a count line
 (`11 variables · 9 in vault · 0 stale · 0 absent`), the environment chips, and every variable it owns
@@ -126,12 +137,12 @@ from a prefix in a second place.
 
 **Status is four badges, each from one source:**
 
-| badge      | source                   | rule                                                                                                                     |
-| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
-| `declared` | manifest                 | the row exists and the code reads it                                                                                     |
-| `present`  | `env-stores.md` census   | the store holds the name for that scope (`+` present · `o` present but empty · `·` absent · `?` store unread)            |
-| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                                                               |
-| `valid`    | census, for `vault` rows | the vault answered **and** the key resolves: `readable` / `empty` / `unreachable` — the census already records all three |
+| badge      | source                   | rule                                                                                                                                                                                                                |
+| ---------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `declared` | manifest                 | the row exists and the code reads it                                                                                                                                                                                |
+| `present`  | `env-stores.md` census   | the store holds the name for that scope (`+` present · `o` present but empty · `·` absent · `?` store unread)                                                                                                       |
+| `fresh`    | `rotations.json` + drift | its `updatedAt` is not before the rotation that governs it                                                                                                                                                          |
+| `valid`    | census, for `vault` rows | the vault answered **and** the key resolves: `readable` / `present, empty` / `vault unread` / `not in the vault` — a measurement carrying the census's date, and `not measured` when no census was read. Never `ok` |
 
 **`vault` validity is observable offline, and that is the v1 answer to "BWS status".** The census is
 the only place the repo says whether the vault answered at all (`Vault: 28 secret(s) readable in
@@ -234,7 +245,7 @@ says so), and widening it to all 16 doors is the duplicate navigation that file 
 
 ```bash
 bash scripts/verify.sh                 # green in every lane it runs
-pnpm env:check                         # census unchanged: 45 declared, 0 unresolved
+pnpm env:check                         # census unchanged: 51 declared, 0 unresolved
 curl -s -o /dev/null -w '%{http_code}' localhost:3000/admin/settings   # 307 → /login signed out
 # signed in as support:  404
 # signed in as admin:    200, and the HTML contains no value from any .env file

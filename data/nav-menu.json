@@ -235,6 +235,10 @@
       "reason": "The growth model (#1095) — a screen charting a simulated business, kept by the owner's ruling and drawn by no rail row. Family: operator analytics, deliberately URL-only; this entry is where the ruling is written down."
     },
     {
+      "href": "/admin/settings",
+      "reason": "The integration directory (#1443) — one card per provider, reached from the shared submenu's Settings pill and from the admin landing's own door. Family: the operator surfaces whose second door is the pill row; a rail row beside Platform health would be a third door to one screen, and the wider nav reorganisation is a card of its own."
+    },
+    {
       "href": "/admin/templates",
       "reason": "An operator authoring tree — the alignment product's template list, admin-gated, reached from the console hub. Family: the console's subtree, which is older than the hub's own three children."
     },

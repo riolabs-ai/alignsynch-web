@@ -97,6 +97,12 @@ import { fileURLToPath } from "node:url";
 
 import { LIVE_PROJECT } from "./neon-endpoints.mjs";
 
+/**
+ * The account an id names. Type-only: this module runs under plain `node` (type stripping erases
+ * the import), and the registry is `data/` so the app and the gate read one list (#1443).
+ */
+import type { ProviderId } from "../data/integrations";
+
 /** The repo root, from this module's own location (`.datacheck/scripts/` included). */
 export const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -140,6 +146,18 @@ export interface EnvRow {
   readonly sources?: Partial<Record<EnvironmentId, Source>>;
   /** One line: what reads it, or why the row exists. */
   readonly why: string;
+  /**
+   * The account that owns the value — an id from `data/integrations.ts`, which is where the
+   * account, the console address and the actor live (#1443).
+   *
+   * **Optional, and total at runtime instead.** A field the compiler required would mean every
+   * synthetic row in `tests/env-manifest.test.ts` had to carry one to test an unrelated rule, and
+   * the rows that matter are the ones in this table. So `owned()` below is how a section states its
+   * provider, and `lib/admin/settings/providers.ts::providerOf` is what refuses a row that names
+   * none or names an id the registry does not have — by name, never by falling into a "general"
+   * bucket. `tests/admin-settings-providers.test.ts` holds both directions over the real table.
+   */
+  readonly provider?: ProviderId;
 }
 
 /**
@@ -153,6 +171,8 @@ export interface OutOfScopeRow {
   readonly name: string;
   readonly why: string;
   readonly carry?: boolean;
+  /** The account that owns the name — the same field, and the same rule, as `EnvRow`'s (#1443). */
+  readonly provider?: ProviderId;
 }
 
 const row = (
@@ -199,6 +219,23 @@ const split = (
 const carried: Source = { carried: true };
 
 /**
+ * Stamp every row of a section with the account that owns it (#1443).
+ *
+ * The provider is declared **per contiguous run of rows**, not per row, because the table is
+ * already grouped by the subsystem that reads it and a subsystem belongs to one account: the
+ * database block is Neon's, the mail block is Resend's. A section that genuinely splits (the forms
+ * block holds one GitHub row among the app's own) is written as two runs, which is the honest shape
+ * — and it keeps a 51-row edit from being 51 one-word diffs nobody reviews.
+ *
+ * A row added outside any run carries no `provider`, and `providerOf` refuses it by name. That is
+ * the deliberate failure: silence would put a variable on a screen with no account, and every
+ * later reader would assume it had none.
+ */
+function owned<T extends { name: string }>(provider: ProviderId, rows: readonly T[]): T[] {
+  return rows.map((entry) => ({ ...entry, provider }));
+}
+
+/**
  * Every variable the application reads, one row each.
  *
  * Grouped by the subsystem that reads it, in the order a reader needs them: the database and auth
@@ -206,380 +243,407 @@ const carried: Source = { carried: true };
  */
 export const ENV_ROWS: readonly EnvRow[] = [
   // --- Database -------------------------------------------------------------------------------
-  split(
-    "DATABASE_URL",
-    ["required", "required", "required"],
-    [
-      { vault: "ALIGNSYNCH_DEMO_DATABASE_URL" },
-      { vault: "ALIGNSYNCH_DEMO_DATABASE_URL" },
-      { vault: "ALIGNSYNCH_PROD_DATABASE_URL" },
-    ],
-    "The pooled connection string every runtime read opens (lib/db/client.ts). Production's own " +
-      "string is a separate vault row, so a production render can never inherit the demo's.",
-    true,
-  ),
-  split(
-    "DATABASE_URL_UNPOOLED",
-    ["required", "required", "required"],
-    [
-      { vault: "ALIGNSYNCH_DEMO_DATABASE_URL_UNPOOLED" },
-      { vault: "ALIGNSYNCH_DEMO_DATABASE_URL_UNPOOLED" },
-      { vault: "ALIGNSYNCH_PROD_DATABASE_URL_UNPOOLED" },
-    ],
-    "Direct URL for migrations and seeds — DDL transactions do not belong behind the pooler.",
-  ),
-  row(
-    "NEON_BRANCH",
-    ["optional", "optional", "optional"],
-    carried,
-    "Informational: the branch a URL points at, printed by the db:* scripts.",
-  ),
-  row(
-    "NEON_PROJECT_ID",
-    ["required", "required", "required"],
-    { literal: LIVE_PROJECT },
-    "The project the account purge deletes a managed-auth user from (lib/account/purge.ts). One " +
-      "project holds every branch — production's `main` and the `demo` — so the id is the same in " +
-      "all three environments, which is why it is a literal and not a carried value.",
-  ),
-  row(
-    "NEON_API_KEY",
-    ["optional", "optional", "optional"],
-    { vault: "ALIGNSYNCH_NEON_API_KEY" },
-    "Deletes a deleted account's managed-auth user (#278); absent means the scrub is skipped.",
-  ),
+  ...owned("neon", [
+    split(
+      "DATABASE_URL",
+      ["required", "required", "required"],
+      [
+        { vault: "ALIGNSYNCH_DEMO_DATABASE_URL" },
+        { vault: "ALIGNSYNCH_DEMO_DATABASE_URL" },
+        { vault: "ALIGNSYNCH_PROD_DATABASE_URL" },
+      ],
+      "The pooled connection string every runtime read opens (lib/db/client.ts). Production's own " +
+        "string is a separate vault row, so a production render can never inherit the demo's.",
+      true,
+    ),
+    split(
+      "DATABASE_URL_UNPOOLED",
+      ["required", "required", "required"],
+      [
+        { vault: "ALIGNSYNCH_DEMO_DATABASE_URL_UNPOOLED" },
+        { vault: "ALIGNSYNCH_DEMO_DATABASE_URL_UNPOOLED" },
+        { vault: "ALIGNSYNCH_PROD_DATABASE_URL_UNPOOLED" },
+      ],
+      "Direct URL for migrations and seeds — DDL transactions do not belong behind the pooler.",
+    ),
+    row(
+      "NEON_BRANCH",
+      ["optional", "optional", "optional"],
+      carried,
+      "Informational: the branch a URL points at, printed by the db:* scripts.",
+    ),
+    row(
+      "NEON_PROJECT_ID",
+      ["required", "required", "required"],
+      { literal: LIVE_PROJECT },
+      "The project the account purge deletes a managed-auth user from (lib/account/purge.ts). One " +
+        "project holds every branch — production's `main` and the `demo` — so the id is the same in " +
+        "all three environments, which is why it is a literal and not a carried value.",
+    ),
+    row(
+      "NEON_API_KEY",
+      ["optional", "optional", "optional"],
+      { vault: "ALIGNSYNCH_NEON_API_KEY" },
+      "Deletes a deleted account's managed-auth user (#278); absent means the scrub is skipped.",
+    ),
+  ]),
 
   // --- Auth (Neon Managed Better Auth) --------------------------------------------------------
-  split(
-    "NEON_AUTH_BASE_URL",
-    ["required", "required", "required"],
-    [
-      { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_BASE_URL" },
-      { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_BASE_URL" },
-      { vault: "ALIGNSYNCH_PROD_NEON_AUTH_BASE_URL" },
-    ],
-    "The auth service's base URL; without it /api/auth and every gated page answer 500 by name.",
-    true,
-  ),
-  split(
-    "NEON_AUTH_COOKIE_SECRET",
-    ["required", "required", "required"],
-    [
-      { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_COOKIE_SECRET" },
-      { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_COOKIE_SECRET" },
-      { vault: "ALIGNSYNCH_PROD_NEON_AUTH_COOKIE_SECRET" },
-    ],
-    "Signs the session cookie and, domain-separated, the demo unlock and form-guard tokens.",
-    true,
-  ),
+  ...owned("neon", [
+    split(
+      "NEON_AUTH_BASE_URL",
+      ["required", "required", "required"],
+      [
+        { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_BASE_URL" },
+        { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_BASE_URL" },
+        { vault: "ALIGNSYNCH_PROD_NEON_AUTH_BASE_URL" },
+      ],
+      "The auth service's base URL; without it /api/auth and every gated page answer 500 by name.",
+      true,
+    ),
+    split(
+      "NEON_AUTH_COOKIE_SECRET",
+      ["required", "required", "required"],
+      [
+        { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_COOKIE_SECRET" },
+        { vault: "ALIGNSYNCH_DEMO_NEON_AUTH_COOKIE_SECRET" },
+        { vault: "ALIGNSYNCH_PROD_NEON_AUTH_COOKIE_SECRET" },
+      ],
+      "Signs the session cookie and, domain-separated, the demo unlock and form-guard tokens.",
+      true,
+    ),
+  ]),
 
   // --- Admin ----------------------------------------------------------------------------------
-  row(
-    "ADMIN_EMAILS",
-    ["optional", "forbidden", "required"],
-    carried,
-    "The operator allowlist. Forbidden on the demo: that target is signed into by demo identities.",
-  ),
-  row(
-    "ADMIN_01_EMAIL",
-    ["required", "optional", "forbidden"],
-    carried,
-    "A seeded platform admin's address, read by db:seed through its numbered loop.",
-  ),
-  row(
-    "ADMIN_01_PASS",
-    ["required", "optional", "forbidden"],
-    carried,
-    "That seat's password. Never synced to production — a production seat is provisioned, not seeded.",
-  ),
-  row(
-    "ADMIN_02_EMAIL",
-    ["required", "optional", "forbidden"],
-    carried,
-    "The second seeded platform admin's address.",
-  ),
-  row(
-    "ADMIN_02_PASS",
-    ["required", "optional", "forbidden"],
-    carried,
-    "The second seat's password.",
-  ),
+  ...owned("neon", [
+    row(
+      "ADMIN_EMAILS",
+      ["optional", "forbidden", "required"],
+      carried,
+      "The operator allowlist. Forbidden on the demo: that target is signed into by demo identities.",
+    ),
+    row(
+      "ADMIN_01_EMAIL",
+      ["required", "optional", "forbidden"],
+      carried,
+      "A seeded platform admin's address, read by db:seed through its numbered loop.",
+    ),
+    row(
+      "ADMIN_01_PASS",
+      ["required", "optional", "forbidden"],
+      carried,
+      "That seat's password. Never synced to production — a production seat is provisioned, not seeded.",
+    ),
+    row(
+      "ADMIN_02_EMAIL",
+      ["required", "optional", "forbidden"],
+      carried,
+      "The second seeded platform admin's address.",
+    ),
+    row(
+      "ADMIN_02_PASS",
+      ["required", "optional", "forbidden"],
+      carried,
+      "The second seat's password.",
+    ),
+  ]),
 
   // --- Demo mode ------------------------------------------------------------------------------
-  row(
-    "DEMO_AUTH",
-    ["optional", "required", "forbidden"],
-    { literal: "1" },
-    "Mounts /demo. Forbidden in production: the PIN panel must not exist on the real product.",
-  ),
-  row(
-    "DEMO_PIN",
-    ["required", "required", "forbidden"],
-    carried,
-    "The PIN the demo panel accepts; DEMO_AUTH=1 without it is not demo mode.",
-  ),
-  row(
-    "DEMO_ALLOW_PRODUCTION",
-    ["optional", "optional", "forbidden"],
-    undefined,
-    "The escape hatch that would mount /demo in production. Never set on the real product.",
-  ),
+  ...owned("repo", [
+    row(
+      "DEMO_AUTH",
+      ["optional", "required", "forbidden"],
+      { literal: "1" },
+      "Mounts /demo. Forbidden in production: the PIN panel must not exist on the real product.",
+    ),
+    row(
+      "DEMO_PIN",
+      ["required", "required", "forbidden"],
+      carried,
+      "The PIN the demo panel accepts; DEMO_AUTH=1 without it is not demo mode.",
+    ),
+    row(
+      "DEMO_ALLOW_PRODUCTION",
+      ["optional", "optional", "forbidden"],
+      undefined,
+      "The escape hatch that would mount /demo in production. Never set on the real product.",
+    ),
+  ]),
 
   // --- Email ----------------------------------------------------------------------------------
-  row(
-    "RESEND_API_KEY",
-    ["optional", "optional", "optional"],
-    { vault: "ALIGNSYNCH_RESEND_API_KEY" },
-    "Mail is attempted only when this is set; its absence is reported, never a crash.",
-  ),
-  row(
-    "RESEND_FROM",
-    ["optional", "optional", "optional"],
-    carried,
-    "The From address; falls back to Resend's development sender when unset.",
-  ),
-  row(
-    "RESEND_WEBHOOK_SECRET",
-    ["optional", "forbidden", "optional"],
-    carried,
-    "Signs POST /api/resend/webhook, whose endpoint alignsynch.com owns. Forbidden on preview: the demo deployment must not hold the account endpoint's secret, and it answers 410 by identity instead (#1338).",
-  ),
-  row(
-    "RESEND_ENDPOINT",
-    ["optional", "optional", "optional"],
-    carried,
-    "Points a send at a capture server instead of Resend (`mailEndpoint`); unset means Resend's own.",
-  ),
-  row(
-    "RESEND_KEY_MODE",
-    ["optional", "optional", "optional"],
-    carried,
-    "Forces the mail key's mode (lib/email/key-mode.ts) — `test` or `captured`, so a send is refused.",
-  ),
+  ...owned("resend", [
+    row(
+      "RESEND_API_KEY",
+      ["optional", "optional", "optional"],
+      { vault: "ALIGNSYNCH_RESEND_API_KEY" },
+      "Mail is attempted only when this is set; its absence is reported, never a crash.",
+    ),
+    row(
+      "RESEND_FROM",
+      ["optional", "optional", "optional"],
+      carried,
+      "The From address; falls back to Resend's development sender when unset.",
+    ),
+    row(
+      "RESEND_WEBHOOK_SECRET",
+      ["optional", "forbidden", "optional"],
+      carried,
+      "Signs POST /api/resend/webhook, whose endpoint alignsynch.com owns. Forbidden on preview: the demo deployment must not hold the account endpoint's secret, and it answers 410 by identity instead (#1338).",
+    ),
+    row(
+      "RESEND_ENDPOINT",
+      ["optional", "optional", "optional"],
+      carried,
+      "Points a send at a capture server instead of Resend (`mailEndpoint`); unset means Resend's own.",
+    ),
+    row(
+      "RESEND_KEY_MODE",
+      ["optional", "optional", "optional"],
+      carried,
+      "Forces the mail key's mode (lib/email/key-mode.ts) — `test` or `captured`, so a send is refused.",
+    ),
+  ]),
 
   // --- Brand and build ------------------------------------------------------------------------
-  row(
-    "BRAND",
-    ["required", "required", "required"],
-    { literal: "alignsynch" },
-    "One tree, two builds. Both deployments here are the AlignSynch record.",
-  ),
-  row(
-    "APP_VERSION",
-    ["optional", "optional", "optional"],
-    { derived: "package.json:version" },
-    "Rendered in the shell and reported by /api/version. next.config.mjs injects it from " +
-      "package.json at build time, so no deployment sets it; a render still writes the same value.",
-  ),
-  row(
-    "APP_COMMIT",
-    ["optional", "optional", "optional"],
-    { derived: "git:commit" },
-    "The commit a build reports; falls back to VERCEL_GIT_COMMIT_SHA when unset.",
-  ),
-  split(
-    "NEXT_PUBLIC_BASE_URL",
-    ["optional", "optional", "optional"],
-    [
-      { literal: "http://localhost:3000" },
-      { literal: "https://demo.alignsynch.com" },
-      { literal: "https://alignsynch.com" },
-    ],
-    "The origin every flow link and email is built from. No trailing slash.",
-  ),
-  row(
-    "NAV_SOURCE",
-    ["optional", "optional", "optional"],
-    { literal: "both" },
-    "What the rail reconciles against (#862): `document`, `derived` or `both`. A build-time switch " +
-      "inlined through next.config.mjs's env block — `derived` builds the rail from the tree alone, " +
-      "which is the truth test; a deployment never sets it.",
-  ),
+  ...owned("repo", [
+    row(
+      "BRAND",
+      ["required", "required", "required"],
+      { literal: "alignsynch" },
+      "One tree, two builds. Both deployments here are the AlignSynch record.",
+    ),
+    row(
+      "APP_VERSION",
+      ["optional", "optional", "optional"],
+      { derived: "package.json:version" },
+      "Rendered in the shell and reported by /api/version. next.config.mjs injects it from " +
+        "package.json at build time, so no deployment sets it; a render still writes the same value.",
+    ),
+    row(
+      "APP_COMMIT",
+      ["optional", "optional", "optional"],
+      { derived: "git:commit" },
+      "The commit a build reports; falls back to VERCEL_GIT_COMMIT_SHA when unset.",
+    ),
+    split(
+      "NEXT_PUBLIC_BASE_URL",
+      ["optional", "optional", "optional"],
+      [
+        { literal: "http://localhost:3000" },
+        { literal: "https://demo.alignsynch.com" },
+        { literal: "https://alignsynch.com" },
+      ],
+      "The origin every flow link and email is built from. No trailing slash.",
+    ),
+    row(
+      "NAV_SOURCE",
+      ["optional", "optional", "optional"],
+      { literal: "both" },
+      "What the rail reconciles against (#862): `document`, `derived` or `both`. A build-time switch " +
+        "inlined through next.config.mjs's env block — `derived` builds the rail from the tree alone, " +
+        "which is the truth test; a deployment never sets it.",
+    ),
+  ]),
 
   // --- Forms and docs -------------------------------------------------------------------------
-  row(
-    "CONTACT_IP_SALT",
-    ["optional", "optional", "optional"],
-    carried,
-    "Salts the contact form's hashed client IP; the guard degrades honestly when unset.",
-  ),
-  row(
-    "FORM_GUARD_SECRET",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Optional override: the fill-token MAC falls back to NEON_AUTH_COOKIE_SECRET, then CONTACT_IP_SALT.",
-  ),
-  row(
-    "GH_FEEDBACK_TOKEN",
-    ["optional", "optional", "optional"],
-    { vault: "ALIGNSYNCH_GH_FEEDBACK_TOKEN" },
-    "Files a docs-feedback issue. Unset means the feedback is stored and no issue is opened.",
-  ),
-  // The docs publish boundary (#1398). All three are optional and all three default to today's
-  // behaviour: a deployment that sets nothing reads `docs/` from the checkout, which is what every
-  // screen did before the switch existed.
-  row(
-    "DOCS_SOURCE",
-    ["optional", "optional", "optional"],
-    { literal: "local" },
-    "Where /admin/docs reads the tree from (#1398): `local` (the checkout's docs/, the default) or " +
-      "`bundle` (a published docs.tar.zst named by DOCS_BUNDLE_DIR). Anything else is `local`.",
-  ),
-  row(
-    "DOCS_BUNDLE_DIR",
-    ["optional", "optional", "optional"],
-    undefined,
-    "The directory holding docs.tar.zst and manifest.json when DOCS_SOURCE=bundle (#1398); opened " +
-      "once at start, never per request, and verified against its manifest before it is read.",
-  ),
-  row(
-    "DOCS_BUNDLE_CACHE",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Where a published docs bundle is unpacked and verified (#1398); defaults to the OS temp " +
-      "directory, keyed by the archive's own sha256.",
-  ),
+  ...owned("repo", [
+    row(
+      "CONTACT_IP_SALT",
+      ["optional", "optional", "optional"],
+      carried,
+      "Salts the contact form's hashed client IP; the guard degrades honestly when unset.",
+    ),
+    row(
+      "FORM_GUARD_SECRET",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Optional override: the fill-token MAC falls back to NEON_AUTH_COOKIE_SECRET, then CONTACT_IP_SALT.",
+    ),
+  ]),
+
+  // GitHub owns one row in this block (#1443): the token that files a docs-feedback issue.
+  ...owned("github", [
+    row(
+      "GH_FEEDBACK_TOKEN",
+      ["optional", "optional", "optional"],
+      { vault: "ALIGNSYNCH_GH_FEEDBACK_TOKEN" },
+      "Files a docs-feedback issue. Unset means the feedback is stored and no issue is opened.",
+    ),
+  ]),
+
+  ...owned("repo", [
+    // The docs publish boundary (#1398). All three are optional and all three default to today's
+    // behaviour: a deployment that sets nothing reads `docs/` from the checkout, which is what every
+    // screen did before the switch existed.
+    row(
+      "DOCS_SOURCE",
+      ["optional", "optional", "optional"],
+      { literal: "local" },
+      "Where /admin/docs reads the tree from (#1398): `local` (the checkout's docs/, the default) or " +
+        "`bundle` (a published docs.tar.zst named by DOCS_BUNDLE_DIR). Anything else is `local`.",
+    ),
+    row(
+      "DOCS_BUNDLE_DIR",
+      ["optional", "optional", "optional"],
+      undefined,
+      "The directory holding docs.tar.zst and manifest.json when DOCS_SOURCE=bundle (#1398); opened " +
+        "once at start, never per request, and verified against its manifest before it is read.",
+    ),
+    row(
+      "DOCS_BUNDLE_CACHE",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Where a published docs bundle is unpacked and verified (#1398); defaults to the OS temp " +
+        "directory, keyed by the archive's own sha256.",
+    ),
+  ]),
 
   // --- Platform health ------------------------------------------------------------------------
-  row(
-    "PLATFORM_HEALTH_DRIFT_LIMIT",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Overrides the drift threshold /admin/health judges the platform record against.",
-  ),
-  row(
-    "PLATFORM_HEALTH_FRESHNESS_HOURS",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Overrides the age after which the platform record reads stale.",
-  ),
+  ...owned("repo", [
+    row(
+      "PLATFORM_HEALTH_DRIFT_LIMIT",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Overrides the drift threshold /admin/health judges the platform record against.",
+    ),
+    row(
+      "PLATFORM_HEALTH_FRESHNESS_HOURS",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Overrides the age after which the platform record reads stale.",
+    ),
+  ]),
 
   // --- Billing --------------------------------------------------------------------------------
-  row(
-    "BILLING_PROVIDER",
-    ["optional", "optional", "optional"],
-    carried,
-    "mock (default, keyless) or stripe. Unset is the demo adapter and still boots.",
-  ),
-  split(
-    "BILLING_HOST",
-    ["required", "required", "required"],
-    [
-      { vault: "ALIGNSYNCH_DEMO_BILLING_HOST" },
-      { vault: "ALIGNSYNCH_DEMO_BILLING_HOST" },
-      { vault: "ALIGNSYNCH_PROD_BILLING_HOST" },
-    ],
-    "alignsynch or demo — the host claim a checkout stamps and a webhook filters on. No default.",
-  ),
-  row(
-    "BILLING_KEY_SET",
-    ["required", "required", "required"],
-    { vault: "ALIGNSYNCH_BILLING_KEY_SET" },
-    "Names which key set the adapter reads, whole or not at all. One vault row: the value is " +
-      "environment-invariant, so a render cannot switch accounts between deployments.",
-  ),
-  row(
-    "STRIPE_API_VERSION",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Pins the Stripe-Version header. Unset uses the constant in lib/billing/adapters/stripe.ts.",
-  ),
-  row(
-    "STRIPE_VENTURE_TEST_SECRET_KEY",
-    ["required", "required", "required"],
-    { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_KEY" },
-    "A key-set member (BILLING_KEY_SET=ventureio-test). Test mode only; the adapter refuses a live key.",
-  ),
-  row(
-    "STRIPE_VENTURE_TEST_PUBLISHABLE_KEY",
-    ["required", "required", "required"],
-    { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_PUBLISHABLE_KEY" },
-    "The browser key for the embedded capture, same set as above.",
-  ),
-  split(
-    "STRIPE_VENTURE_TEST_WEBHOOK_SECRET",
-    ["required", "required", "required"],
-    [
+  ...owned("stripe", [
+    row(
+      "BILLING_PROVIDER",
+      ["optional", "optional", "optional"],
       carried,
-      { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_WEBHOOK_SECRET_DEMO" },
-      { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_WEBHOOK_SECRET_PROD" },
-    ],
-    "Signs POST /api/billing/webhook. Two vault rows, not one: the two endpoints sign with " +
-      'different secrets, and a single row is the "webhooks stopped days later" bug. A ' +
-      "developer's own file keeps whatever `stripe listen` printed, which no vault can supply.",
-  ),
-  row(
-    "STRIPE_ALIGNSYNCH_TEST_SECRET_KEY",
-    ["optional", "optional", "optional"],
-    { vault: "ALIGNSYNCH_STRIPE_TEST_KEY" },
-    "The other key set's secret (BILLING_KEY_SET=alignsynch-test). Optional: unused while not selected.",
-  ),
-  row(
-    "STRIPE_ALIGNSYNCH_TEST_PUBLISHABLE_KEY",
-    ["optional", "optional", "optional"],
-    { vault: "ALIGNSYNCH_STRIPE_TEST_PUBLISHABLE_KEY" },
-    "The other key set's browser key.",
-  ),
-  split(
-    "STRIPE_ALIGNSYNCH_TEST_WEBHOOK_SECRET",
-    ["optional", "optional", "optional"],
-    [
-      carried,
-      { vault: "ALIGNSYNCH_STRIPE_TEST_WEBHOOK_SECRET_DEMO" },
-      { vault: "ALIGNSYNCH_STRIPE_TEST_WEBHOOK_SECRET" },
-    ],
-    "The other key set's endpoint secret. Per environment, for the same reason as the venture set.",
-  ),
-  row(
-    "STRIPE_TEST_SECRET_KEY",
-    ["optional", "optional", "optional"],
-    undefined,
-    "The legacy trio, read only when BILLING_KEY_SET is unset. Not written: a render must not carry",
-  ),
-  row(
-    "STRIPE_TEST_PUBLISHABLE_KEY",
-    ["optional", "optional", "optional"],
-    undefined,
-    "the other account's legacy key forward. Unset BILLING_KEY_SET is refused by name, not guessed at.",
-  ),
-  row(
-    "STRIPE_TEST_WEBHOOK_SECRET",
-    ["optional", "optional", "optional"],
-    undefined,
-    "The legacy trio's endpoint secret. Same rule: declared so the read is accounted for, never written.",
-  ),
+      "mock (default, keyless) or stripe. Unset is the demo adapter and still boots.",
+    ),
+    split(
+      "BILLING_HOST",
+      ["required", "required", "required"],
+      [
+        { vault: "ALIGNSYNCH_DEMO_BILLING_HOST" },
+        { vault: "ALIGNSYNCH_DEMO_BILLING_HOST" },
+        { vault: "ALIGNSYNCH_PROD_BILLING_HOST" },
+      ],
+      "alignsynch or demo — the host claim a checkout stamps and a webhook filters on. No default.",
+    ),
+    row(
+      "BILLING_KEY_SET",
+      ["required", "required", "required"],
+      { vault: "ALIGNSYNCH_BILLING_KEY_SET" },
+      "Names which key set the adapter reads, whole or not at all. One vault row: the value is " +
+        "environment-invariant, so a render cannot switch accounts between deployments.",
+    ),
+    row(
+      "STRIPE_API_VERSION",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Pins the Stripe-Version header. Unset uses the constant in lib/billing/adapters/stripe.ts.",
+    ),
+    row(
+      "STRIPE_VENTURE_TEST_SECRET_KEY",
+      ["required", "required", "required"],
+      { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_KEY" },
+      "A key-set member (BILLING_KEY_SET=ventureio-test). Test mode only; the adapter refuses a live key.",
+    ),
+    row(
+      "STRIPE_VENTURE_TEST_PUBLISHABLE_KEY",
+      ["required", "required", "required"],
+      { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_PUBLISHABLE_KEY" },
+      "The browser key for the embedded capture, same set as above.",
+    ),
+    split(
+      "STRIPE_VENTURE_TEST_WEBHOOK_SECRET",
+      ["required", "required", "required"],
+      [
+        carried,
+        { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_WEBHOOK_SECRET_DEMO" },
+        { vault: "ALIGNSYNCH_VENTURE_STRIPE_TEST_WEBHOOK_SECRET_PROD" },
+      ],
+      "Signs POST /api/billing/webhook. Two vault rows, not one: the two endpoints sign with " +
+        'different secrets, and a single row is the "webhooks stopped days later" bug. A ' +
+        "developer's own file keeps whatever `stripe listen` printed, which no vault can supply.",
+    ),
+    row(
+      "STRIPE_ALIGNSYNCH_TEST_SECRET_KEY",
+      ["optional", "optional", "optional"],
+      { vault: "ALIGNSYNCH_STRIPE_TEST_KEY" },
+      "The other key set's secret (BILLING_KEY_SET=alignsynch-test). Optional: unused while not selected.",
+    ),
+    row(
+      "STRIPE_ALIGNSYNCH_TEST_PUBLISHABLE_KEY",
+      ["optional", "optional", "optional"],
+      { vault: "ALIGNSYNCH_STRIPE_TEST_PUBLISHABLE_KEY" },
+      "The other key set's browser key.",
+    ),
+    split(
+      "STRIPE_ALIGNSYNCH_TEST_WEBHOOK_SECRET",
+      ["optional", "optional", "optional"],
+      [
+        carried,
+        { vault: "ALIGNSYNCH_STRIPE_TEST_WEBHOOK_SECRET_DEMO" },
+        { vault: "ALIGNSYNCH_STRIPE_TEST_WEBHOOK_SECRET" },
+      ],
+      "The other key set's endpoint secret. Per environment, for the same reason as the venture set.",
+    ),
+    row(
+      "STRIPE_TEST_SECRET_KEY",
+      ["optional", "optional", "optional"],
+      undefined,
+      "The legacy trio, read only when BILLING_KEY_SET is unset. Not written: a render must not carry",
+    ),
+    row(
+      "STRIPE_TEST_PUBLISHABLE_KEY",
+      ["optional", "optional", "optional"],
+      undefined,
+      "the other account's legacy key forward. Unset BILLING_KEY_SET is refused by name, not guessed at.",
+    ),
+    row(
+      "STRIPE_TEST_WEBHOOK_SECRET",
+      ["optional", "optional", "optional"],
+      undefined,
+      "The legacy trio's endpoint secret. Same rule: declared so the read is accounted for, never written.",
+    ),
+  ]),
 
   // --- Object storage -------------------------------------------------------------------------
-  row(
-    "NEON_OBJSTORE_ENDPOINT",
-    ["optional", "optional", "optional"],
-    carried,
-    "The branch's S3 endpoint; only pnpm objstore:smoke and a media write read the block.",
-  ),
-  row(
-    "NEON_OBJSTORE_ACCESS_KEY",
-    ["optional", "optional", "optional"],
-    carried,
-    "Object-storage access key (falls back to AWS_ACCESS_KEY_ID when unset).",
-  ),
-  row(
-    "NEON_OBJSTORE_SECRET_KEY",
-    ["optional", "optional", "optional"],
-    carried,
-    "Object-storage secret key (falls back to AWS_SECRET_ACCESS_KEY).",
-  ),
-  row(
-    "NEON_OBJSTORE_BUCKET",
-    ["optional", "optional", "optional"],
-    carried,
-    "The bucket, which has no AWS-shaped equivalent: ours to name.",
-  ),
-  row(
-    "NEON_OBJSTORE_REGION",
-    ["optional", "optional", "optional"],
-    undefined,
-    "Defaults to us-east-2 in lib/objstore.ts.",
-  ),
+  ...owned("neon", [
+    row(
+      "NEON_OBJSTORE_ENDPOINT",
+      ["optional", "optional", "optional"],
+      carried,
+      "The branch's S3 endpoint; only pnpm objstore:smoke and a media write read the block.",
+    ),
+    row(
+      "NEON_OBJSTORE_ACCESS_KEY",
+      ["optional", "optional", "optional"],
+      carried,
+      "Object-storage access key (falls back to AWS_ACCESS_KEY_ID when unset).",
+    ),
+    row(
+      "NEON_OBJSTORE_SECRET_KEY",
+      ["optional", "optional", "optional"],
+      carried,
+      "Object-storage secret key (falls back to AWS_SECRET_ACCESS_KEY).",
+    ),
+    row(
+      "NEON_OBJSTORE_BUCKET",
+      ["optional", "optional", "optional"],
+      carried,
+      "The bucket, which has no AWS-shaped equivalent: ours to name.",
+    ),
+    row(
+      "NEON_OBJSTORE_REGION",
+      ["optional", "optional", "optional"],
+      undefined,
+      "Defaults to us-east-2 in lib/objstore.ts.",
+    ),
+  ]),
 ];
 
 /**
@@ -590,190 +654,234 @@ export const ENV_ROWS: readonly EnvRow[] = [
  */
 export const OUT_OF_SCOPE: readonly OutOfScopeRow[] = [
   // --- Local tool credentials -----------------------------------------------------------------
-  {
-    name: "BWS_ACCESS_TOKEN",
-    why: "Bitwarden Secrets Manager token — a local tool credential, never synced to a deployment",
-    carry: true,
-  },
+  ...owned("bws", [
+    {
+      name: "BWS_ACCESS_TOKEN",
+      why: "Bitwarden Secrets Manager token — a local tool credential, never synced to a deployment",
+      carry: true,
+    },
+  ]),
 
   // --- Held in the vault for something that is not the app --------------------------------
-  {
-    name: "RIO_GITHUB_KEY",
-    why: "agent tooling, not app runtime — the vault row exists and no row claims it",
-  },
-  {
-    name: "GOOGLE_CLIENT_SECRET",
-    why: "the Neon auth provider holds the Google client config; no app code path reads it",
-  },
+  ...owned("github", [
+    {
+      name: "RIO_GITHUB_KEY",
+      why: "agent tooling, not app runtime — the vault row exists and no row claims it",
+    },
+  ]),
+
+  ...owned("google", [
+    {
+      name: "GOOGLE_CLIENT_SECRET",
+      why: "the Neon auth provider holds the Google client config; no app code path reads it",
+    },
+  ]),
 
   // --- Local tooling: `pnpm triage:founder` ---------------------------------------------------
-  // Founder triage runs on a maintainer's machine, against GitHub, and writes nothing a deployment
-  // renders. It is the one place these three are read.
-  {
-    name: "FOUNDER_LOGINS",
-    why: "triage:founder — which GitHub logins count as founders; a local run's scope, not app config",
-  },
-  {
-    name: "GH_REPO",
-    why: "triage:founder — an explicit OWNER/REPO for a run outside a checkout; gh's own convention",
-  },
-  {
-    name: "GH_ID",
-    why: "triage:founder — the per-call identity wrapper's path; a test stubs it, a run never sets it",
-  },
+  ...owned("github", [
+    // Founder triage runs on a maintainer's machine, against GitHub, and writes nothing a deployment
+    // renders. It is the one place these three are read.
+    {
+      name: "FOUNDER_LOGINS",
+      why: "triage:founder — which GitHub logins count as founders; a local run's scope, not app config",
+    },
+    {
+      name: "GH_REPO",
+      why: "triage:founder — an explicit OWNER/REPO for a run outside a checkout; gh's own convention",
+    },
+    {
+      name: "GH_ID",
+      why: "triage:founder — the per-call identity wrapper's path; a test stubs it, a run never sets it",
+    },
+  ]),
 
   // --- Local tooling: `pnpm spec:coverage` ----------------------------------------------------
   // The register coverage report reads a CSV that is deliberately outside this checkout and talks to
   // GitHub; both knobs exist so a maintainer can point one run somewhere else. Nothing a deployment
   // renders, nothing the app reads.
-  {
-    name: "SPEC_VALIDATION_CSV",
-    why: "spec:coverage — where the agreement's VALIDATION.csv lives on this machine; never in the repo",
-  },
-  {
-    name: "SPEC_COVERAGE_REPO",
-    why: "spec:coverage — an explicit OWNER/REPO for a run outside this checkout; gh's own convention",
-  },
+  ...owned("github", [
+    // The register coverage report reads a CSV that is deliberately outside this checkout and talks
+    // to GitHub; both knobs exist so a maintainer can point one run somewhere else. Nothing a
+    // deployment renders, nothing the app reads. GitHub owns the run, so it owns both rows.
+    {
+      name: "SPEC_VALIDATION_CSV",
+      why: "spec:coverage — where the agreement's VALIDATION.csv lives on this machine; never in the repo",
+    },
+    {
+      name: "SPEC_COVERAGE_REPO",
+      why: "spec:coverage — an explicit OWNER/REPO for a run outside this checkout; gh's own convention",
+    },
+  ]),
 
   // --- Platform-provided ----------------------------------------------------------------------
-  { name: "NODE_ENV", why: "set by node/next, never by a deployment's config file" },
-  { name: "NEXT_PHASE", why: "next's own build-phase marker (instrumentation.ts)" },
-  { name: "NEXT_RUNTIME", why: "next's own runtime marker (instrumentation.ts)" },
-  { name: "VERCEL_ENV", why: "set by Vercel in every deployment; decides demo refusal" },
-  { name: "VERCEL_GIT_COMMIT_SHA", why: "set by Vercel; APP_COMMIT's fallback in next.config.mjs" },
-  {
-    name: "VERCEL_OIDC_TOKEN",
-    why: "minted per deployment; a local copy is a captured credential",
-  },
-  { name: "PATH", why: "the shell's, read by the release tooling" },
-  { name: "HOME", why: "the shell's, read by the release tooling" },
-  { name: "TMPDIR", why: "the shell's, read by the QA-atlas capture" },
+  ...owned("repo", [
+    { name: "NODE_ENV", why: "set by node/next, never by a deployment's config file" },
+    { name: "NEXT_PHASE", why: "next's own build-phase marker (instrumentation.ts)" },
+    { name: "NEXT_RUNTIME", why: "next's own runtime marker (instrumentation.ts)" },
+  ]),
 
-  // --- Test and QA knobs (never deployed) -----------------------------------------------------
-  { name: "BASE_URL", why: "harness target for the live flow/e2e walk (scripts, not the app)" },
-  { name: "CDP_PORT", why: "headless-Chrome debug port for a QA capture" },
-  { name: "CDP_WIDTH", why: "QA capture viewport width" },
-  { name: "CDP_HEIGHT", why: "QA capture viewport height" },
-  { name: "CHROME_BIN", why: "the Chrome binary a QA capture drives" },
-  { name: "CHECK_FAST_BASE", why: "the git ref `pnpm check:fast` diffs against" },
-  { name: "COACH_HTML_OUT", why: "writes a rendered coach page to disk in a test" },
-  { name: "DEMO_BRANCH", why: "which Neon branch demo:reset targets" },
-  {
-    name: "DEMO_BRANCH_LIMIT",
-    why: "the plan's branch ceiling a demo prune counts against (scripts/demo-branch-prune.mjs)",
-  },
-  {
-    name: "DEMO_KEEP_BRANCHES",
-    why: "branches a demo prune never deletes (scripts/demo-branch-prune.mjs)",
-  },
-  {
-    name: "DEMO_PRESERVED_MAX_AGE_DAYS",
-    why: "age after which a kept demo branch becomes prunable (scripts/demo-branch-prune.mjs)",
-  },
-  { name: "DEMO_ORIGIN", why: "the origin a demo reset/deploy asserts is trusted" },
-  { name: "DEMO_SOURCE_BRANCH", why: "the branch a demo reset restores from" },
-  { name: "DEMO_FLOW_DEBUG_PORT", why: "debug port for the recorded demo walk" },
-  { name: "DEMO_FLOW_DUMP", why: "dumps each judged page during the recorded demo walk" },
-  { name: "DEMO_FLOW_ONLY", why: "runs one step of the recorded demo walk" },
-  { name: "DEMO_FLOW_OUT", why: "where the recorded demo walk writes its transcript" },
-  { name: "DEMO_FLOW_REQUIRE_SEED", why: "fails the demo walk instead of seeding" },
-  { name: "DEMO_FLOW_SKIP_SEED", why: "skips the seed phase of the demo walk" },
-  { name: "FLOW_E2E_DUMP", why: "dumps each page the live flow walk judges" },
-  {
-    name: "GATE_LANE",
-    why: "the gate depth `scripts/verify.sh` runs — auto classifies the diff, full forces the code lane; forwarded by scripts/health-record.mjs",
-  },
-  {
-    name: "HEALTH_RECORD_REFRESH",
-    why: "re-measures instead of reading the recorded platform health",
-  },
-  { name: "PARITY_ARTIFACT_DIR", why: "where a parity mismatch writes its render" },
-  { name: "PARITY_BRAND", why: "which brand the parity child renders" },
-  { name: "PARITY_REASON", why: "the sentence a parity hash rewrite records" },
-  { name: "PARITY_UPDATE", why: "rewrites the parity manifest instead of comparing it" },
-  { name: "PAYMENT_E2E_STATE", why: "the handoff file `pnpm payment:e2e setup` writes" },
-  {
-    name: "POSTCHECK_PRODUCTION_URL",
-    why: "the host `pnpm release:postcheck` asks in place of alignsynch.com — a preview or a harness; the check itself is an unauthenticated public read",
-  },
-  { name: "PROTOTYPE_SAVE_PORT", why: "the loopback sink the review artifact's Save posts to" },
-  { name: "QA_ATLAS_ARCHIVE_DIR", why: "archive directory for the release atlas capture" },
-  { name: "QA_ATLAS_BASE", why: "the base URL the atlas capture drives" },
-  { name: "QA_ATLAS_BRAND", why: "which brand the atlas capture renders" },
-  { name: "QA_ATLAS_CAPTURE_TIMEOUT_MS", why: "per-shot timeout for the atlas capture" },
-  { name: "QA_ATLAS_DEBUG_PORT", why: "Chrome debug port for the atlas capture" },
-  { name: "QA_ATLAS_SHOTS", why: "where the atlas capture writes its PNGs" },
-  { name: "QA_ATLAS_VERSION", why: "which release directory the atlas capture writes" },
-  {
-    name: "SEED_LOCK_HELD_BY",
-    why: "the label a caller puts on the branch lock it hands a seed it spawns (scripts/demo-verify.mjs → scripts/db-seed.mjs, #1321); a message only, never a config file's",
-  },
-  {
-    name: "SEED_LOCK_HELD_BY_PID",
-    why: "the pid of the connection holding `algn/1`, declared to a spawned seed and proved against pg_locks before it runs (scripts/db-seed.mjs, #1321); a handoff, not a switch — never a deployment's config",
-  },
-  {
-    name: "UPDATES_BASE",
-    why: "the git ref the update ledger's coverage half reads `<base>..HEAD` against (scripts/updates-check.ts), defaulting to origin/main — a local override for checking a change against another branch, never deployed",
-  },
-  {
-    name: "BUNDLES_DIR",
-    why: "the v2 design bundle drop the fidelity audit reads its references from (scripts/design-audit.mjs); a path outside the checkout, never deployed",
-  },
-  {
-    name: "CHROME",
-    why: "the Chrome binary the fidelity audit drives (scripts/design-audit.mjs); falls back to /usr/bin/google-chrome",
-  },
-  {
-    name: "DESIGN_AUDIT_BASE",
-    why: "the demo host the fidelity audit captures instead of demo.alignsynch.com (scripts/design-audit.mjs)",
-  },
-  {
-    name: "DESIGN_AUDIT_HEAD",
-    why: "the sha the fidelity audit's manifest records instead of the tree's own HEAD (scripts/design-audit.mjs)",
-  },
-  {
-    name: "DESIGN_AUDIT_ONLY",
-    why: "narrows a fidelity-audit capture to the rows one card owns, comma-separated doc paths or slugs (scripts/design-audit.mjs); unset captures every row, and a narrowed run carries every other row over from the manifest on disk",
-  },
-  {
-    name: "PROTOTYPE_DIR",
-    why: "the v2 prototype drop the fidelity audit resolves reference states against (scripts/design-audit.mjs); outside the checkout, never deployed",
-  },
-  {
-    name: "SPEC_DOCS_DIR",
-    why: "the v2 spec docs the fidelity audit derives its document set from (scripts/design-audit.mjs); outside the checkout, never deployed",
-  },
+  ...owned("vercel", [
+    { name: "VERCEL_ENV", why: "set by Vercel in every deployment; decides demo refusal" },
+    {
+      name: "VERCEL_GIT_COMMIT_SHA",
+      why: "set by Vercel; APP_COMMIT's fallback in next.config.mjs",
+    },
+    {
+      name: "VERCEL_OIDC_TOKEN",
+      why: "minted per deployment; a local copy is a captured credential",
+    },
+  ]),
 
-  // --- Build cache, release tooling and CI ----------------------------------------------------
-  {
-    name: "SOURCE_DATE_EPOCH",
-    why: "pins the docs bundle manifest's generatedAt so two builds of one tree agree (scripts/docs-bundle.ts); unset means the source commit's own date",
-  },
-  { name: "QUIZHUB_BUILD_SLOT", why: "the gate slot a build holds (scripts/build-cache.mjs)" },
-  { name: "QUIZHUB_CACHE", why: "enables or disables the shared build cache" },
-  { name: "QUIZHUB_CACHE_DIR", why: "the shared build cache's directory" },
-  { name: "QUIZHUB_CACHE_KEY", why: "an override for the build cache's derived key" },
-  { name: "XDG_CACHE_HOME", why: "where the build cache and deploy tooling keep state" },
-  { name: "XDG_DATA_HOME", why: "where the vercel CLI keeps its auth file" },
-  {
-    name: "NO_COLOR",
-    why: "a terminal knob, never a deployment's: suppresses colour in release:preflight's transcript",
-  },
-  { name: "GH_TOKEN", why: "a GitHub token for release mail, supplied by the shell or CI" },
-  { name: "GITHUB_TOKEN", why: "the same, under the name CI injects" },
-  { name: "GITHUB_REPOSITORY", why: "set by GitHub Actions" },
-  { name: "GITHUB_STEP_SUMMARY", why: "set by GitHub Actions" },
-  { name: "HERMES_KANBAN_BOARD", why: "the board a worktree-prune run reads" },
-  { name: "HERMES_KANBAN_DB", why: "the kanban database a worktree-prune run reads" },
-  { name: "HERMES_KANBAN_TASK", why: "the card a release cut attributes itself to" },
-  { name: "RELEASE_MAIL_LEDGER_TITLE", why: "the ledger issue release mail appends to" },
-  { name: "RELEASE_MAIL_REPO", why: "the repo release mail files its ledger entry in" },
-  { name: "RELEASE_TAG", why: "the tag a release-mail run announces" },
-  { name: "STAKEHOLDERS", why: "who release mail goes to (never a deployment's config)" },
-  { name: "VERCEL_PROJECT_DIR", why: "which tree a deploy check reads" },
-  { name: "VERCEL_TOKEN", why: "the vercel CLI's credential for a deploy or prune" },
-  { name: "NEON_API_BASE", why: "overrides the Neon API base for a demo reset" },
+  ...owned("repo", [
+    { name: "PATH", why: "the shell's, read by the release tooling" },
+    { name: "HOME", why: "the shell's, read by the release tooling" },
+    { name: "TMPDIR", why: "the shell's, read by the QA-atlas capture" },
+
+    // --- Test and QA knobs (never deployed) -----------------------------------------------------
+    { name: "BASE_URL", why: "harness target for the live flow/e2e walk (scripts, not the app)" },
+    { name: "CDP_PORT", why: "headless-Chrome debug port for a QA capture" },
+    { name: "CDP_WIDTH", why: "QA capture viewport width" },
+    { name: "CDP_HEIGHT", why: "QA capture viewport height" },
+    { name: "CHROME_BIN", why: "the Chrome binary a QA capture drives" },
+    { name: "CHECK_FAST_BASE", why: "the git ref `pnpm check:fast` diffs against" },
+    { name: "COACH_HTML_OUT", why: "writes a rendered coach page to disk in a test" },
+  ]),
+
+  // These target a Neon branch or the plan's own ceiling, so the account is Neon's (#1443).
+  ...owned("neon", [
+    { name: "DEMO_BRANCH", why: "which Neon branch demo:reset targets" },
+    {
+      name: "DEMO_BRANCH_LIMIT",
+      why: "the plan's branch ceiling a demo prune counts against (scripts/demo-branch-prune.mjs)",
+    },
+    {
+      name: "DEMO_KEEP_BRANCHES",
+      why: "branches a demo prune never deletes (scripts/demo-branch-prune.mjs)",
+    },
+    {
+      name: "DEMO_PRESERVED_MAX_AGE_DAYS",
+      why: "age after which a kept demo branch becomes prunable (scripts/demo-branch-prune.mjs)",
+    },
+  ]),
+
+  ...owned("repo", [
+    { name: "DEMO_ORIGIN", why: "the origin a demo reset/deploy asserts is trusted" },
+    { name: "DEMO_SOURCE_BRANCH", why: "the branch a demo reset restores from" },
+    { name: "DEMO_FLOW_DEBUG_PORT", why: "debug port for the recorded demo walk" },
+    { name: "DEMO_FLOW_DUMP", why: "dumps each judged page during the recorded demo walk" },
+    { name: "DEMO_FLOW_ONLY", why: "runs one step of the recorded demo walk" },
+    { name: "DEMO_FLOW_OUT", why: "where the recorded demo walk writes its transcript" },
+    { name: "DEMO_FLOW_REQUIRE_SEED", why: "fails the demo walk instead of seeding" },
+    { name: "DEMO_FLOW_SKIP_SEED", why: "skips the seed phase of the demo walk" },
+    { name: "FLOW_E2E_DUMP", why: "dumps each page the live flow walk judges" },
+    {
+      name: "GATE_LANE",
+      why: "the gate depth `scripts/verify.sh` runs — auto classifies the diff, full forces the code lane; forwarded by scripts/health-record.mjs",
+    },
+    {
+      name: "HEALTH_RECORD_REFRESH",
+      why: "re-measures instead of reading the recorded platform health",
+    },
+    { name: "PARITY_ARTIFACT_DIR", why: "where a parity mismatch writes its render" },
+    { name: "PARITY_BRAND", why: "which brand the parity child renders" },
+    { name: "PARITY_REASON", why: "the sentence a parity hash rewrite records" },
+    { name: "PARITY_UPDATE", why: "rewrites the parity manifest instead of comparing it" },
+    { name: "PAYMENT_E2E_STATE", why: "the handoff file `pnpm payment:e2e setup` writes" },
+    {
+      name: "POSTCHECK_PRODUCTION_URL",
+      why: "the host `pnpm release:postcheck` asks in place of alignsynch.com — a preview or a harness; the check itself is an unauthenticated public read",
+    },
+    { name: "PROTOTYPE_SAVE_PORT", why: "the loopback sink the review artifact's Save posts to" },
+    { name: "QA_ATLAS_ARCHIVE_DIR", why: "archive directory for the release atlas capture" },
+    { name: "QA_ATLAS_BASE", why: "the base URL the atlas capture drives" },
+    { name: "QA_ATLAS_BRAND", why: "which brand the atlas capture renders" },
+    { name: "QA_ATLAS_CAPTURE_TIMEOUT_MS", why: "per-shot timeout for the atlas capture" },
+    { name: "QA_ATLAS_DEBUG_PORT", why: "Chrome debug port for the atlas capture" },
+    { name: "QA_ATLAS_SHOTS", why: "where the atlas capture writes its PNGs" },
+    { name: "QA_ATLAS_VERSION", why: "which release directory the atlas capture writes" },
+    {
+      name: "SEED_LOCK_HELD_BY",
+      why: "the label a caller puts on the branch lock it hands a seed it spawns (scripts/demo-verify.mjs → scripts/db-seed.mjs, #1321); a message only, never a config file's",
+    },
+    {
+      name: "SEED_LOCK_HELD_BY_PID",
+      why: "the pid of the connection holding `algn/1`, declared to a spawned seed and proved against pg_locks before it runs (scripts/db-seed.mjs, #1321); a handoff, not a switch — never a deployment's config",
+    },
+    {
+      name: "UPDATES_BASE",
+      why: "the git ref the update ledger's coverage half reads `<base>..HEAD` against (scripts/updates-check.ts), defaulting to origin/main — a local override for checking a change against another branch, never deployed",
+    },
+    {
+      name: "BUNDLES_DIR",
+      why: "the v2 design bundle drop the fidelity audit reads its references from (scripts/design-audit.mjs); a path outside the checkout, never deployed",
+    },
+    {
+      name: "CHROME",
+      why: "the Chrome binary the fidelity audit drives (scripts/design-audit.mjs); falls back to /usr/bin/google-chrome",
+    },
+    {
+      name: "DESIGN_AUDIT_BASE",
+      why: "the demo host the fidelity audit captures instead of demo.alignsynch.com (scripts/design-audit.mjs)",
+    },
+    {
+      name: "DESIGN_AUDIT_HEAD",
+      why: "the sha the fidelity audit's manifest records instead of the tree's own HEAD (scripts/design-audit.mjs)",
+    },
+    {
+      name: "DESIGN_AUDIT_ONLY",
+      why: "narrows a fidelity-audit capture to the rows one card owns, comma-separated doc paths or slugs (scripts/design-audit.mjs); unset captures every row, and a narrowed run carries every other row over from the manifest on disk",
+    },
+    {
+      name: "PROTOTYPE_DIR",
+      why: "the v2 prototype drop the fidelity audit resolves reference states against (scripts/design-audit.mjs); outside the checkout, never deployed",
+    },
+    {
+      name: "SPEC_DOCS_DIR",
+      why: "the v2 spec docs the fidelity audit derives its document set from (scripts/design-audit.mjs); outside the checkout, never deployed",
+    },
+
+    // --- Build cache, release tooling and CI ----------------------------------------------------
+    {
+      name: "SOURCE_DATE_EPOCH",
+      why: "pins the docs bundle manifest's generatedAt so two builds of one tree agree (scripts/docs-bundle.ts); unset means the source commit's own date",
+    },
+    { name: "QUIZHUB_BUILD_SLOT", why: "the gate slot a build holds (scripts/build-cache.mjs)" },
+    { name: "QUIZHUB_CACHE", why: "enables or disables the shared build cache" },
+    { name: "QUIZHUB_CACHE_DIR", why: "the shared build cache's directory" },
+    { name: "QUIZHUB_CACHE_KEY", why: "an override for the build cache's derived key" },
+    { name: "XDG_CACHE_HOME", why: "where the build cache and deploy tooling keep state" },
+    { name: "XDG_DATA_HOME", why: "where the vercel CLI keeps its auth file" },
+    {
+      name: "NO_COLOR",
+      why: "a terminal knob, never a deployment's: suppresses colour in release:preflight's transcript",
+    },
+  ]),
+
+  ...owned("github", [
+    { name: "GH_TOKEN", why: "a GitHub token for release mail, supplied by the shell or CI" },
+    { name: "GITHUB_TOKEN", why: "the same, under the name CI injects" },
+    { name: "GITHUB_REPOSITORY", why: "set by GitHub Actions" },
+    { name: "GITHUB_STEP_SUMMARY", why: "set by GitHub Actions" },
+  ]),
+
+  ...owned("repo", [
+    { name: "HERMES_KANBAN_BOARD", why: "the board a worktree-prune run reads" },
+    { name: "HERMES_KANBAN_DB", why: "the kanban database a worktree-prune run reads" },
+    { name: "HERMES_KANBAN_TASK", why: "the card a release cut attributes itself to" },
+    { name: "RELEASE_MAIL_LEDGER_TITLE", why: "the ledger issue release mail appends to" },
+    { name: "RELEASE_MAIL_REPO", why: "the repo release mail files its ledger entry in" },
+    { name: "RELEASE_TAG", why: "the tag a release-mail run announces" },
+    { name: "STAKEHOLDERS", why: "who release mail goes to (never a deployment's config)" },
+  ]),
+
+  ...owned("vercel", [
+    { name: "VERCEL_PROJECT_DIR", why: "which tree a deploy check reads" },
+    { name: "VERCEL_TOKEN", why: "the vercel CLI's credential for a deploy or prune" },
+  ]),
+
+  ...owned("neon", [
+    { name: "NEON_API_BASE", why: "overrides the Neon API base for a demo reset" },
+  ]),
 ];
 
 /** The source that applies to one environment: the override, else the default. */

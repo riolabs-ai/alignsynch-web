@@ -33,6 +33,9 @@ import { adminGrowthPageCopy } from "./admin-growth";
 import { adminHealthPageCopy } from "./admin-health";
 import { adminInboxPageCopy } from "./admin-inbox";
 import { adminSessionsPageCopy } from "./admin-instances";
+// #1443 — the integration directory: one card per provider, over the env table, the store census
+// and the rotation ledger.
+import { adminSettingsPageCopy } from "./admin-settings";
 // #1126 — the CRUD & Permissions matrix: the v2 spec reference, read from one markdown source.
 import { adminPermissionsPageCopy } from "./admin-permissions";
 // #1138 — the transactional-mail override: one register of templates, one editor per template.
@@ -138,6 +141,8 @@ export const pageCopies: PageCopyTable = zPageCopyTable.parse({
   // #920 — the growth model and the sampled operational set beside it.
   "/admin/growth": adminGrowthPageCopy,
   "/admin/health": adminHealthPageCopy,
+  // #1443 — the integration directory: one card per provider, and the census and ledger panels.
+  "/admin/settings": adminSettingsPageCopy,
   "/admin/instances": adminSessionsPageCopy,
   "/admin/instances/[id]": adminRelationshipPageCopy,
   // #665 — the review shelf, grouped by release; the manifest is the catalogue.

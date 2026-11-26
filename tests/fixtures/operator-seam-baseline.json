@@ -8,14 +8,14 @@
   },
   "counts": {
     "operatorPageFiles": 2,
-    "operatorComponentFiles": 7
+    "operatorComponentFiles": 8
   },
   "reconciliation": {
     "cardSaid": "12 operator pages importing StageColumn / 9 components/admin files reaching product-shell paths",
     "measured": "23 operator page files (25 import edges) / 8 operator component files (9 edges)",
     "pageFiles": "The surface is phase 1's gate list — all 23 admin page modules in lib/operator/routes.ts, not the ADR's 12 pre-phase-1 modules. 23 of 23 imported components/assessment-flow/stage-column; two more page files also import a product component (gaps -> components/console/gap-analysis, instances/[id] -> components/relationship/relationship-edit-panel).",
     "componentFiles": "The ADR's 9 was a grep over comments: broadcast-composer.tsx and report-operations.tsx only mention product paths in their template-ancestor provenance lines, with no import edge. The AST found one the grep missed: docs/features-index.tsx -> components/console/stat-card-grid.",
-    "burnedDown": "23 page files: StageColumn -> components/operator/frame.tsx (OperatorFrame, identical markup asserted in tests/admin-column.test.tsx). Still open and carried here: 2 page files and 7 component files, each blocked on a product change or a decision this card may not take — RailSheetSection needs MainLayout's provider, and AnswerForm/AspectDrawer/StatCardGrid/GapAnalysis/RelationshipEditPanel are product feature components. `components/admin/spec/spec-submenu.tsx → @/components/layout/leaving-link` was burned down on 2026-11-26: the submenu's departing Docs row moved to the rail, so that file imports no product component at all now. LeavingLink remains 'the only markup that leaves the app' (AGENTS.md) — it is still carried for the three other spec views that use it."
+    "burnedDown": "23 page files: StageColumn -> components/operator/frame.tsx (OperatorFrame, identical markup asserted in tests/admin-column.test.tsx). Still open and carried here: 2 page files and 7 component files, each blocked on a product change or a decision this card may not take — RailSheetSection needs MainLayout's provider, and AnswerForm/AspectDrawer/StatCardGrid/GapAnalysis/RelationshipEditPanel are product feature components. One row was **added** on 2026-11-26, not burned down: `components/admin/settings/integration-card.tsx → @/components/layout/leaving-link` — the integration directory's console addresses leave the app, and LeavingLink is the only markup that may (AGENTS.md). `components/admin/spec/spec-submenu.tsx → @/components/layout/leaving-link` was burned down on 2026-11-26: the submenu's departing Docs row moved to the rail, so that file imports no product component at all now. LeavingLink remains 'the only markup that leaves the app' (AGENTS.md) — it is still carried for the three other spec views that use it."
   },
   "rows": {
     "app/(mainlayout)/admin/gaps/page.tsx": ["@/components/console/gap-analysis"],
@@ -24,6 +24,7 @@
     ],
     "components/admin/docs/features-index.tsx": ["@/components/console/stat-card-grid"],
     "components/admin/permissions/permissions-console.tsx": ["@/components/layout/leaving-link"],
+    "components/admin/settings/integration-card.tsx": ["@/components/layout/leaving-link"],
     "components/admin/spec/spec-frame.tsx": ["@/components/layout/rail-sheet-slot"],
     "components/admin/spec/spec-issues.tsx": ["@/components/layout/leaving-link"],
     "components/admin/spec/story-page.tsx": ["@/components/layout/leaving-link"],

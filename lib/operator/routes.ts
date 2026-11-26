@@ -22,7 +22,8 @@
  * `tests/parity/boundary.ts` (phase 1) carries the same set row for row — when both cards are on
  * `main`, that file should import these paths instead of repeating them.
  *
- * The measured set is 23 page modules serving 23 URLs; the ADR's table listed 11 URLs because it
+ * The measured set is 24 page modules serving 24 URLs (#1443 added `/admin/settings`); the ADR's
+ * table listed 11 URLs because it
  * predates the gate, which the owner widened to every `/admin/**` surface except the three
  * exclusions above.
  */
@@ -39,7 +40,8 @@ export interface OperatorRouteFact {
 }
 
 /**
- * The 23 surfaces, measured on `origin/main` @ `e2b1c9c48` (the tree phase 1 gated).
+ * The 24 surfaces, measured on `origin/main` @ `e2b1c9c48` (the tree phase 1 gated), plus
+ * `/admin/settings` (#1443).
  *
  * Order is the directory order, shallow before deep, so a diff that adds a row reads as an
  * insertion where the route lives rather than at the end of a list.
@@ -71,6 +73,7 @@ export const OPERATOR_ROUTES: readonly OperatorRouteFact[] = [
   },
   { path: "/admin/permissions", page: "app/(mainlayout)/admin/permissions/page.tsx" },
   { path: "/admin/review", page: "app/(mainlayout)/admin/review/page.tsx" },
+  { path: "/admin/settings", page: "app/(mainlayout)/admin/settings/page.tsx" },
   { path: "/admin/spec", page: "app/(mainlayout)/admin/spec/page.tsx" },
   { path: "/admin/spec/[group]", page: "app/(mainlayout)/admin/spec/[group]/page.tsx" },
   { path: "/admin/spec/validation", page: "app/(mainlayout)/admin/spec/validation/page.tsx" },

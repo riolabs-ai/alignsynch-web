@@ -1,0 +1,9 @@
+{
+  "pr": 1450,
+  "date": "2026-11-26",
+  "area": "admin",
+  "summary": "`/admin/settings` is a read-only integration directory: one card per provider, with the account handle per deployment, the console and docs addresses, and each variable it owns by source, presence and freshness — never a value.",
+  "reader_impact": "An operator tracing a bad key or a stale credential answers which provider owns it, whether a store holds it, whether it is fresh and where to change it on one screen instead of in four files.",
+  "specs": ["docs/specs/settings-integrations.md", "docs/ui-registry.md"],
+  "risk": "low"
+}
