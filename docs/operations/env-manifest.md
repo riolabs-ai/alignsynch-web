@@ -146,6 +146,39 @@ key that no row owns (`NEON_AUTH_JWKS_URL`, `STRIPE_TEST_WEBHOOK_URL`, `CRON_SEC
 visible instead of surviving three migrations; the matrix says which store holds it, and the answer
 for each is either a row, an exemption, or a value to retire from the store.
 
+## Drift is not this table's job: `pnpm env:drift`
+
+The table answers _which names a deployment must hold_. It cannot answer _whether the value it holds
+is the current one_, and neither can anything that reads: `vercel env pull` returns `[SENSITIVE]` for
+21 of production's 48 variables, so a stale value is indistinguishable from a fresh one by
+inspection. The only observable is **time**, and the report is a comparison against a declared date.
+
+The Neon account moved on 2026-11-24. Production was re-sourced by hand on 2026-11-26, and the
+values it had been serving were `NEON_AUTH_COOKIE_SECRET` from 2026-10-30, `NEON_API_KEY` from
+2026-11-04, `NEON_BRANCH` from 2026-11-01 and the four connection/auth names from 2026-11-21 —
+while production served every request, so nothing failed and nothing said so.
+
+`data/env/rotations.json` records **when** each credential set changed and **which variables it
+governs** — `names` the app reads, `platform` values the provider's own runtime consumes
+(`NEON_AUTH_JWKS_URL`), `prefixes` for a family. Dates only: no value, no prefix of one, no hash has
+anywhere to live in that file, and an unknown key is refused by name.
+
+```bash
+pnpm env:drift                            # production, against data/env/rotations.json
+pnpm env:drift --from <listing.json>      # compare a captured listing instead of calling the API
+pnpm env:drift --rotations <file>         # hold the tree against another declared rotation set
+```
+
+It prints a variable name, the day it was last written and the rotation it predates — never a value.
+Exit 0 is clean, 1 names stale variables, 2 means the check could not run (no token, a refusal, a
+rotations file that does not parse); 2 is never reported as 0.
+
+`pnpm release:preflight` runs it as **check 11, credentials current**, so a stale value refuses the
+cut and the drift list is printed in the refusal. No flag waives that check: re-sourcing the value
+is the owner's act, because a wrong write to production is worse than a stale one, and moving a
+declared date is a claim that the credential set changed when it did not. Rotate for real, then
+record the day in the file.
+
 ## Known limits
 
 - A name reached only through a list helper (`firstSet(["A", "B"])` in `lib/objstore.ts`) is caught

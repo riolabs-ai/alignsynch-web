@@ -55,6 +55,18 @@ type Evidence = {
   ci: { available: boolean; sha?: string; runs?: Array<Record<string, string>>; reason?: string };
   prs: { available: boolean; rows?: Array<{ number: number; title: string }>; reason?: string };
   allowOpenPrs: boolean;
+  envDrift: {
+    available: boolean;
+    declared?: boolean;
+    compared?: number;
+    stale?: Array<{
+      key: string;
+      updatedAt: string;
+      rotation: { id: string; changedAt: string };
+    }>;
+    unknown?: Array<{ key: string; rotation: { id: string; changedAt: string } }>;
+    reason?: string;
+  };
 };
 
 /**
@@ -90,6 +102,7 @@ function clean(): Evidence {
     },
     prs: { available: true, rows: [] },
     allowOpenPrs: false,
+    envDrift: { available: true, compared: 7, stale: [], unknown: [] },
   };
 }
 
@@ -97,29 +110,29 @@ const statuses = (evidence: Evidence) => evaluate(evidence).rows.map((row) => ro
 const failed = (evidence: Evidence) => evaluate(evidence).failures.map((row) => row.n);
 
 /* ------------------------------------------------------------------ *
- * 1 — a healthy tree passes all ten
+ * 1 — a healthy tree passes every check
  * ------------------------------------------------------------------ */
-describe("a cut that is ready passes all ten checks", () => {
-  it("prints ten ✓ rows, in order, with no failure and no warning", () => {
+describe("a cut that is ready passes every check", () => {
+  it("prints one ✓ row per check, in order, with no failure and no warning", () => {
     const result = evaluate(clean());
-    expect(result.rows).toHaveLength(10);
+    expect(result.rows).toHaveLength(CHECK_NAMES.length);
     expect(result.rows.map((row) => row.key)).toEqual(CHECK_NAMES);
-    expect(statuses(clean())).toEqual(Array(10).fill("ok"));
+    expect(statuses(clean())).toEqual(Array(CHECK_NAMES.length).fill("ok"));
     expect(result.failures).toEqual([]);
     expect(result.warnings).toEqual([]);
     expect(result.ok).toBe(true);
   });
 
-  it("says so in one line an operator reads: 'all ten checks pass'", () => {
+  it("says so in one line an operator reads: 'all 11 checks pass'", () => {
     const transcript = render(evaluate(clean()), { version: "2.0.1" }).join("\n");
     expect(transcript).toContain("release:preflight — v2.0.1");
-    expect(transcript).toContain("all ten checks pass");
+    expect(transcript).toContain("all 11 checks pass");
     expect(transcript).not.toContain("✗");
   });
 });
 
 /* ------------------------------------------------------------------ *
- * 2 — each check fails alone: ten red cases, none shadowed
+ * 2 — each check fails alone: one red case per check, none shadowed
  * ------------------------------------------------------------------ */
 describe("each check fails alone, so none is shadowed by another", () => {
   const cases: Array<[number, string, (evidence: Evidence) => Evidence]> = [
@@ -170,6 +183,25 @@ describe("each check fails alone, so none is shadowed by another", () => {
         prs: { available: true, rows: [{ number: 1217, title: "fix(flow): stage 5" }] },
       }),
     ],
+    [
+      11,
+      "a production credential predates the rotation that replaced it",
+      (evidence) => ({
+        ...evidence,
+        envDrift: {
+          available: true,
+          compared: 7,
+          stale: [
+            {
+              key: "NEON_AUTH_COOKIE_SECRET",
+              updatedAt: "2026-10-30",
+              rotation: { id: "neon-account", changedAt: "2026-11-24" },
+            },
+          ],
+          unknown: [],
+        },
+      }),
+    ],
   ];
 
   it.each(cases)("check %i — %s — is the only ✗", (number, _label, breakIt) => {
@@ -191,7 +223,7 @@ describe("each check fails alone, so none is shadowed by another", () => {
     const transcript = render(evaluate(breakIt(clean())), { version: "2.0.1" }).join("\n");
     expect(transcript).toContain("✗");
     expect(transcript).toContain("fix:");
-    expect(transcript).toContain(`1 of 10 checks failed (${number})`);
+    expect(transcript).toContain(`1 of ${CHECK_NAMES.length} checks failed (${number})`);
   });
 
   it("prints the two remedies the card names verbatim", () => {
@@ -550,5 +582,107 @@ describe("the CLI refuses a call it cannot answer", () => {
     const run = cli(["--help"]);
     expect(run.status).toBe(0);
     expect(run.stdout).toContain("release:preflight <version>");
+    // Check 11 needs a token, and the usage says so instead of failing on a machine without one.
+    expect(run.stdout).toContain("env:drift");
+    expect(run.stdout).toContain("VERCEL_TOKEN");
+  });
+});
+
+/* ------------------------------------------------------------------ *
+ * 10 — check 11: the drift list is in the refusal, and no flag waives it
+ * ------------------------------------------------------------------ */
+describe("check 11 — a stale credential refuses the cut, with the list in the message", () => {
+  const stale = [
+    {
+      key: "NEON_AUTH_COOKIE_SECRET",
+      updatedAt: "2026-10-30",
+      rotation: { id: "neon-account", changedAt: "2026-11-24" },
+    },
+    {
+      key: "NEON_API_KEY",
+      updatedAt: "2026-11-04",
+      rotation: { id: "neon-account", changedAt: "2026-11-24" },
+    },
+  ];
+  const drifted = { ...clean(), envDrift: { available: true, compared: 7, stale, unknown: [] } };
+
+  it("names the first variable in the verdict and every one of them in the remedy", () => {
+    const [failure] = evaluate(drifted).failures;
+    expect(failure.n).toBe(11);
+    expect(failure.value).toContain("2 variable(s) older than their rotation");
+    expect(failure.value).toContain("NEON_AUTH_COOKIE_SECRET");
+    for (const entry of stale) {
+      expect(failure.remedy).toContain(entry.key);
+      expect(failure.remedy).toContain(entry.updatedAt);
+      expect(failure.remedy).toContain("neon-account");
+    }
+    // The date is the remedy's own red line, not an instruction.
+    expect(failure.remedy).toContain("do not move a date in data/env/rotations.json");
+    expect(failure.remedy).toContain("the write is the owner's");
+  });
+
+  it("prints every drifted variable in the transcript, one fix: line each", () => {
+    const transcript = render(evaluate(drifted), { version: "2.0.1" }).join("\n");
+    for (const entry of stale) expect(transcript).toContain(`fix: ${entry.key} — last updated`);
+    expect(transcript).toContain("1 of 11 checks failed (11)");
+    expect(transcript).toContain("credentials current");
+  });
+
+  it("fails — never passes — when the report could not be read at all", () => {
+    const [failure] = evaluate({
+      ...clean(),
+      envDrift: { available: false, reason: "no Vercel token" },
+    }).failures;
+    expect(failure.n).toBe(11);
+    expect(failure.value).toContain("no Vercel token");
+    expect(failure.remedy).toContain("export VERCEL_TOKEN");
+  });
+
+  it("treats a governed variable with no readable timestamp as a refusal", () => {
+    const [failure] = evaluate({
+      ...clean(),
+      envDrift: {
+        available: true,
+        compared: 7,
+        stale: [],
+        unknown: [
+          { key: "NEON_BRANCH", rotation: { id: "neon-account", changedAt: "2026-11-24" } },
+        ],
+      },
+    }).failures;
+    expect(failure.n).toBe(11);
+    expect(failure.remedy).toContain("NEON_BRANCH");
+    expect(failure.remedy).toContain("no readable updatedAt");
+  });
+
+  it("is green only when every governed variable is current, and counts them", () => {
+    const result = evaluate(clean());
+    expect(result.rows[10].status).toBe("ok");
+    expect(result.rows[10].value).toContain("7 governed variable(s)");
+  });
+
+  it("says out loud when the tree declares no rotation at all", () => {
+    const result = evaluate({
+      ...clean(),
+      envDrift: { available: true, declared: false, compared: 0, stale: [], unknown: [] },
+    });
+    expect(result.rows[10].status).toBe("ok");
+    expect(result.rows[10].value).toContain("no data/env/rotations.json");
+    expect(result.ok).toBe(true);
+  });
+
+  it("carries no value — a name and two dates is the whole vocabulary", () => {
+    const transcript = render(evaluate(drifted), { version: "2.0.1" }).join("\n");
+    for (const line of transcript.split("\n")) {
+      if (!line.includes("NEON_")) continue;
+      expect(line).not.toMatch(/napi_|=|sha256/i);
+    }
+  });
+
+  it("has no flag: the usage offers two waivers and neither is this check", () => {
+    const run = spawnSync(process.execPath, [CLI, "--help"], { encoding: "utf8" });
+    expect(run.stdout).toContain("--no-record");
+    expect(run.stdout).toContain("--allow-open-prs");
+    expect(run.stdout).not.toContain("--allow-env-drift");
   });
 });

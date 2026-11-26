@@ -1,0 +1,21 @@
+{
+  "$comment": "When each credential set last changed — dates only, never what it changed to. `pnpm env:drift` compares Vercel production's `updatedAt` against these and refuses a release cut when a governed variable is older. A rotation entry names the variables it governs: `names` are rows in scripts/env-manifest.ts, `platform` are values the deployment holds that no app code reads (the provider's own runtime consumes them), `prefixes` cover a family. Adding a set is one reviewed entry; moving a date to silence a red run is not a rotation.",
+  "rotations": [
+    {
+      "id": "neon-account",
+      "changedAt": "2026-11-24",
+      "why": "The Neon account moved on 2026-11-24 and every Neon-derived value was re-sourced by hand on 2026-11-26 — the connection strings, the auth service, the API key and the branch name had been stale since 2026-10-30.",
+      "names": [
+        "DATABASE_URL",
+        "DATABASE_URL_UNPOOLED",
+        "NEON_API_KEY",
+        "NEON_BRANCH",
+        "NEON_PROJECT_ID",
+        "NEON_AUTH_BASE_URL",
+        "NEON_AUTH_COOKIE_SECRET"
+      ],
+      "platform": ["NEON_AUTH_JWKS_URL"],
+      "prefixes": ["NEON_OBJSTORE_"]
+    }
+  ]
+}

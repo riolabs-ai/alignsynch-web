@@ -1,0 +1,9 @@
+{
+  "pr": 1423,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "`pnpm env:drift` compares every production variable a declared rotation governs against the day that credential set changed, and `release:preflight` refuses the cut with the drift list when one is older.",
+  "reader_impact": "An operator cutting a release sees a stale credential named with both dates instead of discovering it by hand after production has served it for weeks; no screen changes.",
+  "specs": ["docs/operations/env-manifest.md"],
+  "risk": "low"
+}
