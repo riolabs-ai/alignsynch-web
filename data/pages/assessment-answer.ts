@@ -12,8 +12,8 @@
  *   `privacy`   the note that never moves: answers stay private until both parties finish.
  *   `resume`    the returning reader's banner — "Welcome back", where they are, and `Start Over`.
  *   `progress`  `Round 1 · Aspect n of 5`, the segmented bar's words and the save state.
- *   `aspect`    one Aspect's card: eyebrow, the two row headings and their glosses, the pole line
- *               under each scale, the pick hint and the card's footer buttons.
+ *   `aspect`    one Aspect's card: eyebrow, the four question lines, the pole line under each
+ *               scale, the pick hint and the card's footer buttons.
  *   `review`    `Check Your Answers`, one summary line per Aspect, `Change`, `Submit Answers`.
  *   `sheet`     the seat sentence and the blind rule (#427's words, kept: the v2 screen says the
  *               same thing in more places, not a different thing).
@@ -98,10 +98,22 @@ export const assessmentAnswerPageCopy: PageCopy = zPageCopy.parse({
       id: "aspect",
       items: [
         { id: "eyebrow", label: "Aspect {aspect} of {total}" },
+        /**
+         * The four question lines (#1362): the bold opinion word, then the founder's own sentence,
+         * character-identical to the home band's `bread-line-*` bodies
+         * (`data/pages/home-alignsynch.ts`) — `tests/answer-sheet-question-wording.test.tsx` holds
+         * the two fixtures equal. The bundle that drew this screen
+         * (`docs/specs/v2-bundles/10-spec-design-page-assessment-v2/assessment.html`) glossed only
+         * two kinds — `How it is now` / `How you want it` — and that is the record of what was
+         * approved then; the founder's #1362 wording supersedes it. The bundle's HTML is not
+         * edited: a record of what was approved is not live copy.
+         */
         { id: "feel", label: "Feel" },
-        { id: "feel-gloss", label: "How it is now" },
+        { id: "feel-gloss", label: "How do YOU FEEL it is now?" },
         { id: "wish", label: "Wish" },
-        { id: "wish-gloss", label: "How you want it" },
+        { id: "wish-gloss", label: "How do YOU WISH it to SLOWLY change?" },
+        { id: "think-gloss", label: "How do YOU THINK THEY FEEL it is now?" },
+        { id: "guess-gloss", label: "How do YOU GUESS THEY WISH it to SLOWLY change?" },
         { id: "pole-left", label: "{notch} · {value}" },
         { id: "pole-right", label: "{notch} · {value}" },
         { id: "scale-name", label: "{value} — {notch}" },
