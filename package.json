@@ -41,6 +41,7 @@
     "ui:census": "tsc -p tsconfig.datacheck.json && node .datacheck/scripts/ui-census.js",
     "vocabulary:census": "tsc -p tsconfig.datacheck.json && node .datacheck/scripts/vocabulary.js",
     "columns:check": "node scripts/column-refs.ts --check",
+    "preworktrees:prune": "node scripts/require-node.mjs",
     "worktrees:prune": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/worktree-prune.mjs",
     "prehygiene": "node scripts/require-node.mjs",
     "hygiene": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/repo-hygiene.mjs",
@@ -64,6 +65,7 @@
     "md:fix": "markdownlint-cli2 --fix && node scripts/md-style.mjs && biome format --write docs",
     "md:normalised:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/md-normalise.mjs",
     "release:note": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-modules.mjs scripts/release-notify.mjs",
+    "predb:migrate": "node scripts/require-node.mjs",
     "db:migrate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/db-migrate.mjs",
     "db:seed": "node --import ./scripts/ts-modules.mjs --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/db-seed.mjs",
     "db:seed:check": "node --import ./scripts/ts-modules.mjs --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/db-seed.mjs --check",
@@ -102,7 +104,8 @@
     "lint:fix": "biome check --write && node scripts/lint-brand-classes.mjs && node scripts/noun-check.mjs",
     "format": "biome format --write .",
     "format:check": "biome format .",
-    "prototype:save": "node scripts/prototype-save.mjs"
+    "prototype:save": "node scripts/prototype-save.mjs",
+    "catalog:build": "node scripts/build-prototype-catalog.mjs --out .catalog-site --min-entries 220 --fail-on-untracked --require project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.3.1",

@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**209 documents in 9 sections.** Every page carries the same nav block, generated
+**210 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -40,7 +40,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Start here](#start-here) — 3 documents
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
-- [Operations](#operations) — 25 documents
+- [Operations](#operations) — 26 documents
 - [Specs & design briefs](#specs-design-briefs) — 88 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
@@ -101,6 +101,7 @@ The gate, releasing, deploying, iteration and the history behind them.
 - [`operations/migrations.md`](operations/migrations.md) — **Migrations** — How is a migration numbered, and why can an applied one never be renumbered?
 - [`operations/migration-inventory.md`](operations/migration-inventory.md) — **Migration inventory** — What is applied on each branch, what would replaying it cost, and what is unverified?
 - [`operations/orchestration.md`](operations/orchestration.md) — **Orchestration rules** — How does the orchestrator behave — decisions, blocking, re-carding?
+- [`operations/prototype-catalog.md`](operations/prototype-catalog.md) — **The prototype catalogue** — Where do prototypes publish, and where do a row's date and version come from?
 - [`operations/public-surface.md`](operations/public-surface.md) — **The public site** — Which routes are public, and what does the sitemap publish?
 - [`operations/release-train.md`](operations/release-train.md) — **Release-train card template** — What does a release-train card carry — children, sequence, cutoff, proof?
 - [`operations/releasing.md`](operations/releasing.md) — **Releasing** — Which four artefacts must agree for a release, and how is the tag cut?

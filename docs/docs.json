@@ -203,6 +203,11 @@
           "question": "How does the orchestrator behave — decisions, blocking, re-carding?"
         },
         {
+          "path": "operations/prototype-catalog.md",
+          "title": "The prototype catalogue",
+          "question": "Where do prototypes publish, and where do a row's date and version come from?"
+        },
+        {
           "path": "operations/public-surface.md",
           "title": "The public site",
           "question": "Which routes are public, and what does the sitemap publish?"
