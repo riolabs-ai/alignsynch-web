@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**211 documents in 9 sections.** Every page carries the same nav block, generated
+**212 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -41,7 +41,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
 - [Operations](#operations) — 26 documents
-- [Specs & design briefs](#specs-design-briefs) — 89 documents
+- [Specs & design briefs](#specs-design-briefs) — 90 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
@@ -152,6 +152,7 @@ What the product promises, written down before it was built.
 - [`specs/spec-help-center/GLOSSARY-CONTENT-MAP.md`](specs/spec-help-center/GLOSSARY-CONTENT-MAP.md) — **Glossary source map** — Which 2024 glossary terms feed the public Help page, and how is each editorial decision recorded?
 - [`specs/spec-help-center/IMPLEMENTATION-BRIEF.md`](specs/spec-help-center/IMPLEMENTATION-BRIEF.md) — **Help Center — implementation brief** — Which route does the Help Center redesign target, which files drive it, and what must not change?
 - [`specs/spec-help-center/README.md`](specs/spec-help-center/README.md) — **Help Center design spec (handoff)** — How do I preview the Help Center, and which three files make up the page?
+- [`specs/settings-integrations.md`](specs/settings-integrations.md) — **Settings & integrations** — Which providers does the app depend on, which variables do they own, and where does an operator change them?
 - [`specs/stages.md`](specs/stages.md) — **Stages** — What are Invited, Connected, Sharing and Aligned, and who decides each?
 - [`specs/two-party-flow.md`](specs/two-party-flow.md) — **The two-party flow** — How do two people get from an invitation to a sealed Gap?
 - [`specs/v2-bundles/README.md`](specs/v2-bundles/README.md) — **v2.0 UI handoff bundles (index)** — What are the eleven v2.0 ingest bundles, in what order are they built, and which owner decisions are still open?

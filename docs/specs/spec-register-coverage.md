@@ -20,7 +20,7 @@ An issues-first regeneration would therefore cover at most those rows and would 
 | --- | --- |
 | register rows | 88 |
 | issues read (`state=all`, every page) | 521 |
-| pull requests excluded from that collection | 923 |
+| pull requests excluded from that collection | 926 |
 | issues carrying a `spec-row` marker | 28 |
 | issues carrying no marker (skipped, never guessed) | 493 |
 | rows named by an issue | 28 of 88 (32 %) |
