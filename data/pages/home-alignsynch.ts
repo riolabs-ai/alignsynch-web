@@ -298,6 +298,11 @@ export const alignSynchHomeCopy: PageCopy = zPageCopy.parse({
  * other, both answer privately, and the report opens after both accept. Nothing here claims an
  * outcome the product cannot show, and nothing prices a session.
  *
+ * **The four questions in the model band are the founder's wording, not the reference's (#1362).**
+ * FEEL and THINK read "it is now", WISH and GUESS read "SLOWLY change" — the words the assessment
+ * itself asks, with the adverb carrying the point of the sentence. Every other string on this page
+ * is still the approved page's.
+ *
  * Both are parsed by the same `zPageCopy`, so both are held to the same rules — no unknown keys, no
  * section id twice, every `cta.href` a route in `content/routes.ts`.
  *
@@ -463,22 +468,22 @@ export const alignSynchHomeAs2Copy: PageCopy = zPageCopy.parse({
         {
           id: "bread-line-feel",
           label: "FEEL",
-          body: "You feel it is different than they feel.",
+          body: "How do YOU FEEL it is now?",
         },
         {
           id: "bread-line-wish",
           label: "WISH",
-          body: "You wish it to be different than they wish.",
+          body: "How do YOU WISH it to SLOWLY change?",
         },
         {
           id: "bread-line-think",
           label: "THINK",
-          body: "You think they feel it is different than they really feel.",
+          body: "How do YOU THINK THEY FEEL it is now?",
         },
         {
           id: "bread-line-guess",
           label: "GUESS",
-          body: "You guess they wish it to be different than they really wish.",
+          body: "How do YOU GUESS THEY WISH it to SLOWLY change?",
         },
         { id: "bread-note-lead", label: "Four potential pitfalls" },
         { id: "bread-note-rest", label: "to notice in most relationships." },
