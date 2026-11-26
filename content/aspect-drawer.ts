@@ -20,7 +20,9 @@
  * eyebrow, the two headings, `Title` / `Prompt` / `1 Means` / `5 Means` with the artifact's own
  * hints, the locked-scale line, `Cancel`, and `Add Aspect` / `Save Aspect`. `name-new` and
  * `title-help` are the two sentences the artifact did not need because its prototype held a title;
- * they say what this model actually does (the name is the row's id, and it stays fixed).
+ * they say what this model actually does (the name is the row's id, and it stays fixed — #1361
+ * changed only how it is drawn, never the rule: the Title row is printed as text, and this sentence
+ * answers the founder's two questions, where the name comes from and where it shows).
  */
 
 /** The section id every mounting page declares. `AspectDrawer` reads this by default. */
@@ -47,7 +49,7 @@ export const ASPECT_DRAWER_ITEMS: readonly AspectDrawerItem[] = [
   {
     id: "title-help",
     label:
-      "The name is the row's own id, and answers are keyed to it — reword the prompt instead of renaming it.",
+      "Derived from the stored Aspect id, the handle every answer is keyed to, so it cannot be renamed here. It titles this sheet; the list shows the Prompt.",
   },
   { id: "prompt-label", label: "Prompt" },
   { id: "prompt-help", label: "The question you both answer." },
