@@ -2,8 +2,8 @@
   "pr": 1451,
   "date": "2026-11-26",
   "area": "admin",
-  "summary": "`/admin/settings` gains its deferred write path: a `setting` table, an `env > setting > default` read, and an audited form for four governed non-secret keys, with `NAV_SOURCE` and `DEMO_ALLOW_PRODUCTION` drawn as refused rows because a stored value could not be obeyed.",
-  "reader_impact": "An admin can move the drift alarm's threshold, the freshness window, the From address or the mail endpoint from the browser, see whether the deployment's environment shadows the edit, and read both sides of every change in the audit log — a secret is never read, written or rendered.",
+  "summary": "`/admin/settings` gains its deferred write path: a `setting` table, an `env > setting > default` read, and an audited form for four governed non-secret keys, with the two a stored value could not move drawn as refused rows.",
+  "reader_impact": "An admin moves the drift alarm, the freshness window, the From address or the mail endpoint from the browser, sees when the environment shadows an edit, and reads both sides of each change in the audit log.",
   "specs": ["docs/specs/settings-integrations.md", "docs/ui-registry.md"],
   "risk": "medium"
 }
