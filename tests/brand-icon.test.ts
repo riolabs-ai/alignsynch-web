@@ -48,7 +48,7 @@ import {
 // below does *not* trust it: it reads the sheet itself and compares with the shipped file.
 import { APP_RADIUS_FRACTION } from "@/lib/brand-radius";
 import { type GlyphMarkId, MARK_ICONS, markGroundClass } from "@/components/auth/mark-icon";
-import { alphaBBox, contrastBBox, decodePng, pngSize } from "@/scripts/image-bytes";
+import { alphaBBox, contrastBBox, decodePng, pngSize, type RgbaImage } from "@/scripts/image-bytes";
 
 const BRANDS = [
   { id: "quizhub", brand: quizHubBrand },
@@ -77,6 +77,33 @@ function read(id: string, file: string): Buffer {
 
 const text = (id: string, file: string): string => read(id, file).toString("utf8");
 
+/**
+ * The decoded form of a shipped file, held once.
+ *
+ * `decodePng` *is* this suite's cost: the 1024 px mark inflates to 4 MB and unfilters a thousand
+ * rows (~134 ms), and the fill case below asks for it per surface, per brand, twice inside its own
+ * aspect assertion — eight decodes of the same bytes, ~1.2 s of a 2.3 s test. On a loaded box (the
+ * full suite runs ~16 vitest workers) that was the 6 s that tripped the default 5 s timeout, and a
+ * timeout is reported as a red test, which is how this read as a flake for two releases.
+ *
+ * So: each file is decoded once per *worker*. Nothing here depends on that — every reader is
+ * read-only (`alphaBBox`, `contrastBBox` and `inkRadius` only look at pixels, none writes), and the
+ * memo dies with the process, so no case can observe another's mutation of an image.
+ */
+const decodedByPath = new Map<string, RgbaImage>();
+
+function decodeFile(path: string): RgbaImage {
+  const cached = decodedByPath.get(path);
+  if (cached !== undefined) return cached;
+  const image = decodePng(readFileSync(path));
+  decodedByPath.set(path, image);
+  return image;
+}
+
+function decoded(id: string, file: string): RgbaImage {
+  return decodeFile(join(process.cwd(), "public", "brand", `${id}${file}`));
+}
+
 /** `<image x y width height>` out of a raster-mark SVG. */
 function imageBox(svg: string): { x: number; y: number; width: number; height: number } {
   const match = /<image x="([\d.-]+)" y="([\d.-]+)" width="([\d.-]+)" height="([\d.-]+)"/.exec(svg);
@@ -90,13 +117,22 @@ function imageBox(svg: string): { x: number; y: number; width: number; height: n
 }
 
 /** The mark the record names, decoded, with the ink box the generator places. */
+const markById = new Map<
+  keyof typeof brandsById,
+  { image: RgbaImage; ink: NonNullable<ReturnType<typeof alphaBBox>> }
+>();
+
 function markOf(id: keyof typeof brandsById) {
+  const cached = markById.get(id);
+  if (cached !== undefined) return cached;
   const src = brandsById[id].mark?.src;
   if (src === undefined) throw new Error(`${id} names no mark`);
-  const image = decodePng(readFileSync(join(process.cwd(), "public", src.replace(/^\//, ""))));
+  const image = decodeFile(join(process.cwd(), "public", src.replace(/^\//, "")));
   const ink = alphaBBox(image);
   if (ink === undefined) throw new Error(`${id}'s mark is empty`);
-  return { image, ink };
+  const mark = { image, ink };
+  markById.set(id, mark);
+  return mark;
 }
 
 /**
@@ -142,9 +178,7 @@ function inkFill(
   id: keyof typeof brandsById,
   file: string,
 ): { width: number; height: number; longest: number } {
-  const image = file.endsWith(".svg")
-    ? renderSvg(text(id, file), MARK_SIZE)
-    : decodePng(read(id, file));
+  const image = file.endsWith(".svg") ? renderSvg(text(id, file), MARK_SIZE) : decoded(id, file);
   const ink = brandsById[id].mark === undefined ? contrastBBox(image) : alphaBBox(image);
   if (ink === undefined) throw new Error(`${id}${file} draws no ink`);
   return {
@@ -284,7 +318,7 @@ describe("the generated icon set", () => {
     // 0.580 and the monogram at 0.661 are each 98 % of their own aspect's ceiling, so this is the
     // case that fails when a mark swap makes the fill too large for the new ink.
     for (const { id } of BRANDS) {
-      const radius = inkRadius(decodePng(read(id, "-icon-512.png")));
+      const radius = inkRadius(decoded(id, "-icon-512.png"));
       expect(
         radius,
         `${id}'s icon ink reaches ${radius.toFixed(1)} of ${MASKABLE_SAFE_RADIUS}`,
@@ -298,6 +332,13 @@ describe("the generated icon set", () => {
     // *viewBox* measured 51 % of the tile, and two earlier attempts were signed off on the
     // fraction rather than on this.
     for (const { id, brand } of BRANDS) {
+      // The ink's own aspect is a property of the *mark*, not of the surface it was written at, so
+      // it is read once per brand rather than twice per surface — the same assertion, a quarter of
+      // the decodes.
+      const aspect =
+        brand.mark === undefined
+          ? MARK_INK_BOX.width / MARK_INK_BOX.height
+          : markOf(id).ink.width / markOf(id).ink.height;
       for (const surface of SURFACES) {
         const measured = inkFill(id, surface.file);
         const maskable =
@@ -320,10 +361,6 @@ describe("the generated icon set", () => {
         // Uniform scale, never distortion: the ink keeps its own aspect ratio. 5 % is measurement
         // noise — the extreme rows of a mark are antialiased, so at 180 px an edge pixel or two
         // can fall under INK_ALPHA and shift the box — while a stretch or a crop is far larger.
-        const aspect =
-          brand.mark === undefined
-            ? MARK_INK_BOX.width / MARK_INK_BOX.height
-            : markOf(id).ink.width / markOf(id).ink.height;
         expect(Math.abs(measured.width / measured.height / aspect - 1)).toBeLessThan(0.05);
       }
     }
@@ -357,7 +394,7 @@ describe("the generated icon set", () => {
     // Two paths, two rules, both deliberate. QuizHub's book is a *stroke*: with no ground it would
     // be invisible, so its four files stay opaque full bleed — byte for byte what they were.
     for (const surface of RASTERS) {
-      const image = decodePng(read("quizhub", surface.file));
+      const image = decoded("quizhub", surface.file);
       for (let index = 3; index < image.data.length; index += 4) {
         if (image.data[index] !== 255) {
           throw new Error(
@@ -369,7 +406,7 @@ describe("the generated icon set", () => {
     // AlignSynch's mark carries its own colours and its own keyline, so the canvas behind it is
     // clear on every raster (owner, 2026-11-03): no tile, no bleed, the margin is the safe zone.
     for (const surface of RASTERS) {
-      const image = decodePng(read("alignsynch", surface.file));
+      const image = decoded("alignsynch", surface.file);
       const alphaAt = (x: number, y: number) => image.data[(y * image.width + x) * 4 + 3];
       expect(alphaAt(0, 0), `alignsynch${surface.file} paints a tile in its corner`).toBe(0);
       expect(alphaAt(image.width - 1, image.height - 1)).toBe(0);
