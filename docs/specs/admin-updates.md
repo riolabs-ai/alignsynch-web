@@ -17,7 +17,7 @@ points here.
 
 | Question                    | Answer                                                                              |
 | --------------------------- | ----------------------------------------------------------------------------------- |
-| Where does the record live? | `docs/changelog/updates/<pr>.json` — in the tree, in the PR that makes the change   |
+| Where does the record live? | `data/changelog/updates/<pr>.json` — in the tree, in the PR that makes the change   |
 | What makes it true?         | `data:check` E44 (the rule this document calls **E-updates**) refuses a bad entry   |
 | Where does it surface?      | `/admin/docs/updates`, newest first, with each `specs[]` path linked or marked      |
 | What does a release add?    | `/admin/docs/releases` lists each entry's merges with their ledger rows beside them |

@@ -1,0 +1,9 @@
+{
+  "pr": 1414,
+  "date": "2026-11-26",
+  "area": "admin,docs",
+  "summary": "The update ledger moved from `docs/changelog/updates` to `data/changelog/updates` in one rename commit, and every reader points at the new home while each row's `specs[]` still resolves through the docs tree.",
+  "reader_impact": "An admin reading `/admin/docs/updates` sees the same rows, order and links; the published docs bundle no longer carries the app's ledger, and a bundle gate checks `specs[]` against the tree it serves.",
+  "specs": ["docs/specs/admin-updates.md", "docs/operations/releasing.md"],
+  "risk": "low"
+}

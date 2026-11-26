@@ -36,8 +36,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve, sep } from "node:path";
 import { zstdDecompressSync } from "node:zlib";
 
-import type { BundleManifest } from "@/scripts/docs-bundle";
-
 import { untarEntries } from "./tar.mjs";
 
 /** Which implementation a reader is. The value `DOCS_SOURCE` accepts for the bundle. */
@@ -52,6 +50,34 @@ export const DOCS_DIRECTORY = "docs";
 /** The names `scripts/docs-bundle.ts` writes into its `--out` directory. */
 export const BUNDLE_ARCHIVE_NAME = "docs.tar.zst";
 export const BUNDLE_MANIFEST_NAME = "manifest.json";
+
+/**
+ * One row of `manifest.files`.
+ *
+ * The two interfaces the bundle is described by live here rather than in the bundler (#1413):
+ * `readBundleManifest` below is the reader that *validates* them, and `scripts/data-check.ts`
+ * compiles this module into the gate. A declaration in `scripts/docs-bundle.ts` made that
+ * impossible — importing it pulled the bundler's `import.meta` into a `commonjs` program — so the
+ * two shapes moved to the side that reads them and the bundler imports them from here.
+ */
+export interface BundleFile {
+  /** Repo-relative, `/`-separated: `docs/specs/flow-stages.md`. */
+  readonly path: string;
+  readonly bytes: number;
+  readonly sha256: string;
+}
+
+/** `manifest.json`, whole. The five keys are the card's contract; nothing else is invented. */
+export interface BundleManifest {
+  /** `<package.json version>+<source commit, 7>` — a bundle names the tree it came from. */
+  readonly version: string;
+  /** sha256 of `docs.tar.zst` — what a consumer verifies before extracting. */
+  readonly sha: string;
+  /** The source commit's own committer date, ISO-8601; never the wall clock. */
+  readonly generatedAt: string;
+  readonly files: readonly BundleFile[];
+  readonly totals: { readonly files: number; readonly bytes: number };
+}
 
 /**
  * The reader `tree.ts` talks to: docs-relative paths in, bytes or names out.

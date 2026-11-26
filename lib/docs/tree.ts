@@ -31,9 +31,10 @@
  * learned that a bundle exists — the containment rule, the "missing is a throw" contract and the
  * per-request memoising are unchanged, which is what makes the switch invisible to every page.
  * `CHANGELOG.md` stays a local read on purpose: it is not under `docs/`, it is where
- * `scripts/release.sh` writes it, and it is not part of the published tree.
+ * `scripts/release.sh` writes it, and it is not part of the published tree. The update ledger
+ * (`readUpdateLedger` below) joined that list in #1413 — it moved to `data/changelog/updates`.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { extname, join } from "node:path";
 
 import { cache } from "react";
@@ -41,7 +42,7 @@ import { cache } from "react";
 import { CHANGELOG_PATH, type ChangelogEntry, parseChangelog } from "@/lib/docs/changelog";
 import { IMAGE_EXTENSIONS } from "@/lib/docs/links";
 import { DOCS_ROOT, docsSource } from "@/lib/docs/source";
-import { UpdateLedgerUnreadable, type UpdateFile } from "@/lib/docs/updates";
+import { UPDATES_DIR, UpdateLedgerUnreadable, type UpdateFile } from "@/lib/docs/updates";
 import {
   DocsManifestUnreadable,
   type DocsManifest,
@@ -70,15 +71,6 @@ const MANIFEST_FILE = "docs.json";
 
 /** The release record `scripts/changelog-view.mjs` writes against and `pnpm changelog:check` holds. */
 const RELEASE_RECORD_FILE = "changelog/releases.json";
-
-/**
- * The update ledger's directory — one `<pr>.json` per merged pull request (`lib/docs/updates.ts`).
- *
- * Not a generated view and not a manifest page: the entries are authored in the PR that makes the
- * change, and `data:check` E44 (the spec's E-updates) refuses a missing, unparseable, empty-spec or
- * non-ISO entry. This module opens them read-only on the request, exactly like the two files above.
- */
-const UPDATES_DIRECTORY = "changelog/updates";
 
 /** `CHANGELOG.md` at the repository root — the source of every release fact (#893). */
 export const CHANGELOG_FILE_PATH = join(process.cwd(), CHANGELOG_PATH);
@@ -190,7 +182,14 @@ export const readReleaseRecord = cache((): ReleaseRecord => {
 });
 
 /**
- * The update ledger, read — once per request.
+ * The update ledger, read — once per request. One `<pr>.json` per merged pull request
+ * (`lib/docs/updates.ts`).
+ *
+ * **Not a docs-tree path since #1413.** The ledger lives at `data/changelog/updates`: it is the
+ * app's own record of what each merge changed, and the published tree (`docs.tar.zst`, which is
+ * what `docsSource()` serves under `DOCS_SOURCE=bundle`) must not carry it. So this one reader is
+ * a plain `fs` read at the repository root and does **not** go through `lib/docs/source.ts`, while
+ * every `specs[]` path a row cites still resolves against the docs tree.
  *
  * A missing directory, a file that is not JSON and an entry that does not satisfy the schema are all
  * `UpdateLedgerUnreadable` with a sentence the page draws. They are *not* swallowed into an empty
@@ -200,11 +199,12 @@ export const readReleaseRecord = cache((): ReleaseRecord => {
  * screen and the gate cannot disagree about what a valid entry is.
  */
 export const readUpdateLedger = cache((): UpdateFile[] => {
+  const directory = join(process.cwd(), UPDATES_DIR);
   let names: string[];
   try {
-    names = docsSource().listDirectory(UPDATES_DIRECTORY);
+    names = readdirSync(directory).sort();
   } catch {
-    throw new UpdateLedgerUnreadable("docs/changelog/updates could not be read from the docs tree");
+    throw new UpdateLedgerUnreadable(`${UPDATES_DIR} could not be read from the repository root`);
   }
   const files: UpdateFile[] = [];
   for (const name of names) {
@@ -212,14 +212,14 @@ export const readUpdateLedger = cache((): UpdateFile[] => {
     // kind of file, and a stray one is a mistake the gate names by filename.
     if (!name.endsWith(".json")) {
       throw new UpdateLedgerUnreadable(
-        `docs/changelog/updates/${name} is not a <pr>.json entry — the directory holds entries and nothing else`,
+        `${UPDATES_DIR}/${name} is not a <pr>.json entry — the directory holds entries and nothing else`,
       );
     }
     let raw: unknown;
     try {
-      raw = JSON.parse(docsSource().readText(`${UPDATES_DIRECTORY}/${name}`)) as unknown;
+      raw = JSON.parse(readFileSync(join(directory, name), "utf8")) as unknown;
     } catch {
-      throw new UpdateLedgerUnreadable(`docs/changelog/updates/${name} is not valid JSON`);
+      throw new UpdateLedgerUnreadable(`${UPDATES_DIR}/${name} is not valid JSON`);
     }
     files.push({ name, raw });
   }
