@@ -19,10 +19,24 @@
  *
  * Usage:
  *   node scripts/build-prototype-catalog.mjs --root <dir> --out <dir>
- *        [--min-entries N] [--require <path>]
+ *        [--min-entries N] [--require <path>] [--allow-empty]
  *
  * `--min-entries` and `--require` make an incomplete build fail loudly instead
  * of deploying a catalog that silently lost most of its rows.
+ *
+ * An ABSENT root is a hard error by default, and `--allow-empty` is the only
+ * thing that changes that (#1419). The distinction is about the caller, not
+ * about the tree: `prototypes/` is not committed yet, so on this repository an
+ * absent default root means "nothing to publish yet" — the workflow says so
+ * with a notice and never calls this script. But a root that was *named* and
+ * does not resolve (a typo in `--root`, a moved tree) is broken input, and it
+ * must stay exit 1 wherever it happens. So the flag is a statement a caller
+ * makes about its own tree, never a property of the builder.
+ *
+ * It excuses nothing else. A root that exists and carries too few prototypes
+ * still fails `--min-entries`, and a missing `--require` target still fails —
+ * `--allow-empty` is not a licence to publish an empty catalog over a good one,
+ * and it writes no output at all, so a previous build is left untouched.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -45,7 +59,7 @@ const SKIP_DIRS = new Set([
 const HTML_EXT = new Set([".html", ".htm"]);
 
 function parseArgs(argv) {
-  const opts = { root: null, out: null, minEntries: 0, require: [] };
+  const opts = { root: null, out: null, minEntries: 0, require: [], allowEmpty: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => {
@@ -58,9 +72,10 @@ function parseArgs(argv) {
     else if (arg === "--out") opts.out = next();
     else if (arg === "--min-entries") opts.minEntries = Number(next());
     else if (arg === "--require") opts.require.push(next());
+    else if (arg === "--allow-empty") opts.allowEmpty = true;
     else if (arg === "--help" || arg === "-h") {
       console.log(
-        "usage: build-prototype-catalog.mjs --root <dir> --out <dir> [--min-entries N] [--require <path>]",
+        "usage: build-prototype-catalog.mjs --root <dir> --out <dir> [--min-entries N] [--require <path>] [--allow-empty]",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -155,7 +170,17 @@ function main() {
   const root = path.resolve(opts.root);
   const out = path.resolve(opts.out);
   if (!fs.existsSync(root)) {
-    throw new Error(`prototype root does not exist: ${root}`);
+    if (!opts.allowEmpty) {
+      throw new Error(
+        `prototype root does not exist: ${root} — a named root that does not resolve is broken input; pass --allow-empty only when an absent root means "nothing to build yet"`,
+      );
+    }
+    // Nothing to build, and nothing to say about `out`: the previous build stays
+    // where it is, so an empty run cannot erase a catalog that is still live.
+    console.log(
+      `build-prototype-catalog: prototype root absent (${root}) — nothing to build (--allow-empty). Wrote nothing to ${out}.`,
+    );
+    return;
   }
 
   fs.rmSync(out, { recursive: true, force: true });

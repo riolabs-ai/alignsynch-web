@@ -46,6 +46,13 @@ node scripts/build-prototype-catalog.mjs --root <prototypes dir> --out .catalog-
 a red workflow: the workflow passes both, so a checkout that cannot see the full set fails instead of
 publishing a short catalogue over a complete one.
 
+A root that does not exist is a **hard error** by default, for the same reason: a `--root` that was
+typed and does not resolve is a broken run, and it must not read as a successful empty one. `--allow-empty`
+says "an absent root means there is nothing to publish yet"; it writes no output at all — a previous
+build in `--out` is left exactly where it is — and it excuses nothing else (too few rows still fails
+`--min-entries`, a missing `--require` target still fails). The workflow does not pass it; it gates the
+build step on the tree instead, so CI keeps the strict default.
+
 ## Secrets the workflow needs
 
 | Name                | What it is                                    | If it is absent                                                                            |
@@ -57,13 +64,29 @@ publishing a short catalogue over a complete one.
 `fetch-depth: 0` in the checkout is load-bearing: a shallow clone has neither history nor tags, and
 every row would be marked as an mtime guess.
 
-## The open question
+## Two absences, two answers
 
 Only 77 of the 252 rows are in a repository (54 in `docs/`, 23 in an unrelated local tree); the other
-175 — including the deep-link target above — live on one workstation. The workflow therefore expects
-the prototypes at `./prototypes` (override: the repository variable `PROTOTYPE_ROOT`). Until they are
-there, the first `main` run after this lands is red by design, which is the honest state: the decision
-is tracked in issue 1405.
+175 — including the deep-link target above — live on one workstation. The workflow therefore expects the
+prototypes at `./prototypes` (override: the repository variable `PROTOTYPE_ROOT`), and the decision that
+commits them is tracked in issue 1405. Until then the default root is legitimately absent, and the
+workflow has to survive a tree with nothing to publish without going quiet about a tree it cannot read.
+
+| What the tree looks like                                             | Workflow                                                                                                                  | Builder                                                          |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `./prototypes` absent, no `PROTOTYPE_ROOT` set                       | green, one step: `::notice::prototype root absent (./prototypes) — nothing to build yet`; nothing built, nothing deployed | exit 1 — `--allow-empty` is how a caller says "nothing to build" |
+| `PROTOTYPE_ROOT` set to a path that is not in the tree (a typo)      | red: `::error::PROTOTYPE_ROOT is set to '…' but that directory does not exist in this tree`                               | exit 1 — the workflow passes no flag                             |
+| root present, fewer rows than `--min-entries`, or a `--require` gone | red                                                                                                                       | exit 1                                                           |
+| `VERCEL_TOKEN` absent                                                | red, naming the secret                                                                                                    | n/a                                                              |
+| build error, or a deploy that never converges                        | red, naming the reason                                                                                                    | exit 1                                                           |
+
+The one judge is the `detect prototype root` step; every step that needs the tree — the token, the build,
+the deploy, the smoke check — is gated on its `present` output. So the answer is one visible line in the
+log rather than a stack of skipped steps, and **the two failures stay different**: "no input yet" is a
+notice, "input is broken" is a failure. A named root that does not resolve is the second one, which is why
+a typo fails instead of skipping — a guard that skipped on any absent directory would turn a wrong
+`PROTOTYPE_ROOT` into a green run that deployed nothing, which is the state this workflow exists to make
+impossible.
 
 ## What this page is not
 

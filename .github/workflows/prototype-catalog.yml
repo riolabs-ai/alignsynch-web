@@ -8,6 +8,16 @@ name: prototype catalog
 # PROTOTYPE_ROOT). `fetch-depth: 0` is not optional — dates come from
 # `git log -1 --format=%cs` and versions from `git describe --tags`, so a
 # shallow clone would mark every row as untracked.
+#
+# TWO ABSENCES, TWO ANSWERS (#1419). `prototypes/` is not committed yet, so the
+# default root is legitimately absent and there is nothing to publish: the job
+# says so with a notice and stops green, because a red `main` for "no input"
+# teaches everyone to ignore this workflow. A root that was NAMED and does not
+# resolve — a typo in PROTOTYPE_ROOT, a moved tree — is broken input and fails
+# here, by name. Everything that needs the tree (the token, the build, the
+# deploy, the smoke check) is gated on the same verdict and stays exactly as
+# loud as it was: the point is to tell "no input yet" from "input is broken",
+# never to make the job quiet.
 
 on:
   push:
@@ -22,7 +32,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROTOTYPE_ROOT: ${{ vars.PROTOTYPE_ROOT || 'prototypes' }}
   CATALOG_OUT: .catalog-site
   DEEP_LINK: project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html
   SITE: https://alignsynch-mockups.vercel.app
@@ -37,10 +46,47 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # The one judge. Everything below asks this step, so "is there a tree?" is
+      # answered once and the answer is visible in the log rather than inferred
+      # from a stack of skipped steps. `configured` is what separates the two
+      # absences: the default root may legitimately not exist yet, a root that
+      # was named must.
+      #
+      # The repository variable arrives through `env` and is quoted in the
+      # script; it is never interpolated into a `run:` string, so its value
+      # cannot become shell syntax.
+      - name: detect prototype root
+        id: root
+        env:
+          VAR_ROOT: ${{ vars.PROTOTYPE_ROOT }}
+        run: |
+          set -euo pipefail
+          if [ -n "${VAR_ROOT:-}" ]; then
+            root="$VAR_ROOT"
+            configured=true
+          else
+            root=prototypes
+            configured=false
+          fi
+          echo "path=$root" >> "$GITHUB_OUTPUT"
+          echo "configured=$configured" >> "$GITHUB_OUTPUT"
+          if [ -d "$root" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+            echo "prototype root present: $root"
+            exit 0
+          fi
+          echo "present=false" >> "$GITHUB_OUTPUT"
+          if [ "$configured" = "true" ]; then
+            echo "::error::PROTOTYPE_ROOT is set to '$root' but that directory does not exist in this tree. A named root that does not resolve is broken input, not missing input — fix the path, or unset the repository variable to build from ./prototypes."
+            exit 1
+          fi
+          echo "::notice::prototype root absent (./$root) — nothing to build yet. The prototypes are committed by the decision tracked in issue 1405 and this workflow rebuilds and deploys them the moment they land. Nothing was built and nothing was deployed."
+
       # Fail loudly and first: a missing token must never look like a skipped
       # deploy. Without this the Vercel CLI fails later with an auth error that
       # reads like a build problem.
       - name: require VERCEL_TOKEN
+        if: steps.root.outputs.present == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -51,10 +97,17 @@ jobs:
           echo "VERCEL_TOKEN present"
 
       - uses: actions/setup-node@v4
+        if: steps.root.outputs.present == 'true'
         with:
           node-version-file: .nvmrc
 
+      # No --allow-empty here on purpose: this step only runs when the tree was
+      # found, so the builder keeps its strict default and a root that vanished
+      # between the two steps still fails loudly.
       - name: build catalog
+        if: steps.root.outputs.present == 'true'
+        env:
+          PROTOTYPE_ROOT: ${{ steps.root.outputs.path }}
         run: |
           node scripts/build-prototype-catalog.mjs \
             --root "$PROTOTYPE_ROOT" \
@@ -63,6 +116,7 @@ jobs:
             --require "$DEEP_LINK"
 
       - name: deploy to production
+        if: steps.root.outputs.present == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -75,6 +129,7 @@ jobs:
           npx --yes vercel@latest deploy "$CATALOG_OUT" --prod --yes --token "$VERCEL_TOKEN"
 
       - name: smoke every published path
+        if: steps.root.outputs.present == 'true'
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
