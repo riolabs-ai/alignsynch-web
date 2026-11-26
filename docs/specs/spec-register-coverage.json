@@ -1,0 +1,1314 @@
+{
+  "version": 1,
+  "asOf": "2026-11-26",
+  "register": {
+    "file": "VALIDATION.csv",
+    "rows": 88,
+    "sha256": "0c14eed64fef1190b89abf8d668a4ab7a2313ef48ad0616acf612deaaee070d8"
+  },
+  "source": {
+    "repo": "riolabs-ai/alignsynch-web",
+    "entries": 1447,
+    "issues": 521,
+    "pullRequests": 926,
+    "withMarker": 28,
+    "withoutMarker": 493
+  },
+  "coverage": {
+    "rows": 88,
+    "covered": 28,
+    "uncovered": 60
+  },
+  "join": {
+    "duplicateMarkers": [],
+    "orphanMarkers": [],
+    "shape": {
+      "firstLine": 28,
+      "ownLineOnly": 0,
+      "inline": []
+    }
+  },
+  "labels": {
+    "missingSpec": [],
+    "missingTier": [],
+    "tierMismatch": [
+      {
+        "rowId": "APP-15",
+        "number": 1272,
+        "release": "Fills Gap · R1",
+        "label": "tier/R2"
+      }
+    ],
+    "missingMilestone": [
+      {
+        "rowId": "APP-14",
+        "number": 1271
+      },
+      {
+        "rowId": "APP-15",
+        "number": 1272
+      }
+    ],
+    "milestones": [
+      {
+        "name": "v2.2.0 — the member surface",
+        "count": 14
+      },
+      {
+        "name": "v2.0.0 — the official release",
+        "count": 5
+      },
+      {
+        "name": "v2.3.0 — the operator console and the public site",
+        "count": 5
+      },
+      {
+        "name": "(none)",
+        "count": 2
+      },
+      {
+        "name": "v2.deferred",
+        "count": 1
+      },
+      {
+        "name": "v2.0.0 — the acceptance certificate",
+        "count": 1
+      }
+    ],
+    "milestoneCollisions": [
+      {
+        "version": "v2.0.0",
+        "names": [
+          "v2.0.0 — the official release",
+          "v2.0.0 — the acceptance certificate"
+        ]
+      }
+    ],
+    "reviewed": 0,
+    "approved": 0
+  },
+  "drift": [
+    {
+      "rowId": "APP-05",
+      "status": "Tentative",
+      "number": 1268,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "APP-20",
+      "status": "Partial",
+      "number": 1274,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "APP-22",
+      "status": "Tentative",
+      "number": 1275,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "APP-46",
+      "status": "Partial",
+      "number": 1282,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "ADMIN-06",
+      "status": "Partial",
+      "number": 1287,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "WEB-07",
+      "status": "Tentative",
+      "number": 1289,
+      "state": "closed",
+      "agrees": false
+    },
+    {
+      "rowId": "WEB-08",
+      "status": "Partial",
+      "number": 1290,
+      "state": "closed",
+      "agrees": false
+    }
+  ],
+  "classes": {
+    "needs-issue": [],
+    "delivered-record": [
+      "APP-01",
+      "APP-12",
+      "APP-23",
+      "APP-24",
+      "ADMIN-01",
+      "ADMIN-07",
+      "WEB-05",
+      "OPS-03",
+      "B-01",
+      "B-02",
+      "B-03",
+      "B-04",
+      "B-05",
+      "B-06",
+      "B-07",
+      "B-08",
+      "B-09",
+      "B-10",
+      "B-11",
+      "B-12",
+      "APP-02",
+      "APP-06",
+      "APP-07",
+      "APP-08",
+      "APP-10",
+      "APP-17",
+      "APP-18",
+      "APP-19",
+      "APP-21",
+      "APP-25",
+      "APP-26",
+      "APP-27",
+      "APP-28",
+      "APP-31",
+      "APP-33",
+      "APP-38",
+      "APP-44",
+      "APP-45",
+      "ADMIN-02",
+      "ADMIN-03",
+      "ADMIN-04",
+      "WEB-01",
+      "WEB-02",
+      "WEB-03",
+      "WEB-04",
+      "WEB-09",
+      "OPS-02"
+    ],
+    "off-agreement": [
+      "APP-03",
+      "APP-04",
+      "APP-13",
+      "APP-29",
+      "APP-30",
+      "APP-32",
+      "APP-36",
+      "APP-42",
+      "APP-43",
+      "APP-48",
+      "WEB-10",
+      "OPS-05",
+      "OPS-06"
+    ]
+  },
+  "rows": [
+    {
+      "id": "APP-05",
+      "section": "Unfinished Work: TBD",
+      "group": "Play with Aspects",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Add a Household Pet Peeves template (content only).",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1268,
+        "state": "closed",
+        "tier": "tier/R1",
+        "milestone": "v2.0.0 — the official release",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1268"
+      }
+    },
+    {
+      "id": "APP-09",
+      "section": "Unfinished Work: TBD",
+      "group": "Play with Aspects",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1269,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1269"
+      }
+    },
+    {
+      "id": "APP-11",
+      "section": "Unfinished Work: TBD",
+      "group": "Play with Aspects",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1270,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1270"
+      }
+    },
+    {
+      "id": "APP-14",
+      "section": "Unfinished Work: TBD",
+      "group": "Register",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Walt decides on collecting age.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1271,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": null,
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1271"
+      }
+    },
+    {
+      "id": "APP-15",
+      "section": "Unfinished Work: TBD",
+      "group": "Register",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Sign up a fresh email on prod; record whether a verification email arrives. Built → Delivered, else move to R2.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1272,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": null,
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1272"
+      }
+    },
+    {
+      "id": "APP-16",
+      "section": "Unfinished Work: TBD",
+      "group": "Register",
+      "status": "Tentative",
+      "v2_0_0": "On Roadmap · Later",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1273,
+        "state": "open",
+        "tier": "tier/Later",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1273"
+      }
+    },
+    {
+      "id": "APP-20",
+      "section": "Unfinished Work: TBD",
+      "group": "Register",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1274,
+        "state": "closed",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1274"
+      }
+    },
+    {
+      "id": "APP-22",
+      "section": "Unfinished Work: TBD",
+      "group": "Invite",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Decide: optional note field on Stage 5, or mark Out of Scope with Walt.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1275,
+        "state": "closed",
+        "tier": "tier/R1",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1275"
+      }
+    },
+    {
+      "id": "APP-34",
+      "section": "Unfinished Work: TBD",
+      "group": "Share and Results",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1276,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1276"
+      }
+    },
+    {
+      "id": "APP-35",
+      "section": "Unfinished Work: TBD",
+      "group": "Share and Results",
+      "status": "Tentative",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1277,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1277"
+      }
+    },
+    {
+      "id": "APP-37",
+      "section": "Unfinished Work: TBD",
+      "group": "Discuss",
+      "status": "Partial",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Persist Discussion messages (#1189); reload keeps the thread.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1278,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1278"
+      }
+    },
+    {
+      "id": "APP-39",
+      "section": "Unfinished Work: TBD",
+      "group": "Discuss",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1279,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1279"
+      }
+    },
+    {
+      "id": "APP-40",
+      "section": "Unfinished Work: TBD",
+      "group": "Discuss",
+      "status": "Tentative",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1280,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1280"
+      }
+    },
+    {
+      "id": "APP-41",
+      "section": "Unfinished Work: TBD",
+      "group": "Discuss",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1281,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1281"
+      }
+    },
+    {
+      "id": "APP-46",
+      "section": "Unfinished Work: TBD",
+      "group": "Plans and Billing",
+      "status": "Partial",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Show invoice/receipt link (provider portal) on the Payment tab, or record that the provider emails receipts.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1282,
+        "state": "closed",
+        "tier": "tier/R1",
+        "milestone": "v2.0.0 — the official release",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1282"
+      }
+    },
+    {
+      "id": "APP-47",
+      "section": "Unfinished Work: TBD",
+      "group": "Plans and Billing",
+      "status": "Tentative",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1283,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1283"
+      }
+    },
+    {
+      "id": "APP-49",
+      "section": "Unfinished Work: TBD",
+      "group": "Coaches and Professionals",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Walt decides whether Coach invite is in 2.0 (scaffold exists).",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1284,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1284"
+      }
+    },
+    {
+      "id": "APP-50",
+      "section": "Unfinished Work: TBD",
+      "group": "Coaches and Professionals",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Walt confirms Branded Coach is post-2.0.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1285,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.2.0 — the member surface",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1285"
+      }
+    },
+    {
+      "id": "ADMIN-05",
+      "section": "Unfinished Work: TBD",
+      "group": "Admin",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1286,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.3.0 — the operator console and the public site",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1286"
+      }
+    },
+    {
+      "id": "ADMIN-06",
+      "section": "Unfinished Work: TBD",
+      "group": "Admin",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1287,
+        "state": "closed",
+        "tier": "tier/R2",
+        "milestone": "v2.0.0 — the official release",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1287"
+      }
+    },
+    {
+      "id": "WEB-06",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Decide: no blog at launch (hide `/news`) or a later loop.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1288,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.3.0 — the operator console and the public site",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1288"
+      }
+    },
+    {
+      "id": "WEB-07",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Publish `/glossary` from the docs glossary; Reviews waits for real reviews.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1289,
+        "state": "closed",
+        "tier": "tier/R1",
+        "milestone": "v2.0.0 — the official release",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1289"
+      }
+    },
+    {
+      "id": "WEB-08",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Partial",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Add `app/sitemap.ts` and `app/robots.ts` for the public routes.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1290,
+        "state": "closed",
+        "tier": "tier/R1",
+        "milestone": "v2.0.0 — the official release",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1290"
+      }
+    },
+    {
+      "id": "WEB-11",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Walt signs off on dropping watermark/no-print.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1291,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.3.0 — the operator console and the public site",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1291"
+      }
+    },
+    {
+      "id": "WEB-12",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Tentative",
+      "v2_0_0": "On Roadmap · Later",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1292,
+        "state": "open",
+        "tier": "tier/Later",
+        "milestone": "v2.deferred",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1292"
+      }
+    },
+    {
+      "id": "WEB-13",
+      "section": "Unfinished Work: TBD",
+      "group": "Website",
+      "status": "Tentative",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Walt confirms hidden pages are out of 2.0.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1293,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.3.0 — the operator console and the public site",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1293"
+      }
+    },
+    {
+      "id": "OPS-01",
+      "section": "Unfinished Work: TBD",
+      "group": "Launch and Operations",
+      "status": "Partial",
+      "v2_0_0": "Fills Gap · R1",
+      "next_acceptance": "Tag 2.0.0 after the open PM PRs land; deploy; collect signatures.",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1294,
+        "state": "open",
+        "tier": "tier/R1",
+        "milestone": "v2.0.0 — the acceptance certificate",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1294"
+      }
+    },
+    {
+      "id": "OPS-04",
+      "section": "Unfinished Work: TBD",
+      "group": "Launch and Operations",
+      "status": "Partial",
+      "v2_0_0": "On Roadmap · R2",
+      "next_acceptance": "—",
+      "class": "needs-issue",
+      "issue": {
+        "number": 1295,
+        "state": "open",
+        "tier": "tier/R2",
+        "milestone": "v2.3.0 — the operator console and the public site",
+        "reviewed": false,
+        "approved": false,
+        "url": "https://github.com/riolabs-ai/alignsynch-web/issues/1295"
+      }
+    },
+    {
+      "id": "APP-01",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Play with Aspects",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-12",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Register",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-23",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Invite",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-24",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Invite",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "ADMIN-01",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Admin",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "ADMIN-07",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Admin",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-05",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Website",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "OPS-03",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Launch and Operations",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-01",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2 · #1235 merged #1236 merged",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-02",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-03",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-04",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-05",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-06",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-07",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-08",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-09",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-10",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-11",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "B-12",
+      "section": "Over-Spec Deliverables in v2.0",
+      "group": "Beyond the Agreement",
+      "status": "Over-Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-03",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Play with Aspects",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-04",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Play with Aspects",
+      "status": "Out of Scope",
+      "v2_0_0": "Future Version",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-13",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Register",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-29",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Opinions",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-30",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Share and Results",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-32",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Share and Results",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-36",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Share and Results",
+      "status": "Out of Scope",
+      "v2_0_0": "Future Version",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-42",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Plans and Billing",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-43",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Plans and Billing",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2 · #1237 merged",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-48",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Plans and Billing",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2 · #1235 merged #1236 merged",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "WEB-10",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Website",
+      "status": "Offset",
+      "v2_0_0": "Offset in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "OPS-05",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Launch and Operations",
+      "status": "Out of Scope",
+      "v2_0_0": "Future Version",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "OPS-06",
+      "section": "Under-Spec or Moved to a Future Version",
+      "group": "Launch and Operations",
+      "status": "Out of Scope",
+      "v2_0_0": "Future Version",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "off-agreement"
+    },
+    {
+      "id": "APP-02",
+      "section": "Delivered as Specified",
+      "group": "Play with Aspects",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-06",
+      "section": "Delivered as Specified",
+      "group": "Play with Aspects",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-07",
+      "section": "Delivered as Specified",
+      "group": "Play with Aspects",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-08",
+      "section": "Delivered as Specified",
+      "group": "Play with Aspects",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-10",
+      "section": "Delivered as Specified",
+      "group": "Play with Aspects",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-17",
+      "section": "Delivered as Specified",
+      "group": "Register",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-18",
+      "section": "Delivered as Specified",
+      "group": "Register",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-19",
+      "section": "Delivered as Specified",
+      "group": "Register",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-21",
+      "section": "Delivered as Specified",
+      "group": "Invite",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-25",
+      "section": "Delivered as Specified",
+      "group": "Invite",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-26",
+      "section": "Delivered as Specified",
+      "group": "Opinions",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-27",
+      "section": "Delivered as Specified",
+      "group": "Opinions",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-28",
+      "section": "Delivered as Specified",
+      "group": "Opinions",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-31",
+      "section": "Delivered as Specified",
+      "group": "Share and Results",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-33",
+      "section": "Delivered as Specified",
+      "group": "Share and Results",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-38",
+      "section": "Delivered as Specified",
+      "group": "Discuss",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-44",
+      "section": "Delivered as Specified",
+      "group": "Plans and Billing",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "APP-45",
+      "section": "Delivered as Specified",
+      "group": "Plans and Billing",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "ADMIN-02",
+      "section": "Delivered as Specified",
+      "group": "Admin",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "ADMIN-03",
+      "section": "Delivered as Specified",
+      "group": "Admin",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "ADMIN-04",
+      "section": "Delivered as Specified",
+      "group": "Admin",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-01",
+      "section": "Delivered as Specified",
+      "group": "Website",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-02",
+      "section": "Delivered as Specified",
+      "group": "Website",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-03",
+      "section": "Delivered as Specified",
+      "group": "Website",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-04",
+      "section": "Delivered as Specified",
+      "group": "Website",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "WEB-09",
+      "section": "Delivered as Specified",
+      "group": "Website",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    },
+    {
+      "id": "OPS-02",
+      "section": "Delivered as Specified",
+      "group": "Launch and Operations",
+      "status": "Delivered",
+      "v2_0_0": "Shipped in rc1.2",
+      "next_acceptance": "—",
+      "issue": null,
+      "class": "delivered-record"
+    }
+  ]
+}

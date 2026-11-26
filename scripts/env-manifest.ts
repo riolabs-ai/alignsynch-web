@@ -622,6 +622,19 @@ export const OUT_OF_SCOPE: readonly OutOfScopeRow[] = [
     why: "triage:founder — the per-call identity wrapper's path; a test stubs it, a run never sets it",
   },
 
+  // --- Local tooling: `pnpm spec:coverage` ----------------------------------------------------
+  // The register coverage report reads a CSV that is deliberately outside this checkout and talks to
+  // GitHub; both knobs exist so a maintainer can point one run somewhere else. Nothing a deployment
+  // renders, nothing the app reads.
+  {
+    name: "SPEC_VALIDATION_CSV",
+    why: "spec:coverage — where the agreement's VALIDATION.csv lives on this machine; never in the repo",
+  },
+  {
+    name: "SPEC_COVERAGE_REPO",
+    why: "spec:coverage — an explicit OWNER/REPO for a run outside this checkout; gh's own convention",
+  },
+
   // --- Platform-provided ----------------------------------------------------------------------
   { name: "NODE_ENV", why: "set by node/next, never by a deployment's config file" },
   { name: "NEXT_PHASE", why: "next's own build-phase marker (instrumentation.ts)" },
