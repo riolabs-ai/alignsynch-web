@@ -2,10 +2,16 @@
  * `.env.local` → `process.env`, for the node scripts (#145).
  *
  * Next loads `.env*` itself; a plain `node scripts/x.mjs` does not. The file is gitignored and
- * is written by `neon env pull`, so this reader is the only thing that has to know its shape —
- * it is deliberately not a dotenv: no expansion, no `export` keywords, no quoting rules beyond
- * the two quote characters. A value is taken literally, which is what a connection string and a
- * signing secret need.
+ * is written by `neon env pull` (bare values) and by `pnpm env:render` (single-quoted values), so
+ * this reader is the only thing that has to know its shape — it is deliberately not a dotenv: no
+ * expansion, no `export` keywords, and the quoting rule is the renderer's own. See
+ * `formatEnvLine` / `parseEnvValue` in `scripts/env-manifest.ts`: a value is a **single-quoted
+ * shell literal**, an embedded `'` written `'\''`, and this reader undoes exactly that. Bare and
+ * double-quoted values are still read literally, because `neon env pull` writes bare ones.
+ *
+ * Getting this wrong is not cosmetic: the file is also sourced by bash (`withenv.sh`,
+ * `set -a; . ./.env.local`), so a value the reader accepts but the shell truncates is a
+ * half-loaded environment — which is how the v2.1.0 cut's check 8 failed on a URL's `&` (#1422).
  *
  * Nothing here prints a value. A missing variable is reported by name only.
  */
@@ -18,6 +24,24 @@ export const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 const KEY = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
+/**
+ * One value, in the syntax `formatEnvLine` in `scripts/env-manifest.ts` writes — the authority for
+ * this file's shape, and the reason this reader is not a dotenv.
+ *
+ * `pnpm env:render` writes every value single-quoted (`NAME='…'`) so that `. ./.env.local` in bash
+ * loads it whole; an embedded `'` is written `'\''`. Bare values stay bare, because `neon env pull`
+ * writes those too.
+ */
+function unquote(raw) {
+  const value = raw.trim();
+  if (value.length < 2) return value;
+  const first = value[0];
+  if (value[value.length - 1] !== first) return value;
+  if (first === "'") return value.slice(1, -1).replaceAll("'\\''", "'");
+  if (first === '"') return value.slice(1, -1).replaceAll('\\"', '"');
+  return value;
+}
+
 function parseEnv(text) {
   const entries = new Map();
   for (const rawLine of text.split(/\r?\n/)) {
@@ -27,13 +51,7 @@ function parseEnv(text) {
     if (separator === -1) continue;
     const key = line.slice(0, separator).trim();
     if (!KEY.test(key)) continue;
-    let value = line.slice(separator + 1).trim();
-    const quoted =
-      value.length >= 2 &&
-      ((value.startsWith('"') && value.endsWith('"')) ||
-        (value.startsWith("'") && value.endsWith("'")));
-    if (quoted) value = value.slice(1, -1);
-    entries.set(key, value);
+    entries.set(key, unquote(line.slice(separator + 1)));
   }
   return entries;
 }

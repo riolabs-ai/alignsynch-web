@@ -23,6 +23,11 @@
  *      (`scripts/neon-endpoints.mjs`) marks the paused project's branches `retired: true`; a vault
  *      row still holding one resolves as `missing` with a note naming the row and the endpoint, so
  *      a render after a project move refuses instead of publishing the dead database (#1339).
+ *   4. **Every value is written as a single-quoted shell literal** (`NAME='…'`, an embedded `'`
+ *      written `'\''`), and a line that does not re-parse to its own bytes refuses the render.
+ *      Bare values are why the v2.1.0 cut could not pass check 8: a Neon URL's `&` ends the shell
+ *      assignment, so `set -a; . .env.local` left `DATABASE_URL` unset while every plain value
+ *      loaded — a half-loaded environment that blamed the wrong variable (#1422).
  *
  * The output is deterministic — rows in table order, no clock, no path — so rendering twice is
  * byte-identical and a diff of the rendered file is a diff of the table.
@@ -40,7 +45,10 @@ import {
   type EnvironmentId,
   type EnvRow,
   type Source,
+  envFileValue,
+  formatEnvLine,
   parseEnvFile,
+  parseEnvValue,
   sourceFor,
 } from "./env-manifest";
 import { KNOWN_ENDPOINTS } from "./neon-endpoints.mjs";
@@ -98,10 +106,29 @@ export function carriedFile(environment: EnvironmentId): string {
   return file;
 }
 
-/** `NAME=value`, quoted only when the value would not survive a naive parse. */
+/**
+ * `NAME='value'` — every value a single-quoted shell literal, and the line is proved before it is
+ * emitted.
+ *
+ * The old form quoted only when a value matched `[\s#'"]`, so a Neon URL went out bare and its `&`
+ * truncated the line on `. .env.local`: `DATABASE_URL` unset, every plain variable loaded, and both
+ * the v2.1.0 cut (check 8) and `demo:verify` blamed the wrong thing. Quoting "when it looks risky"
+ * is the defect — a value is data, so it is always quoted, and the one form that expands nothing is
+ * `'…'` with an embedded quote written `'\''`.
+ *
+ * Two refusals here, both by name and never by value: a value carrying a line break _inside_ it
+ * cannot be a `NAME=value` line at all (a trailing one is framing — see `envFileValue`), and a line
+ * that does not re-parse to the exact bytes it was built from would be a file that half-loads — so
+ * the renderer fails instead of writing it.
+ */
 function envLine(name: string, value: string): string {
-  const needsQuotes = /[\s#'"]/.test(value);
-  return `${name}=${needsQuotes ? `"${value.replaceAll('"', '\\"')}"` : value}`;
+  const carried = envFileValue(value);
+  const line = formatEnvLine(name, value);
+  const separator = line.indexOf("=");
+  if (parseEnvValue(line.slice(separator + 1)) !== carried) {
+    throw new Error(`env-render: ${name} does not survive this repo's own env-file syntax`);
+  }
+  return line;
 }
 
 /**
@@ -225,7 +252,38 @@ export function planRender(input: {
       }
     }
 
-    resolutions.push({ name: row.name, status: "ok", from: describe(source, environment) });
+    // A value a `NAME=value` line cannot carry is refused per row, the same way a retired endpoint
+    // is: by name, with a note, and never by letting the line out. An interior line break is
+    // unrepresentable, so the row has not resolved — a required one refuses the file, an optional
+    // one is skipped and said out loud. A trailing one is framing and is dropped (`envFileValue`),
+    // with a note, because the loader trims it anyway and the app has never seen it.
+    const carriedValue = envFileValue(value);
+    if (/[\r\n]/.test(carriedValue)) {
+      const resolution: Resolution = {
+        name: row.name,
+        status: "missing",
+        from: describe(source, environment),
+        note:
+          "the value carries a line break inside it, which a `NAME=value` line cannot hold — " +
+          "trim the source row; nothing was written for this name",
+      };
+      resolutions.push(resolution);
+      if (requirement === "required") missing.push(resolution);
+      continue;
+    }
+
+    resolutions.push({
+      name: row.name,
+      status: "ok",
+      from: describe(source, environment),
+      ...(carriedValue === value
+        ? {}
+        : {
+            note:
+              "the source value ends with a line break, which no env file can carry — written " +
+              "without it (the loader trims it anyway), so the value the app sees is unchanged",
+          }),
+    });
     lines.push(envLine(row.name, value));
   }
 
@@ -234,6 +292,17 @@ export function planRender(input: {
     if (entry.carry !== true) continue;
     const value = carried.get(entry.name);
     if (value === undefined || value === "") continue;
+    // Same refusal as a table row, and for the same reason: one unrepresentable value must not
+    // take the whole render down, and it must not be written as a line that breaks the file.
+    if (/[\r\n]/.test(envFileValue(value))) {
+      resolutions.push({
+        name: entry.name,
+        status: "missing",
+        from: `carried ${ENVIRONMENT_FILES[environment]}`,
+        note: "the carried value carries a line break inside it — not written; fix the file it came from",
+      });
+      continue;
+    }
     resolutions.push({
       name: entry.name,
       status: "ok",

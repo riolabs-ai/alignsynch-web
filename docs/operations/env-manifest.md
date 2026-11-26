@@ -90,6 +90,17 @@ and writes nothing partial for that file: a half-written env file is worse than 
 next command reads it. The output is deterministic (table order, no clock, no path), so rendering
 twice is byte-identical and a diff of a rendered file is a diff of the table.
 
+**Every value is written as a single-quoted shell literal** — `NAME='…'`, an embedded `'` written
+`'\''`. The files are read three ways (bash `set -a; . ./.env.local` through `withenv.sh`, Next's
+own loader, and `scripts/load-env.mjs` for the `db:*` scripts), and a bare value is the one form
+those three disagree about: `&` is a shell control operator, so an unquoted Neon URL ends the
+assignment there, backgrounds it with an empty value, and runs the rest as a command — the file
+loads _half_ and the failure is attributed to the wrong variable. That is why the v2.1.0 cut
+refused on check 8 with `DATABASE_URL` unset while every plain value was present (#1422). The
+renderer re-parses each line it emits and fails rather than write a line that does not round-trip;
+a value with a line break _inside_ it is unresolved by name, and a _trailing_ one is framing and is
+dropped, since no env file can carry it and the loader trims it anyway.
+
 `env:sync` **defaults to `--check`** — names and scope coverage only, because Vercel masks a value
 and an encrypted value cannot be compared. `--write` is the only path that changes a target, and
 `--write --target production` additionally needs `--confirm-production`. Values come from the

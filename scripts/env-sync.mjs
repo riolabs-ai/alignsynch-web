@@ -161,6 +161,24 @@ function token() {
   return t;
 }
 
+/**
+ * One value, in the syntax `formatEnvLine` in `scripts/env-manifest.ts` writes.
+ *
+ * This reader pushes what `pnpm env:render` wrote into a Vercel scope, so it must agree with the
+ * renderer byte for byte: single-quoted values with `'` written `'\''`, bare values (a
+ * `neon env pull` file) taken literally. A value that reached Vercel with its quotes still on it, or
+ * with its tail cut at a `&`, is the #1422 defect arriving at a different door.
+ */
+function unquote(raw) {
+  const value = raw.trim();
+  if (value.length < 2) return value;
+  const first = value[0];
+  if (value[value.length - 1] !== first) return value;
+  if (first === "'") return value.slice(1, -1).replaceAll("'\\''", "'");
+  if (first === '"') return value.slice(1, -1).replaceAll('\\"', '"');
+  return value;
+}
+
 function parseEnv(text) {
   const out = new Map();
   for (const raw of text.split("\n")) {
@@ -169,11 +187,7 @@ function parseEnv(text) {
     const eq = line.indexOf("=");
     if (eq < 1) continue;
     const key = line.slice(0, eq).trim();
-    let val = line.slice(eq + 1).trim();
-    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-      val = val.slice(1, -1);
-    }
-    out.set(key, val);
+    out.set(key, unquote(line.slice(eq + 1)));
   }
   return out;
 }
