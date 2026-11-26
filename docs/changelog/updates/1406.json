@@ -1,9 +1,11 @@
 {
-  "pr": 1405,
+  "pr": 1406,
   "date": "2026-11-26",
   "area": "dev",
   "summary": "`pnpm dev:ready` takes one lock-free census of a branch's content, demo accounts and admin seats, seeds only when that census says the branch is bare, and then starts the dev server.",
   "reader_impact": "A developer who opens `/demo` on a branch whose accounts are gone gets them back with one command, a branch with no database prints one line and starts, and `pnpm dev` still starts in under a second.",
-  "specs": ["docs/getting-started/demo.md"],
+  "specs": [
+    "docs/getting-started/demo.md"
+  ],
   "risk": "low"
 }
