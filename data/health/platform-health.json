@@ -1,46 +1,46 @@
 {
   "schemaVersion": 1,
-  "recordedAt": "2026-11-25T04:51:57.057Z",
+  "recordedAt": "2026-11-26T13:56:14.992Z",
   "recorder": "pnpm health:record",
   "dbVerify": {
     "command": "pnpm db:verify",
-    "ranAt": "2026-11-25T04:50:08.526Z",
+    "ranAt": "2026-11-26T13:54:18.944Z",
     "database": "demo branch (NEON_BRANCH=demo, neondb) · host ep-fancy-bar-bd0pzuz0.c-8.us-east-2.aws.neon.tech",
     "exitCode": 0,
     "result": "pass",
-    "summary": "✓ db:verify — 33 session(s) checked, 33 template(s) resolved, 29 template version(s) parsed with every relationship bound to one (0 copy(ies) authored at create, checked as structure), 29 published template(s) each with at least one version (no published badge over a template that cannot be copied), no Gap column, no `instance` table or column, 0 orphan session(s) (every session has a relationship), 33 invitation(s) with 33 missing a relationship (V32 reports all of them; 0 wanted), 27 active and 6 draft session(s) of 33 — every draft lacks a Counterparty seat and every active one has it (V33 fails on a mismatch; the draft count is the \"invited but not started\" census), 22 active session(s) whose relationship mirror is NULL (reported; the seat is the fact), 0 UPDATE path(s) against session/opinion across 649 source file(s) (a scored session is immutable), 5 relationship(s) with one initiator member and no double coach, every mode matches its answers, every Setting one of soft/full with 33 seeded setting(s) matching the fixture, 13 of 33 seeded session(s) complete, 33 seeded relationship(s) coherent with their own session (one lifecycle word, its own invitation row — claimed where a seat exists, present on a draft), 10 party binding(s) resolve to an account, 2 seeded binding(s) intact, 0 unlock mark(s) on complete instances only, 6 billing plan row(s) matching data/billing-plans.ts (2 live subscription(s)), 4 console column(s) nullable with no default, 0 submitted seat(s) with every Aspect answered, 2 mail event(s) recorded (1 address(es) suppressed), 3 contact message(s) in the inbox with 2 reply attempt(s), 1 broadcast send(s) recorded (3 address(es) mailed), 4 profile row(s) with a live account behind them (no orphan after a deletion), 1 open deletion job(s) none older than 24 h, 12 review artifact(s) with 3 TODO item(s) and 2 feedback issue(s) none in a closed/open mismatch, 149 seeded activity event(s) and 0 simulated (143 naming a seat, every one resolving to its own relationship), no drift",
+    "summary": "✓ db:verify — 33 session(s) checked, 33 template(s) resolved, 29 template version(s) parsed with every relationship bound to one (0 copy(ies) authored at create, checked as structure), 29 published template(s) each with at least one version (no published badge over a template that cannot be copied), no Gap column, no `instance` table or column, 0 orphan session(s) (every session has a relationship), 33 invitation(s) with 33 missing a relationship (V32 reports all of them; 0 wanted), 27 active and 6 draft session(s) of 33 — every draft lacks a Counterparty seat and every active one has it (V33 fails on a mismatch; the draft count is the \"invited but not started\" census), 22 active session(s) whose relationship mirror is NULL (reported; the seat is the fact), 0 UPDATE path(s) against session/opinion across 682 source file(s) (a scored session is immutable), 5 relationship(s) with one initiator member and no double coach, every mode matches its answers, every Setting one of soft/full with 33 seeded setting(s) matching the fixture, 13 of 33 seeded session(s) complete, 33 seeded relationship(s) coherent with their own session (one lifecycle word, its own invitation row — claimed where a seat exists, present on a draft), 10 party binding(s) resolve to an account, 2 seeded binding(s) intact, 0 unlock mark(s) on complete instances only, 6 billing plan row(s) matching data/billing-plans.ts (2 live subscription(s)), 4 console column(s) nullable with no default, 0 submitted seat(s) with every Aspect answered, 4 mail event(s) recorded (1 address(es) suppressed), 3 contact message(s) in the inbox with 2 reply attempt(s), 1 broadcast send(s) recorded (3 address(es) mailed), 3 profile row(s) with a live account behind them (no orphan after a deletion), 0 open deletion job(s) none older than 24 h, 13 review artifact(s) with 3 TODO item(s) and 2 feedback issue(s) none in a closed/open mismatch, 149 seeded activity event(s) and 0 simulated (143 naming a seat, every one resolving to its own relationship), no drift",
     "violations": []
   },
   "gate": {
     "lane": "code",
-    "seconds": 172.3,
-    "measuredAt": "2026-11-25T04:47:16.269Z",
+    "seconds": 567.5,
+    "measuredAt": "2026-11-26T13:44:16.290Z",
     "command": "env -i HOME… PATH… CI=1 HEALTH_RECORD_REFRESH=1 GATE_LANE=full bash scripts/verify.sh",
     "yield": {
-      "window": "2026-11-20",
-      "measuredAt": "2026-11-21T23:32:48.340Z",
-      "command": "python3 docs/gate-baseline.py --window 2026-11-20",
-      "successes": 14,
-      "runs": 14,
-      "percent": 100,
-      "runP50Seconds": 193,
-      "runP95Seconds": 271
+      "window": "2026-11-25",
+      "measuredAt": "2026-11-26T13:53:43.831Z",
+      "command": "python3 docs/gate-baseline.py --window 2026-11-25",
+      "successes": 22,
+      "runs": 28,
+      "percent": 78.6,
+      "runP50Seconds": 194,
+      "runP95Seconds": 247
     }
   },
   "production": {
     "state": "answering",
-    "version": "2.0.0-rc2",
-    "commit": "22faf9bfec1059990e19766ce839fc44fdfda3dd",
+    "version": "2.1.0",
+    "commit": "9e58e9eeae7108e5189a8d34bba204a87d21ed29",
     "status": 200,
-    "measuredAt": "2026-11-25T04:47:16.269Z",
+    "measuredAt": "2026-11-26T13:44:16.290Z",
     "source": "GET https://alignsynch.com/api/version",
     "behindMain": 0
   },
   "tree": {
-    "packageVersion": "2.0.0-rc2",
-    "latestTag": "v2.0.0-rc2",
-    "headSha": "22faf9bfec1059990e19766ce839fc44fdfda3dd",
-    "mainSha": "22faf9bfec1059990e19766ce839fc44fdfda3dd",
-    "measuredAt": "2026-11-25T04:47:14.674Z"
+    "packageVersion": "2.1.0",
+    "latestTag": "v2.1.0",
+    "headSha": "9e58e9eeae7108e5189a8d34bba204a87d21ed29",
+    "mainSha": "9e58e9eeae7108e5189a8d34bba204a87d21ed29",
+    "measuredAt": "2026-11-26T13:44:15.292Z"
   }
 }
