@@ -1,0 +1,9 @@
+{
+  "pr": 1409,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "The catalog rebuilds on every push to main from prototypes committed in this repo; dates come from `git log`, versions from the nearest tag plus the distance past it.",
+  "reader_impact": "All 225 rows carry a git date and a tag-derived version — no mtime guesses, no path-inferred versions — and the deep link at `/p/project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html` still resolves.",
+  "specs": ["docs/operations/prototype-catalog.md"],
+  "risk": "low"
+}

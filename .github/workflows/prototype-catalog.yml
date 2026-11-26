@@ -1,13 +1,19 @@
 name: prototype catalog
 
-# Rebuilds https://alignsynch-mockups.vercel.app from the prototypes in this
-# repository and deploys it. main only: a preview deployment of unreleased
+# Rebuilds https://alignsynch-mockups.vercel.app from the prototypes committed in
+# this repository and deploys it. main only: a preview deployment of unreleased
 # prototypes would multiply the surface and leak them.
 #
-# The prototypes live at ./prototypes (override with the repo variable
-# PROTOTYPE_ROOT). `fetch-depth: 0` is not optional — dates come from
-# `git log -1 --format=%cs` and versions from `git describe --tags`, so a
-# shallow clone would mark every row as untracked.
+# The prototypes live in two places, and both are declared by the builder
+# (`scripts/build-prototype-catalog.mjs`), not by this file:
+#
+#   prototypes/   → project-spec/**, project-reqs/**   (committed under #1405)
+#   docs/         → quizhub/quizhub/docs/**            (this repo's docs tree)
+#
+# `fetch-depth: 0` is not optional — dates come from `git log -1 --format=%cs`
+# and versions from `git describe --tags`, so a shallow clone would mark every
+# row as untracked (and `--fail-on-untracked` below would then fail the run,
+# which is the point: a guessed date is not a shipped date).
 
 on:
   push:
@@ -22,10 +28,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PROTOTYPE_ROOT: ${{ vars.PROTOTYPE_ROOT || 'prototypes' }}
   CATALOG_OUT: .catalog-site
   DEEP_LINK: project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html
   SITE: https://alignsynch-mockups.vercel.app
+  # The floor and the required row. 225 rows ship today (170 prototypes/ + 55 docs/);
+  # 220 leaves room to retire a handful without a red run, while still failing a
+  # checkout that cannot see the tree at all.
+  MIN_ENTRIES: 220
 
 jobs:
   deploy:
@@ -54,12 +63,21 @@ jobs:
         with:
           node-version-file: .nvmrc
 
+      # Dates and tags are the whole point of this workflow, so refuse to build
+      # from anything but a full, tracked checkout.
+      - name: check out full history
+        run: |
+          set -euo pipefail
+          git rev-parse --is-shallow-repository | grep -qx false || {
+            echo "::error::shallow clone — git dates and tags would be guesses"; exit 1; }
+          echo "commits: $(git rev-list --count HEAD) · tags: $(git tag | wc -l)"
+
       - name: build catalog
         run: |
           node scripts/build-prototype-catalog.mjs \
-            --root "$PROTOTYPE_ROOT" \
             --out "$CATALOG_OUT" \
-            --min-entries 250 \
+            --min-entries "$MIN_ENTRIES" \
+            --fail-on-untracked \
             --require "$DEEP_LINK"
 
       - name: deploy to production
@@ -79,10 +97,24 @@ jobs:
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE/p/$DEEP_LINK")
-            rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})')
+            rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})' )
             echo "attempt $attempt: deep link $code · live rows $rows"
-            if [ "$code" = "200" ] && [ "$rows" -ge 250 ]; then exit 0; fi
+            if [ "$code" = "200" ] && [ "$rows" -ge "$MIN_ENTRIES" ]; then exit 0; fi
             sleep 10
           done
           echo "::error::catalog deploy did not converge — deep link $code, live rows $rows"
           exit 1
+
+      - name: summary
+        if: always()
+        run: |
+          {
+            echo "### prototype catalog"
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| commit | \`${GITHUB_SHA:0:8}\` |"
+            echo "| required row | \`$DEEP_LINK\` |"
+            echo "| floor | $MIN_ENTRIES rows |"
+            echo "| site | $SITE |"
+          } >> "$GITHUB_STEP_SUMMARY"

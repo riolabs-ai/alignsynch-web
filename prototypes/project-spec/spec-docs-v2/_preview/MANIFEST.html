@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manifest · AlignSynch Docs</title>
+  <meta name="description" content="Every file in spec-docs-v2 as it is on disk, generated and then verified against the disk." />
+  <link rel="icon" type="image/png" href="/assets/brand/alignsynch-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button class="menu-btn" type="button" aria-label="Open navigation" data-menu-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <a class="brand" href="/">
+        <img src="/assets/brand/alignsynch-logo.png" alt="" width="28" height="28" />
+        <span>AlignSynch <em>Docs</em></span>
+      </a>
+      <span class="preview-badge">v2 preview</span>
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Toggle color theme">Theme</button>
+    </header>
+    <div class="body">
+      <aside class="sidebar" id="sidebar">
+        <a class="nav-home" href="/">Overview</a>
+<div class="nav-extra">
+<a class="" href="/README.html">Docs plan</a>
+<a class="" href="/INVENTORY.html">Feature inventory</a>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Project Spec 2.0</div>
+<div class="nav-group"><div class="nav-group-label">Overview</div><ul>
+<li><a class="nav-link" href="/scope/index.html">Index</a></li>
+</ul></div>
+<div class="nav-group nav-group--fixed" data-fixed="true" aria-expanded="true"><div class="nav-group-label">Validation</div><ul>
+<li><a class="nav-link" href="/scope/validation.html">Validation</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Story</div><ul>
+<li><a class="nav-link" href="/scope/01-play-with-aspects.html">01 Play With Aspects</a></li>
+<li><a class="nav-link" href="/scope/02-register.html">02 Register</a></li>
+<li><a class="nav-link" href="/scope/03-invite.html">03 Invite</a></li>
+<li><a class="nav-link" href="/scope/04-opinions.html">04 Opinions</a></li>
+<li><a class="nav-link" href="/scope/05-share.html">05 Share</a></li>
+<li><a class="nav-link" href="/scope/06-discuss.html">06 Discuss</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Around the Story</div><ul>
+<li><a class="nav-link" href="/scope/07-billing.html">07 Billing</a></li>
+<li><a class="nav-link" href="/scope/08-coaches.html">08 Coaches</a></li>
+<li><a class="nav-link" href="/scope/09-admin.html">09 Admin</a></li>
+<li><a class="nav-link" href="/scope/10-website.html">10 Website</a></li>
+<li><a class="nav-link" href="/scope/11-launch-and-operations.html">11 Launch and Operations</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Builder Docs</div>
+<div class="nav-group"><div class="nav-group-label">Introduction</div><ul>
+<li><a class="nav-link" href="/start/what-is-alignsynch.html">What Is Alignsynch</a></li>
+<li><a class="nav-link" href="/start/quickstart.html">Quickstart</a></li>
+<li><a class="nav-link" href="/start/core-concepts.html">Core Concepts</a></li>
+<li><a class="nav-link" href="/start/plans-and-trial.html">Plans and Trial</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Guides</div>
+<div class="nav-group"><div class="nav-group-label">Initiator</div><ul>
+<li><a class="nav-link" href="/guides/initiator/pick-a-template.html">Pick a Template</a></li>
+<li><a class="nav-link" href="/guides/initiator/set-up-details-settings-and-aspects.html">Set Up Details Settings and Aspects</a></li>
+<li><a class="nav-link" href="/guides/initiator/create-your-account.html">Create Your Account</a></li>
+<li><a class="nav-link" href="/guides/initiator/send-the-invite.html">Send the Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/edit-a-draft-or-sent-invite.html">Edit a Draft or Sent Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/copy-resend-or-cancel-an-invite.html">Copy Resend or Cancel an Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/if-a-draft-cant-be-created.html">If a Draft Cant Be Created</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-relationships-and-start.html">My Relationships and Start</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-templates.html">My Templates</a></li>
+<li><a class="nav-link" href="/guides/initiator/your-7-days-free.html">Your 7 Days Free</a></li>
+<li><a class="nav-link" href="/guides/initiator/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/initiator/add-a-card-or-take-your-extra-week.html">Add a Card or Take Your Extra Week</a></li>
+<li><a class="nav-link" href="/guides/initiator/payment.html">Payment</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Counterparty</div><ul>
+<li><a class="nav-link" href="/guides/counterparty/accept-or-decline-an-invite.html">Accept or Decline an Invite</a></li>
+<li><a class="nav-link" href="/guides/counterparty/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/counterparty/save-these-aspects-as-a-template.html">Save These Aspects as a Template</a></li>
+<li><a class="nav-link" href="/guides/counterparty/ask-to-be-removed.html">Ask to Be Removed</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Both People</div><ul>
+<li><a class="nav-link" href="/guides/shared/answer-the-assessment.html">Answer the Assessment</a></li>
+<li><a class="nav-link" href="/guides/shared/results-and-align.html">Results and Align</a></li>
+<li><a class="nav-link" href="/guides/shared/propose-a-change.html">Propose a Change</a></li>
+<li><a class="nav-link" href="/guides/shared/chat-and-discussion.html">Chat and Discussion</a></li>
+<li><a class="nav-link" href="/guides/shared/leave-a-relationship.html">Leave a Relationship</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Account & Settings</div><ul>
+<li><a class="nav-link" href="/guides/account/account-menu.html">Account Menu</a></li>
+<li><a class="nav-link" href="/guides/account/profile-and-password.html">Profile and Password</a></li>
+<li><a class="nav-link" href="/guides/account/delete-your-account.html">Delete Your Account</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Admin</div><ul>
+<li><a class="nav-link" href="/guides/admin/crud-and-permissions.html">Crud and Permissions</a></li>
+<li><a class="nav-link" href="/guides/admin/email-templates.html">Email Templates</a></li>
+<li><a class="nav-link" href="/guides/admin/who-sees-the-admin-rail.html">Who Sees the Admin Rail</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Reference</div>
+<div class="nav-group"><div class="nav-group-label">Stages 1–6</div><ul>
+<li><a class="nav-link" href="/reference/stages/stage-1-details.html">Stage 1 Details</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-2-settings.html">Stage 2 Settings</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-3-aspects.html">Stage 3 Aspects</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-4-account.html">Stage 4 Account</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-5-invite.html">Stage 5 Invite</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-6-align.html">Stage 6 Align</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">States & Status</div><ul>
+<li><a class="nav-link" href="/reference/states/relationship-states-by-role.html">Relationship States By Role</a></li>
+<li><a class="nav-link" href="/reference/states/status-chips.html">Status Chips</a></li>
+<li><a class="nav-link" href="/reference/states/answer-scale.html">Answer Scale</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Emails</div><ul>
+<li><a class="nav-link" href="/reference/emails/invitation.html">Invitation</a></li>
+<li><a class="nav-link" href="/reference/emails/counterparty-joined.html">Counterparty Joined</a></li>
+<li><a class="nav-link" href="/reference/emails/trial-started.html">Trial Started</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-initiator.html">Paused Initiator</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-counterparty.html">Paused Counterparty</a></li>
+<li><a class="nav-link" href="/reference/emails/release-notes-and-banners.html">Release Notes and Banners</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Copy & Glossary</div><ul>
+<li><a class="nav-link" href="/reference/copy/glossary.html">Glossary</a></li>
+<li><a class="nav-link" href="/reference/copy/retired-terms.html">Retired Terms</a></li>
+<li><a class="nav-link" href="/reference/copy/copy-rules.html">Copy Rules</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Changelog</div><ul>
+<li><a class="nav-link" href="/reference/changelog.html">Changelog</a></li>
+</ul></div>
+</div>
+      </aside>
+      <div class="overlay" data-menu-toggle hidden></div>
+      <main class="main">
+        <article class="article" id="article">
+          
+        <header class="doc-header">
+          <div class="doc-pills"><span class="pill pill-info">Generated · 19 Nov 2026</span><span class="pill pill-audience">Jaden</span><span class="pill pill-audience">Hermes</span><span class="pill pill-audience">build team</span></div>
+          <h1>Manifest</h1>
+          <p class="doc-summary">Every file in spec-docs-v2 as it is on disk, generated and then verified against the disk.</p>
+        </header>
+        
+          <p><strong>146 files</strong> besides this one: 53 Markdown, 92 PNG, 1 JSON. Each row was read from disk; the check re-hashes every row.</p>
+<h2 id="files">Files</h2>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Bytes</th>
+<th>SHA-256</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>INVENTORY.md</code></td>
+<td>17730</td>
+<td><code>7f148faaf9667b5ed58628939e3a1efced9e782a096ec12a1033475675ea1c6f</code></td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>9238</td>
+<td><code>d378105ab45b49ac520c491577d89ac47baecaa6cf8e02abde1c81aab5c0454b</code></td>
+</tr>
+<tr>
+<td><code>assets/account/account-menu-desktop.png</code></td>
+<td>124347</td>
+<td><code>fa265aeb6882cf638796bdbb9697c5c3de180c706ff8fcdf161f9dc291fc9d5c</code></td>
+</tr>
+<tr>
+<td><code>assets/account/delete-confirm-desktop.png</code></td>
+<td>170958</td>
+<td><code>3a2005b159f4c200dcc1e927a8774d4e5eca6fa82dbd0c15a017d4d32c4fd4c7</code></td>
+</tr>
+<tr>
+<td><code>assets/account/delete-confirm-mobile.png</code></td>
+<td>132659</td>
+<td><code>ca4e0076f7799721192a6c709274c31fc2a905435a1d971768e7611bd9a4a47f</code></td>
+</tr>
+<tr>
+<td><code>assets/account/settings-desktop.png</code></td>
+<td>144887</td>
+<td><code>7ecf9afbc185dbf33324d3f6bd912be96782770809de2eeffe46961a93e792a4</code></td>
+</tr>
+<tr>
+<td><code>assets/account/settings-mobile.png</code></td>
+<td>115633</td>
+<td><code>49364151aed92f1751726a10f83dc189a677d697f4fde565e0723a760af12415</code></td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/matrix-filtered-table-desktop.png</code></td>
+<td>171676</td>
+<td><code>1ac8e883b00e3e94fdf1b2efa0f887ef0a5fe5624ee5ad7281a376dd3d845c7d</code></td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/matrix-top-desktop.png</code></td>
+<td>256183</td>
+<td><code>ac20f678865db6bb4da46f21149ddc4c5412f5db97ad5920803c8cda4ad96cfe</code></td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/source-unreadable-desktop.png</code></td>
+<td>118050</td>
+<td><code>31751a642fda9e5c544020b67abe94911d0d309000f19b698ae76da886aef9cb</code></td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/source-unreadable-mobile.png</code></td>
+<td>93187</td>
+<td><code>52bc1c2e4f82b278e825d741746c4232b359a61454401b7380a2f1e28e15d451</code></td>
+</tr>
+<tr>
+<td><code>assets/align/waiting-counterparty-desktop.png</code></td>
+<td>167277</td>
+<td><code>d8b106d17212126c98a968670f52c1badd49eabbde32d970c275380fe59d88c2</code></td>
+</tr>
+<tr>
+<td><code>assets/align/waiting-desktop.png</code></td>
+<td>167162</td>
+<td><code>f150e22ed1651ba82219fdfcdea97985fc15f1fb0ea1cdbdbc06887095281f8c</code></td>
+</tr>
+<tr>
+<td><code>assets/assessment/answer-counterparty-desktop.png</code></td>
+<td>59559</td>
+<td><code>f756cbc445d4d3600c954915916b897e022e5695faca485f614c6415b94ff6cc</code></td>
+</tr>
+<tr>
+<td><code>assets/assessment/answer-desktop.png</code></td>
+<td>59097</td>
+<td><code>3f39e0fdbad2d7f5fccf4b35ab06941fb9ef9cc61d270a0a60726b231e653058</code></td>
+</tr>
+<tr>
+<td><code>assets/assessment/resume-mobile.png</code></td>
+<td>58190</td>
+<td><code>463e485633011fb4e19a6d0e0fa7e7cadc6171ff80515f48ae90e290b60b2f4b</code></td>
+</tr>
+<tr>
+<td><code>assets/assessment/save-chip-desktop.png</code></td>
+<td>66087</td>
+<td><code>aae6c7f833f62f3995d74774377c4a080a6d31cf2032b6febd66f17500e74218</code></td>
+</tr>
+<tr>
+<td><code>assets/assessment/save-chip-mobile.png</code></td>
+<td>56836</td>
+<td><code>76300317835b323ff0081729eea885abd327de11fd805942f0f0ae9da6deed59</code></td>
+</tr>
+<tr>
+<td><code>assets/brand/alignsynch-logo.png</code></td>
+<td>27152</td>
+<td><code>6ddd15a2031cab928cd7a87c6316aee81fe93e6a4f57ac55b9b0be01b3d3e4af</code></td>
+</tr>
+<tr>
+<td><code>assets/chat/chat-desktop.png</code></td>
+<td>74655</td>
+<td><code>771a7865028c594b8c53ba7277a33a88cd98cd0d227bfa356fdbcd8bd22b970c</code></td>
+</tr>
+<tr>
+<td><code>assets/chat/chat-mobile.png</code></td>
+<td>45282</td>
+<td><code>b146ad59a7c680e0dc3f4e154b4cfac784e10571ca5e66fb5482a68b44f36028</code></td>
+</tr>
+<tr>
+<td><code>assets/chat/relationship-thread-desktop.png</code></td>
+<td>122379</td>
+<td><code>cfdd46db49d55c417314ee23b6f186d290030eb03965907ac3b8021dea8030e7</code></td>
+</tr>
+<tr>
+<td><code>assets/chat/relationship-thread-paused-desktop.png</code></td>
+<td>85998</td>
+<td><code>a6aa2a5d7e744433bfa1565124be7cadcc40dbb91a1aa653fa5739e63e0f1330</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/answering-paused-desktop.png</code></td>
+<td>42045</td>
+<td><code>e9e583b73adc4f3d1fdbfbf401dd24aa9caa4918eb3dfd5ac7b7ed0dbce83d7d</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/answering-paused-mobile.png</code></td>
+<td>34001</td>
+<td><code>1e7d35160108e69630c84b37682145d8dd3010272ee4a4257f45b5471442d181</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/aspects-save-desktop.png</code></td>
+<td>286690</td>
+<td><code>88024f90e0bd095b4c191fad129163c9862b0a3d88ca6b93440eaa29c0bcb913</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/aspects-save-mobile.png</code></td>
+<td>161945</td>
+<td><code>354b49d65ad107503f9ba94fa382086ac15ede78b1b848015b64651149b587f2</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/declined-desktop.png</code></td>
+<td>146132</td>
+<td><code>3890bbec65539790e28e78c9641bbb9108c7c0b4780cbdc2ded821a1ecf20646</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-1-desktop.png</code></td>
+<td>146132</td>
+<td><code>3890bbec65539790e28e78c9641bbb9108c7c0b4780cbdc2ded821a1ecf20646</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-1-mobile.png</code></td>
+<td>136821</td>
+<td><code>b62cd970b1b6530ea264d1beb1820c9051a6eb75d39939cb5e4e69fe999004ee</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-2-desktop.png</code></td>
+<td>47505</td>
+<td><code>39a99eb513ed9ec9a8f5cc536571a349446cd7fcd6daf0762687fd144b628e5d</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-3-desktop.png</code></td>
+<td>56903</td>
+<td><code>770350d1fb8dfedfe559ac367b63811fc694fd357f3ff9f064a55950be99f110</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/joined-landing-desktop.png</code></td>
+<td>178603</td>
+<td><code>a479bf16c565beb42d836d69cfbcef1f195db08d80269f26008c59ccf42ca611</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/paused-waiting-desktop.png</code></td>
+<td>221827</td>
+<td><code>13e01fd6ab5cdc609606691bd31e62f3d87f36f745e1c304ceda2805bfacf8cb</code></td>
+</tr>
+<tr>
+<td><code>assets/counterparty/paused-waiting-mobile.png</code></td>
+<td>166123</td>
+<td><code>2525ccfe0386ff8fb2a83b1eb39152161b50eaa790cb1eb175c1bb6df4b915eb</code></td>
+</tr>
+<tr>
+<td><code>assets/create-failed/create-failed-desktop.png</code></td>
+<td>38234</td>
+<td><code>e0d3e2134a23e8d05544334bf00fa19f8dad9bc0d0b87a962eba837881f97f61</code></td>
+</tr>
+<tr>
+<td><code>assets/create-failed/create-failed-mobile.png</code></td>
+<td>21063</td>
+<td><code>99e6a03bcb43a7515491d5568d3f6f398faefc56408fb5395db059c3405b35f3</code></td>
+</tr>
+<tr>
+<td><code>assets/emails/email-banner-desktop.png</code></td>
+<td>29205</td>
+<td><code>60015fc3f6ea4794f277ec258829e6bcfa8469020b03ae06534f9c5b87579003</code></td>
+</tr>
+<tr>
+<td><code>assets/emails/readme-banner-desktop.png</code></td>
+<td>61135</td>
+<td><code>3175f66dd21a4c6732d698e9e2806e020ff2ec46f330ed4c0dd031ae6e313e20</code></td>
+</tr>
+<tr>
+<td><code>assets/emails/release-default-desktop.png</code></td>
+<td>66870</td>
+<td><code>57db9c201abd56b53df424a40c85b2a488999d64099d83cfae7e4eec85964f4f</code></td>
+</tr>
+<tr>
+<td><code>assets/get-started/align-desktop.png</code></td>
+<td>239180</td>
+<td><code>a681705168de1ed2a859c222c8f57d65fd90f072b03d861de0a4dba1a30f723c</code></td>
+</tr>
+<tr>
+<td><code>assets/get-started/align-mobile.png</code></td>
+<td>165286</td>
+<td><code>4e84468fe63bc063c1192fe4ae68bb528ba79c36cb0980c7079c845e080a6a91</code></td>
+</tr>
+<tr>
+<td><code>assets/get-started/relationship-templates-desktop.png</code></td>
+<td>178056</td>
+<td><code>5302effdb3e703742cb59a091e0966936696d4e6b76addd041312fb50ea979cc</code></td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-desktop.png</code></td>
+<td>179698</td>
+<td><code>aa9a4f653db02f229122964d4a9eb7105004f106685e80090df6aa6cb9d6ad72</code></td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-mobile.png</code></td>
+<td>137155</td>
+<td><code>8c46b901247b3820d60f7c587a9912360c3d20d817c2cdce68215ee59b9a6b29</code></td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-paused-desktop.png</code></td>
+<td>176432</td>
+<td><code>4d13702615786cbe7fdb21547fb43a2542ea45d0dee935415d388ec471d27ac4</code></td>
+</tr>
+<tr>
+<td><code>assets/propose/incoming-desktop.png</code></td>
+<td>147269</td>
+<td><code>7d213e3cd8cb015c301a8fbe5b11ee7a2727cf1ff1c9ae19cd98024a8425be46</code></td>
+</tr>
+<tr>
+<td><code>assets/propose/propose-desktop.png</code></td>
+<td>172877</td>
+<td><code>6a75447bde8eb26b860d2eeddb0b4fba8d9df1de33aec84be2acca5d6ba02014</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/cancel-invite-desktop.png</code></td>
+<td>152498</td>
+<td><code>bb0e5ad2a223bfe3b9e86cfcc8ef40d0bfbe3e0dfbb979e87b247cde94118524</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/cancel-invite-mobile.png</code></td>
+<td>65971</td>
+<td><code>8ee26303a037a61e3e6c5ad54114f9ba12654ddb13d4829e80ffdf8fdf11826c</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/draft-desktop.png</code></td>
+<td>182692</td>
+<td><code>bbb74ae8ac34229ae7b33542cb3e3eb54a1b8cdc77359014ba2eb9b694ff3f6e</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/invite-sent-desktop.png</code></td>
+<td>185674</td>
+<td><code>a02d9b2a4c5f8bd98f86fdbfa1ec8cc4441bec214b0a1914896765677bf61171</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/invited-details-desktop.png</code></td>
+<td>212059</td>
+<td><code>283734dd27d2fb495d146ee5ff81a658143b855a57f7f17e2daa940d4bc9e1d1</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-lapsed-initiator-desktop.png</code></td>
+<td>94376</td>
+<td><code>80cdf308a23d098e7b17751f6eda82d7298e00904ab4acf99a08c62476034c59</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-paused-counterparty-desktop.png</code></td>
+<td>96246</td>
+<td><code>b7bd6639b1f388832c280b97df1dc42199861f6e252d895167a054ad36f4daa5</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-paused-initiator-desktop.png</code></td>
+<td>99583</td>
+<td><code>41ebd4c6de9c28b3aa5cc74ed46d94e3f279b74a8c8fbdaa240f7c935d0dbcf9</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/extra-week-ended-initiator-desktop.png</code></td>
+<td>221924</td>
+<td><code>7e4e985d951cc8a833c2e7333be5c634a2e666cd4226fa2eed26b6e678aa159d</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-counterparty-desktop.png</code></td>
+<td>221827</td>
+<td><code>13e01fd6ab5cdc609606691bd31e62f3d87f36f745e1c304ceda2805bfacf8cb</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-counterparty-payment-desktop.png</code></td>
+<td>166900</td>
+<td><code>5c855da9e5119f0b73df15b00da382916bf48f6a152dd91ee5ea50cfc8f8d9f2</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-desktop.png</code></td>
+<td>224522</td>
+<td><code>85424b59164128744190440daacd6697712a47e4e7fc71396b54c2224bd89d58</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-mobile.png</code></td>
+<td>193315</td>
+<td><code>52448bdee5631f5a330420a8ee86fbf59a29971edb2f6e9e1dba486ce447ea7e</code></td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-payment-desktop.png</code></td>
+<td>190412</td>
+<td><code>3bc872b25e150cc71dea213200c0b7c618532e136250c7f14a47370cf6758be8</code></td>
+</tr>
+<tr>
+<td><code>assets/stage-6/relationship-live-desktop.png</code></td>
+<td>228613</td>
+<td><code>8b4f8bc9cf46ddf3f3499a8d4a12cb9f33af19f4333c22432ae45b45704ad116</code></td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/card-menu-desktop.png</code></td>
+<td>134157</td>
+<td><code>464acba4bfe25d1be07de503f57787bf820ec468447a51f2346fbff1ceafbafd</code></td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/empty-desktop.png</code></td>
+<td>63574</td>
+<td><code>da9b68413d0b8bff66cb54c603abe1065ecd1c7c29aae8a3dd41c59a0af5872f</code></td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/my-relationships-desktop.png</code></td>
+<td>128734</td>
+<td><code>97aab5ca3bbadb80d189d6594c3de620d755c042c961d4afe99a798a5a76d68d</code></td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/start-desktop.png</code></td>
+<td>157806</td>
+<td><code>64c6cf041a47948ca03f212d0f3e3a113434491ff21fdec5466365b151a600c0</code></td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/start-mobile.png</code></td>
+<td>139208</td>
+<td><code>f640b902e20f3a39dde9a67df2951342502c8c36b750d023aecaf49d1fb3eee6</code></td>
+</tr>
+<tr>
+<td><code>assets/states/flow-map-later-calls-desktop.png</code></td>
+<td>88512</td>
+<td><code>65952649ce08e27c7c1e22acdb20da8cabfa259aaa4b129ca93e617bd54c3003</code></td>
+</tr>
+<tr>
+<td><code>assets/system/palette-before-after-desktop.png</code></td>
+<td>318844</td>
+<td><code>317dfb044943ef811566037c25be74c7f1d03224d8c74e991b549d2e8f3ebcbf</code></td>
+</tr>
+<tr>
+<td><code>assets/system/scale-before-after-desktop.png</code></td>
+<td>814339</td>
+<td><code>27f90f941fba7fac0e91088e102e7914bc9c0156c409a574f6b50ddcafdac6f0</code></td>
+</tr>
+<tr>
+<td><code>assets/system/status-patterns-desktop.png</code></td>
+<td>62657</td>
+<td><code>021beedf8fb0090814a3557a8f57ba7ec3482d3657f6f9f6d2dbaf3b1e775aac</code></td>
+</tr>
+<tr>
+<td><code>assets/templates-public/catalog-desktop.png</code></td>
+<td>178056</td>
+<td><code>5302effdb3e703742cb59a091e0966936696d4e6b76addd041312fb50ea979cc</code></td>
+</tr>
+<tr>
+<td><code>assets/templates-public/catalog-mobile.png</code></td>
+<td>143233</td>
+<td><code>14031b651a7ad5ebb7d020d196fbe5c4f8e235fe2e9dd4e4115e258a8340ba96</code></td>
+</tr>
+<tr>
+<td><code>assets/templates-public/template-page-desktop.png</code></td>
+<td>251300</td>
+<td><code>8714f7c2547574ee1b15e584867c06fb7fcd9a9650e8281b996716b0efae4d4c</code></td>
+</tr>
+<tr>
+<td><code>assets/templates/card-menu-desktop.png</code></td>
+<td>97140</td>
+<td><code>b754067c36548f9fa7175e24939d6904eb4e15e6b9aebda730a3fe4ccd739d77</code></td>
+</tr>
+<tr>
+<td><code>assets/templates/my-templates-desktop.png</code></td>
+<td>81224</td>
+<td><code>017e365787368d5b172bf96e88e10b77b576eadada031ea385c63c2c238db3e8</code></td>
+</tr>
+<tr>
+<td><code>assets/templates/my-templates-mobile.png</code></td>
+<td>79678</td>
+<td><code>0bb7ef7eca55cdcb81a270f94af6888c6cc7027b8d742db8b567e8f1cd56c62e</code></td>
+</tr>
+<tr>
+<td><code>assets/templates/propose-desktop.png</code></td>
+<td>100218</td>
+<td><code>4621344e0811c325790d8c91c1f6c37886bde10c5008b83f6354355393cefc3b</code></td>
+</tr>
+<tr>
+<td><code>assets/templates/template-detail-desktop.png</code></td>
+<td>186969</td>
+<td><code>0879a44eb494fb4f737accfb0515b85674f1b42409834ab45fc8a7eb1d0bc621</code></td>
+</tr>
+<tr>
+<td><code>assets/trial/extra-week-ended-payment-desktop.png</code></td>
+<td>182288</td>
+<td><code>f0f0fa43bbf8bd54554b87424f3b92ec63fe014e173e38d1d278f72a152f633c</code></td>
+</tr>
+<tr>
+<td><code>assets/trial/extra-week-running-desktop.png</code></td>
+<td>241110</td>
+<td><code>0fcc6e0696f4902c4540b786897b24960e848af8b446aa17184870223cac73ea</code></td>
+</tr>
+<tr>
+<td><code>assets/trial/trial-running-payment-desktop.png</code></td>
+<td>187032</td>
+<td><code>8722f956ada28e9a5aaf8dcb224f60f35b94ee3c76d0c61db9caf5df6b2ff0a5</code></td>
+</tr>
+<tr>
+<td><code>assets/trial/trial-running-payment-mobile.png</code></td>
+<td>155957</td>
+<td><code>f9939765ca0ec2cfaf297c3e2f98732401615b643f3c4ab1b727f4ab3d95aa15</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/aspect-drawer-desktop.png</code></td>
+<td>143408</td>
+<td><code>ec39dfae203001dde886cab55eec6427a48edd0d80f1e4ed337d24a6a60788e5</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/edit-invited-desktop.png</code></td>
+<td>152792</td>
+<td><code>c207cd6751187a1bfa267609dc59cedce8357d34da09dee135c425b5b1aeadb5</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-1-details-desktop.png</code></td>
+<td>140807</td>
+<td><code>c842a6e34354cc1809d6317d62e90090334e191e4a227074e0aa33ea5610e175</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-1-details-mobile.png</code></td>
+<td>87932</td>
+<td><code>75603c5c50f59c7a1f723715dba7146157f7e640c627dc8692067f444ca84353</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-2-settings-desktop.png</code></td>
+<td>144555</td>
+<td><code>4a5273c98c4237ec5e79638f912ee1bcceeb67a79d9ee2e5313c7f1e97e901ec</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-3-aspects-desktop.png</code></td>
+<td>162458</td>
+<td><code>7ea2c7c91b6237178ec5dc5d492e89217a03c3f166a5d61347e4482683c6ecab</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-4-account-desktop.png</code></td>
+<td>117750</td>
+<td><code>a57b3b5db7d24f6f34cbf46a232a08d262272a14917a908634e10ebfc246e6d7</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-4-account-mobile.png</code></td>
+<td>63124</td>
+<td><code>349e9a132d9ab2ca3a7aee52fd622f90f2b40b35d962995ac4b791ce500f91b0</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-5-invite-desktop.png</code></td>
+<td>174831</td>
+<td><code>d96e293b8a1298344330c6c3a8772266a9e0f793c5723c7450d60be06285f8a6</code></td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-5-invite-mobile.png</code></td>
+<td>116900</td>
+<td><code>e5aa4101dcbee969a16fe4c6806a87bc0da16c252d3cf6f4c165a36286011137</code></td>
+</tr>
+<tr>
+<td><code>docs.json</code></td>
+<td>4358</td>
+<td><code>19e757ce721b4f5a64ec0054f80ed4de9150e70659f24b4fac3841253e834429</code></td>
+</tr>
+<tr>
+<td><code>guides/account/account-menu.md</code></td>
+<td>1433</td>
+<td><code>988235877741096476172d3d3a1f96cefb26a0e8f56158d357dba8fb6d5d4017</code></td>
+</tr>
+<tr>
+<td><code>guides/account/delete-your-account.md</code></td>
+<td>2595</td>
+<td><code>ea47974244344be0844f274367ae462d46f9d041d0bd1629ed8cc96c2ae81aa5</code></td>
+</tr>
+<tr>
+<td><code>guides/account/profile-and-password.md</code></td>
+<td>2430</td>
+<td><code>ab93c3a910e658143f8cc86409adc17d795abd7ea8ed53676b996dd69ccabea3</code></td>
+</tr>
+<tr>
+<td><code>guides/admin/crud-and-permissions.md</code></td>
+<td>6817</td>
+<td><code>4eded8c7c8bf659190d9395a026ed899ee36c277ee9dff72b49521654580c701</code></td>
+</tr>
+<tr>
+<td><code>guides/admin/email-templates.md</code></td>
+<td>2382</td>
+<td><code>15d1189b85f0c16219a5b4252c248d5771a2b3efb047fa9b1e69d90bfed754af</code></td>
+</tr>
+<tr>
+<td><code>guides/admin/who-sees-the-admin-rail.md</code></td>
+<td>2073</td>
+<td><code>9cee903f59ad0a8cb5d89b0d54cbf2bd3bd529254d3345cc2cdf22dad54aae6a</code></td>
+</tr>
+<tr>
+<td><code>guides/counterparty/accept-or-decline-an-invite.md</code></td>
+<td>4348</td>
+<td><code>aaa7581175debb309807c03b6f206861370c142b2660d36a2918cf9a3cd39a00</code></td>
+</tr>
+<tr>
+<td><code>guides/counterparty/ask-to-be-removed.md</code></td>
+<td>2223</td>
+<td><code>5a1e42c9cd705f945794510dbeb8f35220279bfd4817214cc8d120d2a0176ab7</code></td>
+</tr>
+<tr>
+<td><code>guides/counterparty/save-these-aspects-as-a-template.md</code></td>
+<td>2316</td>
+<td><code>557727131cb733ee11f0910130c0b4312774805269ff250312433ac254aa4682</code></td>
+</tr>
+<tr>
+<td><code>guides/counterparty/when-a-relationship-pauses.md</code></td>
+<td>4708</td>
+<td><code>a022c7d03c55d3e28a79ffb1c95e7888e589b0cdf1169d920700800cd08432ee</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/add-a-card-or-take-your-extra-week.md</code></td>
+<td>3190</td>
+<td><code>6e0597d660adf80f85f48b2f5731727d09776d6ce95869db99a0c2ac64c9b2b7</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/copy-resend-or-cancel-an-invite.md</code></td>
+<td>2989</td>
+<td><code>eed07cdbcf92f9b6b7f6f78884e3a85bf1c971d369de69accc087420389550f0</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/create-your-account.md</code></td>
+<td>2397</td>
+<td><code>f8c9172f524ba27ce4aefc570037282eb065e56bc8ab4534922abead8b807db5</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/edit-a-draft-or-sent-invite.md</code></td>
+<td>2865</td>
+<td><code>86c45ee93c749b6de345c68698929e2e381d0ac3695abbd000ed6c2b43a42b45</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/if-a-draft-cant-be-created.md</code></td>
+<td>2127</td>
+<td><code>dde7c2d613276a792d0b118e364b4e73927042ec61ec512e720f65954c1c9e1c</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/my-relationships-and-start.md</code></td>
+<td>3832</td>
+<td><code>f5863251360887a7b4135091d57f4c52c3cab26b649caf7fb65fab15985671a3</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/my-templates.md</code></td>
+<td>3100</td>
+<td><code>1fe3029818276a073abbf3967a23b6c6a4cb3ae52b37c182987efa5dfc30d5ee</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/payment.md</code></td>
+<td>3259</td>
+<td><code>9c52e00ed4ccbff5abb7b9cabb19c19bee30a73152923ee571a071c9881de62b</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/pick-a-template.md</code></td>
+<td>3426</td>
+<td><code>28a1bb669d6a658fff45261e5628f823a979c569c8d7777677b0c1f9a394e149</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/send-the-invite.md</code></td>
+<td>3528</td>
+<td><code>350a4e632a8dff90342ed663bdac3af4846e4b92f546f56bbfa482a2262631ed</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/set-up-details-settings-and-aspects.md</code></td>
+<td>4607</td>
+<td><code>dd07aa8a81128d875396c5a652f821c4f3a72360f4e41708f7c967883ecb131c</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/when-a-relationship-pauses.md</code></td>
+<td>12049</td>
+<td><code>d5faab3c55974c09bd4df6daf162572f0499df99fa61d55d4639e0bbe4c628b9</code></td>
+</tr>
+<tr>
+<td><code>guides/initiator/your-7-days-free.md</code></td>
+<td>3043</td>
+<td><code>f16aff9c5a7e43722bec6616e78dc72857326e5390c4d98911275b67742dbb4e</code></td>
+</tr>
+<tr>
+<td><code>guides/shared/answer-the-assessment.md</code></td>
+<td>3544</td>
+<td><code>7fe6fe72f776c08c2839617c467f585a45ce34e46c9b2fd1bc3fe8ffff62aadb</code></td>
+</tr>
+<tr>
+<td><code>guides/shared/chat-and-discussion.md</code></td>
+<td>2476</td>
+<td><code>71de7b7c01c6ad41dd481c92c0e2dbf101c25004d2ae5649e4193baa5993481c</code></td>
+</tr>
+<tr>
+<td><code>guides/shared/leave-a-relationship.md</code></td>
+<td>2050</td>
+<td><code>a9bb726b101e3c0cfb7cb33efc2fec6c09f92d3b7a7c72e0a6a749702f219297</code></td>
+</tr>
+<tr>
+<td><code>guides/shared/propose-a-change.md</code></td>
+<td>1927</td>
+<td><code>c82e550fa2588d654db91c4f99a7c686b4a6048f1c84957c94b12c16eaab7110</code></td>
+</tr>
+<tr>
+<td><code>guides/shared/results-and-align.md</code></td>
+<td>2996</td>
+<td><code>57610e713ed1f205514cb30965f7da2d6b9d6a6f5fa1d0db3a137ad5d7905bb1</code></td>
+</tr>
+<tr>
+<td><code>reference/changelog.md</code></td>
+<td>1767</td>
+<td><code>f4331def789d2c8e6f3a4f6ade33ba4151b754c007c2285abe69e330e8cb5277</code></td>
+</tr>
+<tr>
+<td><code>reference/copy/copy-rules.md</code></td>
+<td>1431</td>
+<td><code>2170c8db5be15392d8169477098f61748e02390e167753ba1acb6d8d5ed7e24c</code></td>
+</tr>
+<tr>
+<td><code>reference/copy/glossary.md</code></td>
+<td>1806</td>
+<td><code>e3c625dcdf66145de3439d54fbac94eb322ff7455479b5a273536e745abe3d77</code></td>
+</tr>
+<tr>
+<td><code>reference/copy/retired-terms.md</code></td>
+<td>1461</td>
+<td><code>7e7b401b7e1030ea4a3c9cd0a6ec95e2b7400632554deb2e592abd2b6849b7da</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/counterparty-joined.md</code></td>
+<td>1368</td>
+<td><code>26de4dac9714b13595afa21e0fae90be8f72b8eee2f85c23bbe6ce7abf0bdc0e</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/invitation.md</code></td>
+<td>1320</td>
+<td><code>50a51a93eedd0b47a4d278b05002314d6f37a2ea173092014f906bdd99e9addb</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/paused-counterparty.md</code></td>
+<td>1164</td>
+<td><code>2f081c67ad56d49dc7f09361722e5c984a39307f61217cd517989f1c14ca0756</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/paused-initiator.md</code></td>
+<td>1217</td>
+<td><code>36967a38997db8b32f3fcabbad990052312b3bb602dccc4af88a9d28dde59b09</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/release-notes-and-banners.md</code></td>
+<td>1696</td>
+<td><code>b9b6bbcaa475395eeae974d5d024e3da5e7eb7fed0344051be94785eb0b0149e</code></td>
+</tr>
+<tr>
+<td><code>reference/emails/trial-started.md</code></td>
+<td>1089</td>
+<td><code>c806ec0099ef3adc9e6900972a8daa7f204e02855c2ec55a9b6c9d1a0f712c97</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-1-details.md</code></td>
+<td>1533</td>
+<td><code>4cfca467575c06cdfd22f81b03960da48423928d9cae10f50b00b0a93040a8e1</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-2-settings.md</code></td>
+<td>1530</td>
+<td><code>8f4d6c8362a2bc1c57489e5c431d0cf78f7beafc37ea05ec62500273b15df7e0</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-3-aspects.md</code></td>
+<td>1416</td>
+<td><code>aa071b824cdaccf1afdd88373612e5bf36314bca223f0d6faa2b1af846422d63</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-4-account.md</code></td>
+<td>1239</td>
+<td><code>3c9f53740ddd36ef096787bf5e17a217910c3787cedca10903be1f0b05dc83f6</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-5-invite.md</code></td>
+<td>1556</td>
+<td><code>5292e43477cdc9edf79d3a353db57e46bf260f13dabaf5b2f52d254df2cde775</code></td>
+</tr>
+<tr>
+<td><code>reference/stages/stage-6-align.md</code></td>
+<td>1894</td>
+<td><code>c5db331e59b13889f979ccdb355ad3e5105921a7288d74653a1070a997b3d68d</code></td>
+</tr>
+<tr>
+<td><code>reference/states/answer-scale.md</code></td>
+<td>1602</td>
+<td><code>7e578f4ce90b38999fee205e3f0932e9702369e2782c788b3ab69221ed484795</code></td>
+</tr>
+<tr>
+<td><code>reference/states/relationship-states-by-role.md</code></td>
+<td>2636</td>
+<td><code>39540adf2486c43925d930463f42f8e0166a2a9733363afe2ddb5476fe23e475</code></td>
+</tr>
+<tr>
+<td><code>reference/states/status-chips.md</code></td>
+<td>1903</td>
+<td><code>244b861e805726f1cb69d010e535cb4c264c1a555fd1cfe69e79291a5af5c45b</code></td>
+</tr>
+<tr>
+<td><code>start/core-concepts.md</code></td>
+<td>3532</td>
+<td><code>5dbd0d864fcb933514c43d4a80e8a1729ea4fb737a4846f1c494906b86f97438</code></td>
+</tr>
+<tr>
+<td><code>start/plans-and-trial.md</code></td>
+<td>4868</td>
+<td><code>554290abebb2697acd9a56c3a7b88665a8f95a045a3dd99eb788538afe84b351</code></td>
+</tr>
+<tr>
+<td><code>start/quickstart.md</code></td>
+<td>4328</td>
+<td><code>786347467f40ad8975707326b07cf1cabc7a912a1e9e83f2ecb01b6a00cca7bf</code></td>
+</tr>
+<tr>
+<td><code>start/what-is-alignsynch.md</code></td>
+<td>5267</td>
+<td><code>0c93c9e8ab7fca5cf04f087bfac1e44ec827c7b07697987fea65e77e41a9db17</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="asset-sources">Asset Sources</h2>
+<p>Where every screenshot came from. Originals were copied, never moved or edited.</p>
+<table>
+<thead>
+<tr>
+<th>Asset</th>
+<th>Tier</th>
+<th>Original</th>
+<th>Processing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assets/account/account-menu-desktop.png</code></td>
+<td><strong>Bundle</strong> 11</td>
+<td><code>spec-design-v2-bundles/11-spec-design-page-account-settings-v2/reference/account-menu-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/account/delete-confirm-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/settings-delete-confirm-1280.png</code></td>
+<td>scaled from 2560 px</td>
+</tr>
+<tr>
+<td><code>assets/account/delete-confirm-mobile.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/settings-delete-confirm-390.png</code></td>
+<td>scaled from 780 px</td>
+</tr>
+<tr>
+<td><code>assets/account/settings-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/settings-1280.png</code></td>
+<td>scaled from 2560 px</td>
+</tr>
+<tr>
+<td><code>assets/account/settings-mobile.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/settings-390.png</code></td>
+<td>scaled from 780 px</td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/matrix-filtered-table-desktop.png</code></td>
+<td><strong>Bundle</strong> 12</td>
+<td><code>spec-design-v2-bundles/12-spec-design-page-admin-crud-matrix-v2/reference/admin-crud-matrix-filtered-1280.png</code></td>
+<td>cropped to the table</td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/matrix-top-desktop.png</code></td>
+<td><strong>Bundle</strong> 12 (cropped to the first 1500 px)</td>
+<td><code>spec-design-v2-bundles/12-spec-design-page-admin-crud-matrix-v2/reference/admin-crud-matrix-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/source-unreadable-desktop.png</code></td>
+<td><strong>Bundle</strong> 12</td>
+<td><code>spec-design-v2-bundles/12-spec-design-page-admin-crud-matrix-v2/reference/admin-crud-matrix-broken-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/admin-crud-permissions/source-unreadable-mobile.png</code></td>
+<td><strong>Bundle</strong> 12</td>
+<td><code>spec-design-v2-bundles/12-spec-design-page-admin-crud-matrix-v2/reference/admin-crud-matrix-broken-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/align/waiting-counterparty-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-waiting-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/align/waiting-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-waiting-initiator-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/assessment/answer-counterparty-desktop.png</code></td>
+<td><strong>Bundle</strong> 10</td>
+<td><code>spec-design-v2-bundles/10-spec-design-page-assessment-v2/reference/assessment-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/assessment/answer-desktop.png</code></td>
+<td><strong>Bundle</strong> 10</td>
+<td><code>spec-design-v2-bundles/10-spec-design-page-assessment-v2/reference/assessment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/assessment/resume-mobile.png</code></td>
+<td><strong>Bundle</strong> 10</td>
+<td><code>spec-design-v2-bundles/10-spec-design-page-assessment-v2/reference/assessment-resume-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/assessment/save-chip-desktop.png</code></td>
+<td><strong>Bundle</strong> rc1.3 01</td>
+<td><code>spec-design-v2-rc1.3-bundle/01-answer-screen-paused-1223/reference/assessment-sheet-save-chip-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/assessment/save-chip-mobile.png</code></td>
+<td><strong>Bundle</strong> rc1.3 01</td>
+<td><code>spec-design-v2-rc1.3-bundle/01-answer-screen-paused-1223/reference/assessment-sheet-save-chip-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/brand/alignsynch-logo.png</code></td>
+<td><strong>Spec</strong></td>
+<td><code>project-spec/alignsynch-logo.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/chat/chat-desktop.png</code></td>
+<td><strong>Bundle</strong> 07</td>
+<td><code>spec-design-v2-bundles/07-spec-design-page-chat-v2/reference/chat-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/chat/chat-mobile.png</code></td>
+<td><strong>Bundle</strong> 07</td>
+<td><code>spec-design-v2-bundles/07-spec-design-page-chat-v2/reference/chat-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/chat/relationship-thread-desktop.png</code></td>
+<td><strong>Bundle</strong> 07</td>
+<td><code>spec-design-v2-bundles/07-spec-design-page-chat-v2/reference/chat-relationship-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/chat/relationship-thread-paused-desktop.png</code></td>
+<td><strong>Bundle</strong> 07</td>
+<td><code>spec-design-v2-bundles/07-spec-design-page-chat-v2/reference/chat-relationship-paused-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/answering-paused-desktop.png</code></td>
+<td><strong>Bundle</strong> rc1.3 01</td>
+<td><code>spec-design-v2-rc1.3-bundle/01-answer-screen-paused-1223/reference/assessment-paused-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/answering-paused-mobile.png</code></td>
+<td><strong>Bundle</strong> rc1.3 01</td>
+<td><code>spec-design-v2-rc1.3-bundle/01-answer-screen-paused-1223/reference/assessment-paused-counterparty-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/aspects-save-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-live-aspects-counterparty-1280.png</code></td>
+<td>cropped to the top 1800 px</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/aspects-save-mobile.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-live-aspects-counterparty-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/declined-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/join-declined-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-1-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/join-step1-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-1-mobile.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/join-step1-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-2-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/join-step2-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/join-step-3-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/join-step3-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/joined-landing-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-joined-landing-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/paused-waiting-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/counterparty/paused-waiting-mobile.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-counterparty-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/create-failed/create-failed-desktop.png</code></td>
+<td><strong>Bundle</strong> rc1.3 04</td>
+<td><code>spec-design-v2-rc1.3-bundle/04-create-failed-screen-1226/reference/create-failed-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/create-failed/create-failed-mobile.png</code></td>
+<td><strong>Bundle</strong> rc1.3 04</td>
+<td><code>spec-design-v2-rc1.3-bundle/04-create-failed-screen-1226/reference/create-failed-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/emails/email-banner-desktop.png</code></td>
+<td><strong>Spec</strong> (repo asset)</td>
+<td><code>repo</code>public/og/email-banner.png<code>(main @ 601ce26)</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/emails/readme-banner-desktop.png</code></td>
+<td><strong>Spec</strong> (repo asset)</td>
+<td><code>repo</code>public/og/readme-banner.png<code>(main @ 601ce26)</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/emails/release-default-desktop.png</code></td>
+<td><strong>Spec</strong> (repo asset)</td>
+<td><code>repo</code>public/og/release-default.png<code>(main @ 601ce26)</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/get-started/align-desktop.png</code></td>
+<td><strong>Bundle</strong> 04</td>
+<td><code>spec-design-v2-bundles/04-spec-design-page-align-v2/reference/align-1280.png</code></td>
+<td>cropped to the top 1800 px</td>
+</tr>
+<tr>
+<td><code>assets/get-started/align-mobile.png</code></td>
+<td><strong>Bundle</strong> 04</td>
+<td><code>spec-design-v2-bundles/04-spec-design-page-align-v2/reference/align-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/get-started/relationship-templates-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/relationship-templates-1280.png</code></td>
+<td>cropped to the top 1400 px</td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-desktop.png</code></td>
+<td><strong>Bundle</strong> 08</td>
+<td><code>spec-design-v2-bundles/08-spec-design-page-payment-v2/reference/payment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-mobile.png</code></td>
+<td><strong>Bundle</strong> 08</td>
+<td><code>spec-design-v2-bundles/08-spec-design-page-payment-v2/reference/payment-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/payment/payment-paused-desktop.png</code></td>
+<td><strong>Bundle</strong> 08</td>
+<td><code>spec-design-v2-bundles/08-spec-design-page-payment-v2/reference/payment-paused-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/propose/incoming-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/proposal-incoming-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/propose/propose-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/modal-propose-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/cancel-invite-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/modal-cancel-invite-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/cancel-invite-mobile.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/modal-cancel-invite-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/draft-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-draft-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/invite-sent-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-invite-sent-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-detail/invited-details-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-invited-details-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-lapsed-initiator-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/assessment-lapsed-marcus-1280.png</code></td>
+<td>2× capture, as copied by the approved draft</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-paused-counterparty-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/assessment-paused-elena-1280.png</code></td>
+<td>2× capture, as copied by the approved draft</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/answering-paused-initiator-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/assessment-paused-marcus-1280.png</code></td>
+<td>2× capture, as copied by the approved draft</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/extra-week-ended-initiator-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-extended-initiator-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-counterparty-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-counterparty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-counterparty-payment-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-counterparty-payment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-initiator-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-mobile.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-initiator-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/relationship-pause/trial-ended-initiator-payment-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-initiator-payment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/stage-6/relationship-live-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-live-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/card-menu-desktop.png</code></td>
+<td><strong>Bundle</strong> 05</td>
+<td><code>spec-design-v2-bundles/05-spec-design-page-start-my-relationships-v2/reference/kebab-relationship-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/empty-desktop.png</code></td>
+<td><strong>Bundle</strong> 05</td>
+<td><code>spec-design-v2-bundles/05-spec-design-page-start-my-relationships-v2/reference/my-relationships-empty-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/my-relationships-desktop.png</code></td>
+<td><strong>Bundle</strong> 05</td>
+<td><code>spec-design-v2-bundles/05-spec-design-page-start-my-relationships-v2/reference/my-relationships-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/start-desktop.png</code></td>
+<td><strong>Bundle</strong> 05</td>
+<td><code>spec-design-v2-bundles/05-spec-design-page-start-my-relationships-v2/reference/start-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/start-and-list/start-mobile.png</code></td>
+<td><strong>Bundle</strong> 05</td>
+<td><code>spec-design-v2-bundles/05-spec-design-page-start-my-relationships-v2/reference/start-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/states/flow-map-later-calls-desktop.png</code></td>
+<td><strong>Prototype</strong> (18 Nov)</td>
+<td><code>box /workspace/alignsynch/out/new-surfaces-shots/flow-map-later-calls-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/system/palette-before-after-desktop.png</code></td>
+<td><strong>Prototype</strong></td>
+<td><code>spec-design-v2-prototype/screens/palette-before-after.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/system/scale-before-after-desktop.png</code></td>
+<td><strong>Prototype</strong></td>
+<td><code>spec-design-v2-prototype/screens/scale-before-after.png</code></td>
+<td>cropped to the top 1800 px</td>
+</tr>
+<tr>
+<td><code>assets/system/status-patterns-desktop.png</code></td>
+<td><strong>Bundle</strong> 09</td>
+<td><code>spec-design-v2-bundles/09-spec-design-system-tokens-v2/reference/patterns-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates-public/catalog-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/relationship-templates-1280.png</code></td>
+<td>cropped to the top 1400 px</td>
+</tr>
+<tr>
+<td><code>assets/templates-public/catalog-mobile.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/relationship-templates-390.png</code></td>
+<td>cropped to the top 2000 px</td>
+</tr>
+<tr>
+<td><code>assets/templates-public/template-page-desktop.png</code></td>
+<td><strong>Bundle</strong> 02</td>
+<td><code>spec-design-v2-bundles/02-spec-design-page-onboarding-v2/reference/relationship-template-public-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates/card-menu-desktop.png</code></td>
+<td><strong>Bundle</strong> 06</td>
+<td><code>spec-design-v2-bundles/06-spec-design-page-templates-v2/reference/kebab-my-templates-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates/my-templates-desktop.png</code></td>
+<td><strong>Bundle</strong> 06</td>
+<td><code>spec-design-v2-bundles/06-spec-design-page-templates-v2/reference/templates-mine-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates/my-templates-mobile.png</code></td>
+<td><strong>Bundle</strong> 06</td>
+<td><code>spec-design-v2-bundles/06-spec-design-page-templates-v2/reference/templates-mine-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates/propose-desktop.png</code></td>
+<td><strong>Bundle</strong> 06</td>
+<td><code>spec-design-v2-bundles/06-spec-design-page-templates-v2/reference/template-proposal-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/templates/template-detail-desktop.png</code></td>
+<td><strong>Bundle</strong> 06</td>
+<td><code>spec-design-v2-bundles/06-spec-design-page-templates-v2/reference/my-template-detail-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/trial/extra-week-ended-payment-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-trial-ended-extended-initiator-payment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/trial/extra-week-running-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-extended-live-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/trial/trial-running-payment-desktop.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-live-payment-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/trial/trial-running-payment-mobile.png</code></td>
+<td><strong>Bundle</strong> 03</td>
+<td><code>spec-design-v2-bundles/03-spec-design-page-relationship-detail-v2/reference/rd-live-payment-390.png</code></td>
+<td>cropped to the top 2200 px</td>
+</tr>
+<tr>
+<td><code>assets/wizard/aspect-drawer-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/drawer-edit-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/edit-invited-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-edit-invited-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-1-details-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-1-details-mobile.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-2-settings-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage2-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-3-aspects-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage3-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-4-account-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage4-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-4-account-mobile.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage4-390.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-5-invite-desktop.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage5-1280.png</code></td>
+<td>copied as is</td>
+</tr>
+<tr>
+<td><code>assets/wizard/stage-5-invite-mobile.png</code></td>
+<td><strong>Bundle</strong> 01</td>
+<td><code>spec-design-v2-bundles/01-spec-design-page-wizard-v2/reference/wizard-stage5-390.png</code></td>
+<td>copied as is</td>
+</tr>
+</tbody>
+</table>
+        </article>
+        
+      </main>
+    </div>
+  </div>
+  <script src="/theme.js"></script>
+</body>
+</html>

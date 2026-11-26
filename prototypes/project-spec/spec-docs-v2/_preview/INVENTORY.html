@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>v2 Design Inventory · AlignSynch Docs</title>
+  <meta name="description" content="Every v2 design and feature, who it's for, what it gives them, its status and its best screenshot, with gaps flagged." />
+  <link rel="icon" type="image/png" href="/assets/brand/alignsynch-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="frame">
+    <header class="topbar">
+      <button class="menu-btn" type="button" aria-label="Open navigation" data-menu-toggle>
+        <span></span><span></span><span></span>
+      </button>
+      <a class="brand" href="/">
+        <img src="/assets/brand/alignsynch-logo.png" alt="" width="28" height="28" />
+        <span>AlignSynch <em>Docs</em></span>
+      </a>
+      <span class="preview-badge">v2 preview</span>
+      <button class="theme-btn" type="button" data-theme-toggle aria-label="Toggle color theme">Theme</button>
+    </header>
+    <div class="body">
+      <aside class="sidebar" id="sidebar">
+        <a class="nav-home" href="/">Overview</a>
+<div class="nav-extra">
+<a class="" href="/README.html">Docs plan</a>
+<a class="is-active" href="/INVENTORY.html">Feature inventory</a>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Project Spec 2.0</div>
+<div class="nav-group"><div class="nav-group-label">Overview</div><ul>
+<li><a class="nav-link" href="/scope/index.html">Index</a></li>
+</ul></div>
+<div class="nav-group nav-group--fixed" data-fixed="true" aria-expanded="true"><div class="nav-group-label">Validation</div><ul>
+<li><a class="nav-link" href="/scope/validation.html">Validation</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Story</div><ul>
+<li><a class="nav-link" href="/scope/01-play-with-aspects.html">01 Play With Aspects</a></li>
+<li><a class="nav-link" href="/scope/02-register.html">02 Register</a></li>
+<li><a class="nav-link" href="/scope/03-invite.html">03 Invite</a></li>
+<li><a class="nav-link" href="/scope/04-opinions.html">04 Opinions</a></li>
+<li><a class="nav-link" href="/scope/05-share.html">05 Share</a></li>
+<li><a class="nav-link" href="/scope/06-discuss.html">06 Discuss</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Around the Story</div><ul>
+<li><a class="nav-link" href="/scope/07-billing.html">07 Billing</a></li>
+<li><a class="nav-link" href="/scope/08-coaches.html">08 Coaches</a></li>
+<li><a class="nav-link" href="/scope/09-admin.html">09 Admin</a></li>
+<li><a class="nav-link" href="/scope/10-website.html">10 Website</a></li>
+<li><a class="nav-link" href="/scope/11-launch-and-operations.html">11 Launch and Operations</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Builder Docs</div>
+<div class="nav-group"><div class="nav-group-label">Introduction</div><ul>
+<li><a class="nav-link" href="/start/what-is-alignsynch.html">What Is Alignsynch</a></li>
+<li><a class="nav-link" href="/start/quickstart.html">Quickstart</a></li>
+<li><a class="nav-link" href="/start/core-concepts.html">Core Concepts</a></li>
+<li><a class="nav-link" href="/start/plans-and-trial.html">Plans and Trial</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Guides</div>
+<div class="nav-group"><div class="nav-group-label">Initiator</div><ul>
+<li><a class="nav-link" href="/guides/initiator/pick-a-template.html">Pick a Template</a></li>
+<li><a class="nav-link" href="/guides/initiator/set-up-details-settings-and-aspects.html">Set Up Details Settings and Aspects</a></li>
+<li><a class="nav-link" href="/guides/initiator/create-your-account.html">Create Your Account</a></li>
+<li><a class="nav-link" href="/guides/initiator/send-the-invite.html">Send the Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/edit-a-draft-or-sent-invite.html">Edit a Draft or Sent Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/copy-resend-or-cancel-an-invite.html">Copy Resend or Cancel an Invite</a></li>
+<li><a class="nav-link" href="/guides/initiator/if-a-draft-cant-be-created.html">If a Draft Cant Be Created</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-relationships-and-start.html">My Relationships and Start</a></li>
+<li><a class="nav-link" href="/guides/initiator/my-templates.html">My Templates</a></li>
+<li><a class="nav-link" href="/guides/initiator/your-7-days-free.html">Your 7 Days Free</a></li>
+<li><a class="nav-link" href="/guides/initiator/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/initiator/add-a-card-or-take-your-extra-week.html">Add a Card or Take Your Extra Week</a></li>
+<li><a class="nav-link" href="/guides/initiator/payment.html">Payment</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Counterparty</div><ul>
+<li><a class="nav-link" href="/guides/counterparty/accept-or-decline-an-invite.html">Accept or Decline an Invite</a></li>
+<li><a class="nav-link" href="/guides/counterparty/when-a-relationship-pauses.html">When a Relationship Pauses</a></li>
+<li><a class="nav-link" href="/guides/counterparty/save-these-aspects-as-a-template.html">Save These Aspects as a Template</a></li>
+<li><a class="nav-link" href="/guides/counterparty/ask-to-be-removed.html">Ask to Be Removed</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Both People</div><ul>
+<li><a class="nav-link" href="/guides/shared/answer-the-assessment.html">Answer the Assessment</a></li>
+<li><a class="nav-link" href="/guides/shared/results-and-align.html">Results and Align</a></li>
+<li><a class="nav-link" href="/guides/shared/propose-a-change.html">Propose a Change</a></li>
+<li><a class="nav-link" href="/guides/shared/chat-and-discussion.html">Chat and Discussion</a></li>
+<li><a class="nav-link" href="/guides/shared/leave-a-relationship.html">Leave a Relationship</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Account & Settings</div><ul>
+<li><a class="nav-link" href="/guides/account/account-menu.html">Account Menu</a></li>
+<li><a class="nav-link" href="/guides/account/profile-and-password.html">Profile and Password</a></li>
+<li><a class="nav-link" href="/guides/account/delete-your-account.html">Delete Your Account</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Admin</div><ul>
+<li><a class="nav-link" href="/guides/admin/crud-and-permissions.html">Crud and Permissions</a></li>
+<li><a class="nav-link" href="/guides/admin/email-templates.html">Email Templates</a></li>
+<li><a class="nav-link" href="/guides/admin/who-sees-the-admin-rail.html">Who Sees the Admin Rail</a></li>
+</ul></div>
+</div>
+<div class="nav-tab"><div class="nav-tab-label">Reference</div>
+<div class="nav-group"><div class="nav-group-label">Stages 1–6</div><ul>
+<li><a class="nav-link" href="/reference/stages/stage-1-details.html">Stage 1 Details</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-2-settings.html">Stage 2 Settings</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-3-aspects.html">Stage 3 Aspects</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-4-account.html">Stage 4 Account</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-5-invite.html">Stage 5 Invite</a></li>
+<li><a class="nav-link" href="/reference/stages/stage-6-align.html">Stage 6 Align</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">States & Status</div><ul>
+<li><a class="nav-link" href="/reference/states/relationship-states-by-role.html">Relationship States By Role</a></li>
+<li><a class="nav-link" href="/reference/states/status-chips.html">Status Chips</a></li>
+<li><a class="nav-link" href="/reference/states/answer-scale.html">Answer Scale</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Emails</div><ul>
+<li><a class="nav-link" href="/reference/emails/invitation.html">Invitation</a></li>
+<li><a class="nav-link" href="/reference/emails/counterparty-joined.html">Counterparty Joined</a></li>
+<li><a class="nav-link" href="/reference/emails/trial-started.html">Trial Started</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-initiator.html">Paused Initiator</a></li>
+<li><a class="nav-link" href="/reference/emails/paused-counterparty.html">Paused Counterparty</a></li>
+<li><a class="nav-link" href="/reference/emails/release-notes-and-banners.html">Release Notes and Banners</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Copy & Glossary</div><ul>
+<li><a class="nav-link" href="/reference/copy/glossary.html">Glossary</a></li>
+<li><a class="nav-link" href="/reference/copy/retired-terms.html">Retired Terms</a></li>
+<li><a class="nav-link" href="/reference/copy/copy-rules.html">Copy Rules</a></li>
+</ul></div>
+<div class="nav-group"><div class="nav-group-label">Changelog</div><ul>
+<li><a class="nav-link" href="/reference/changelog.html">Changelog</a></li>
+</ul></div>
+</div>
+      </aside>
+      <div class="overlay" data-menu-toggle hidden></div>
+      <main class="main">
+        <article class="article" id="article">
+          
+        <header class="doc-header">
+          <div class="doc-pills"><span class="pill pill-draft">Draft · 19 Nov 2026 (updated after the docs pass)</span><span class="pill pill-audience">Jaden</span><span class="pill pill-audience">Hermes</span><span class="pill pill-audience">build team</span></div>
+          <h1>v2 Design Inventory</h1>
+          <p class="doc-summary">Every v2 design and feature, who it's for, what it gives them, its status and its best screenshot, with gaps flagged.</p>
+        </header>
+        
+          <p><strong>Shot tiers, in priority order:</strong> <strong>B</strong> = Bundle reference render · <strong>Q</strong> = QA capture of the built app · <strong>S</strong> = spec or repo asset · <strong>P</strong> = prototype render · <strong>—</strong> = none.
+<strong>Design status:</strong> Designed (bundle) · Prototype Only · Planned (no screen) · Removed.
+<strong>App:</strong> the PR that shipped it, or <em>confirm</em> when it isn&rsquo;t verified.
+Bundle paths are short for <code>spec-design-v2-bundles/NN-*/reference/</code>. <strong>P</strong> shots taken 18 Nov are on the box at <code>/workspace/alignsynch/out/new-surfaces-shots/</code>.</p>
+<h2 id="get-started-and-initiator">Get Started and Initiator</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Public Relationship Templates catalog and public template page</td>
+<td>Visitor → Initiator</td>
+<td>Pick a relationship like yours before signing up</td>
+<td>Designed</td>
+<td>1.22 (#1159/#1161/#1170), confirm</td>
+<td><strong>B</strong> 02 <code>relationship-templates-1280</code>, <code>relationship-template-public-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Pricing → template pick (plan carried into the wizard)</td>
+<td>Visitor → Initiator</td>
+<td>Choose a plan and keep it through setup</td>
+<td>Designed</td>
+<td>1.22 (#1170), confirm</td>
+<td><strong>B</strong> 02 <code>pricing-1280</code>, <code>relationship-templates-from-pricing-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Wizard Stages 1–2: Details and Settings</td>
+<td>Initiator</td>
+<td>Name the relationship and its goal in a minute</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 01 <code>wizard-1280</code>, <code>wizard-stage2-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Stage 3 Aspects and the Aspect drawer</td>
+<td>Initiator</td>
+<td>Choose what you&rsquo;ll compare; edit or add Aspects</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 01 <code>wizard-stage3-1280</code>, <code>drawer-edit-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Stage 4: account only</td>
+<td>Initiator</td>
+<td>Sign up with no card asked for</td>
+<td>Designed</td>
+<td>#1190 return after sign-in</td>
+<td><strong>B</strong> 01 <code>wizard-stage4-1280</code></td>
+<td>Return-after-sign-in hop not shown (routing only)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Stage 5 Invite: <strong>Continue with 7 Days Free</strong>, plan chip</td>
+<td>Initiator</td>
+<td>Send the invite; the free days wait until they accept</td>
+<td>Designed</td>
+<td>#1217 Back → Stage 4</td>
+<td><strong>B</strong> 01 <code>wizard-stage5-1280</code>, <code>wizard-stage5-plan-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Draft and sent invite stay editable</td>
+<td>Initiator</td>
+<td>Fix a typo after sending</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 01 <code>wizard-edit-invited-1280</code>; 03 <code>rd-draft-1280</code>, <code>rd-invite-sent-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Invitation hygiene: Copy Link, Resend, Cancel Invite</td>
+<td>Initiator</td>
+<td>Control who can still join</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-invited-details-1280</code>, <code>modal-cancel-invite-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Couldn&rsquo;t Create This Draft · Try Again Shortly</td>
+<td>Initiator</td>
+<td>A calm, honest message instead of a blank page</td>
+<td>Prototype Only</td>
+<td>#1210 shipped a named 500, not this UI</td>
+<td><strong>P</strong> <code>create-failed-1280/390</code></td>
+<td>No bundle reference; rc1 bug capture <code>v2rc1-bug-create-loop.png</code> shows the old failure</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Start and My Relationships (list, empty, paused, kebab)</td>
+<td>Initiator</td>
+<td>One place for every relationship and its next step</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 05 <code>start-1280</code>, <code>my-relationships-1280</code>, <code>my-relationships-paused-1280</code>, <code>kebab-relationship-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>11</td>
+<td>Templates: Library / My Templates, detail, proposal, archive / restore</td>
+<td>Initiator</td>
+<td>Reuse and refine your own templates; never lose one</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 06 <code>templates-1280</code>, <code>templates-mine-1280</code>, <code>my-template-detail-1280</code>, <code>template-proposal-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>12</td>
+<td>Chat</td>
+<td>Both</td>
+<td>Talk it through next to the results</td>
+<td>Designed</td>
+<td>rc1 notes say chat does not persist (#1189)</td>
+<td><strong>B</strong> 07 <code>chat-1280</code>, <code>chat-relationship-1280</code>, <code>chat-relationship-paused-1280</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="counterparty">Counterparty</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>13</td>
+<td>Join steps 1–3</td>
+<td>Counterparty</td>
+<td>Accept in a few clicks, never charged</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 02 <code>join-step1/2/3-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>14</td>
+<td>One-click Decline</td>
+<td>Counterparty</td>
+<td>Say no without explaining</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 02 <code>join-declined-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>15</td>
+<td>You&rsquo;ve Joined landing</td>
+<td>Counterparty</td>
+<td>Know what happens next</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-joined-landing-counterparty-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>16</td>
+<td>Save These Aspects as a My Template (Counterparty fork)</td>
+<td>Counterparty</td>
+<td>Keep the questions for your own relationships</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-live-aspects-counterparty-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>17</td>
+<td>Leave Relationship / Request My Removal (closed, never deleted)</td>
+<td>Both</td>
+<td>Step away without erasing the other person&rsquo;s results</td>
+<td>Designed (DESIGN-NOTES §42)</td>
+<td>confirm</td>
+<td><strong>—</strong></td>
+<td>No reference render of the Closed banner or removal request (flow10 tests it, but there is no shot)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="stage-6-both-people">Stage 6 (both people)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>18</td>
+<td>Assessment: one Aspect at a time, save and resume, review, sealed for Round 1</td>
+<td>Both</td>
+<td>Answer honestly at your own pace</td>
+<td>Designed</td>
+<td>#1173</td>
+<td><strong>B</strong> 10 <code>assessment-1280</code>, <code>assessment-counterparty-1280</code>, <code>assessment-resume-390</code></td>
+<td></td>
+</tr>
+<tr>
+<td>19</td>
+<td>Save status chips: Saves as You Go · Saving… · ✓ Saved · Not Saved · Pick Again</td>
+<td>Both</td>
+<td>Trust that every answer is kept</td>
+<td>Prototype Only</td>
+<td>#1173 shipped text-only chips (flagged)</td>
+<td><strong>P</strong> <code>assessment-chip-*-1280/390</code></td>
+<td>No bundle reference</td>
+</tr>
+<tr>
+<td>20</td>
+<td>Waiting and Results In</td>
+<td>Both</td>
+<td>Know who you&rsquo;re waiting on</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-waiting-initiator-1280</code>, <code>rd-waiting-counterparty-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>21</td>
+<td>Align: Soft / Full re-score, status summary</td>
+<td>Both</td>
+<td>See where you match and where you don&rsquo;t</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 04 <code>align-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>22</td>
+<td>Propose a change on locked Aspects</td>
+<td>Both</td>
+<td>No silent edits; both agree first</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>modal-propose-1280</code>, <code>proposal-incoming-1280</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h2 id="plans-trial">Plans &amp; Trial</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>23</td>
+<td>Trial running and Payment tab (countdown only after accept)</td>
+<td>Initiator</td>
+<td>Know exactly when the free days end</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-live-payment-1280</code>; 08 <code>payment-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>24</td>
+<td>Trial ended → Stage 6 paused, one free Extra Week, Extra Week Ended</td>
+<td>Initiator</td>
+<td>Nothing lost; resume in one step</td>
+<td>Designed</td>
+<td>Built (#1143, #1236 merged); Initiator lapse line still says &ldquo;Align is paused&rdquo;</td>
+<td><strong>B</strong> 03 <code>rd-trial-ended-initiator-1280</code>, <code>rd-trial-ended-extended-initiator-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>25</td>
+<td>Counterparty paused view, &ldquo;Marcus covers this relationship&rdquo;</td>
+<td>Counterparty</td>
+<td>Nothing to do, never asked to pay</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 03 <code>rd-trial-ended-counterparty-1280</code>; 08 <code>payment-counterparty-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>26</td>
+<td>Answer screen while paused (Initiator <strong>Paused</strong> · Counterparty <strong>Paused · Waiting on {name}</strong>)</td>
+<td>Both</td>
+<td>Answers are safe while paused</td>
+<td>Designed (rc1.3 bundle 01)</td>
+<td>Built: <a href="https://github.com/riolabs-ai/alignsynch/pull/1235">PR #1235</a> merged; old headings still on main</td>
+<td><strong>B</strong> rc1.3 01 <code>assessment-paused-*</code>, <code>assessment-lapsed-*</code></td>
+<td>Shots predate the settled copy</td>
+</tr>
+<tr>
+<td>27</td>
+<td>Basic $9.99/month, the one plan, on Pricing and Payment</td>
+<td>Initiator</td>
+<td>See the plan you actually hold</td>
+<td>Planned</td>
+<td><a href="https://github.com/riolabs-ai/alignsynch/pull/1241">PR #1241</a> open (Single Annual removed); #1230 per-plan price</td>
+<td><strong>B</strong> 08 <code>payment-1280</code></td>
+<td>Pricing render shows three cards; <code>wizard-stage5-plan-1280</code> shows the removed Family chip</td>
+</tr>
+<tr>
+<td>28</td>
+<td>Family plan and Family at capacity (4 of 4)</td>
+<td>Initiator</td>
+<td>—</td>
+<td>Removed</td>
+<td>#1229 closed; <a href="https://github.com/riolabs-ai/alignsynch/pull/1237">PR #1237</a></td>
+<td><strong>—</strong></td>
+<td>Removed 19 Nov 2026 (merged). Single Annual removed by PR #1241 (open). One plan: Basic $9.99/month.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="account-settings">Account &amp; Settings</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>29</td>
+<td>Account menu (name, email, Account Settings, Sign Out)</td>
+<td>Everyone</td>
+<td>Get to your account from any page</td>
+<td>Designed</td>
+<td>#1152 closed; confirm</td>
+<td><strong>B</strong> 11 <code>account-menu-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>30</td>
+<td>Settings: Profile, Password, Session; Notifications removed</td>
+<td>Everyone</td>
+<td>Fewer, honest controls</td>
+<td>Prototype Only (current)</td>
+<td>confirm</td>
+<td><strong>P</strong> <code>settings-1280/390</code></td>
+<td><strong>B</strong> 11 <code>settings-1280</code> is stale: it still shows Notifications and the 30-day text</td>
+</tr>
+<tr>
+<td>31</td>
+<td>Delete Account: immediate, can&rsquo;t be restored</td>
+<td>Everyone</td>
+<td>A clear, final choice</td>
+<td>Prototype Only (current)</td>
+<td>#1163 (copy)</td>
+<td><strong>P</strong> <code>settings-delete-confirm-1280/390</code></td>
+<td>Bundle reference stale; prod capture <code>alignsynch-prod-captures/0004</code> is v1.16</td>
+</tr>
+</tbody>
+</table>
+<h2 id="admin">Admin</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32</td>
+<td>CRUD &amp; Permissions matrix</td>
+<td>Admin</td>
+<td>One read-only answer to &ldquo;who can do what&rdquo;</td>
+<td>Designed</td>
+<td>#1157, #1179 (deltas open)</td>
+<td><strong>B</strong> 12 <code>admin-crud-matrix-1280</code>, <code>-filtered-</code>, <code>-broken-</code></td>
+<td>No QA capture of the built page</td>
+</tr>
+<tr>
+<td>33</td>
+<td>Email Templates admin (register and override editor)</td>
+<td>Admin</td>
+<td>Fix email copy without a deploy</td>
+<td>Planned (no design)</td>
+<td>#1167</td>
+<td><strong>—</strong></td>
+<td>No shot anywhere</td>
+</tr>
+</tbody>
+</table>
+<h2 id="emails-and-comms">Emails and comms</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>34</td>
+<td>&ldquo;Your 7 days free start today&rdquo; (Initiator, free-trial only)</td>
+<td>Initiator</td>
+<td>Know the clock started</td>
+<td>Planned (copy only)</td>
+<td>PR #1240 (open)</td>
+<td><strong>—</strong></td>
+<td>Not on main; no render</td>
+</tr>
+<tr>
+<td>35</td>
+<td>Counterparty Joined email, &ldquo;Relationship&rdquo; not &ldquo;session&rdquo;</td>
+<td>Initiator</td>
+<td>Know they&rsquo;re in</td>
+<td>Built (copy only)</td>
+<td>#1195 merged; trial-line fix in PR #1240 (open)</td>
+<td><strong>—</strong></td>
+<td>No render</td>
+</tr>
+<tr>
+<td>36</td>
+<td>Paused emails split by seat (<code>trial-ended-paused</code> / <code>relationship-paused</code>)</td>
+<td>Both</td>
+<td>Each person hears only what applies to them</td>
+<td>Built (copy only)</td>
+<td>#1168 merged; subjects still say &ldquo;Align is paused&rdquo;</td>
+<td><strong>—</strong></td>
+<td>No render</td>
+</tr>
+<tr>
+<td>37</td>
+<td>FAQ &ldquo;How do I get started?&rdquo; (v2 path)</td>
+<td>Visitor</td>
+<td>A correct answer before signing up</td>
+<td>Planned</td>
+<td>PR #1238 (open)</td>
+<td><strong>S</strong> rc1.3 06 repo-spec shots</td>
+<td>Not in docs.json</td>
+</tr>
+<tr>
+<td>38</td>
+<td>OG and release banners (email, readme, release default)</td>
+<td>Everyone</td>
+<td>Consistent, on-brand shares</td>
+<td>Built</td>
+<td>#1177</td>
+<td><strong>S</strong> repo <code>public/og/*.png</code></td>
+<td>Not copied locally</td>
+</tr>
+</tbody>
+</table>
+<h2 id="reference-and-system">Reference and system</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Feature</th>
+<th>Audience</th>
+<th>Value for the person</th>
+<th>Design</th>
+<th>App</th>
+<th>Best shot</th>
+<th>Gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>39</td>
+<td>Tokens, status language (icon plus word), 1–5 scale, no red</td>
+<td>Everyone</td>
+<td>Calm, readable status at a glance</td>
+<td>Designed</td>
+<td>confirm</td>
+<td><strong>B</strong> 09 <code>baseline-1280</code>, <code>patterns-1280</code>; <strong>P</strong> <code>palette-/scale-/summary-before-after.png</code></td>
+<td></td>
+</tr>
+<tr>
+<td>40</td>
+<td>Flow map, including Later Calls · 18 Nov</td>
+<td>Team</td>
+<td>See every state in one place</td>
+<td>Designed + Prototype</td>
+<td>n/a</td>
+<td><strong>B</strong> 09 <code>index-1280</code>; <strong>P</strong> <code>flow-map-later-calls-1280</code></td>
+<td></td>
+</tr>
+<tr>
+<td>41</td>
+<td><code>spec-stages/Preview List Titles New.avif</code></td>
+<td>?</td>
+<td>?</td>
+<td>Unknown</td>
+<td>?</td>
+<td><strong>S</strong> (couldn&rsquo;t decode)</td>
+<td>Not reviewed. Need Jaden to say what it is</td>
+</tr>
+</tbody>
+</table>
+<h2 id="counts">Counts</h2>
+<table>
+<thead>
+<tr>
+<th>Best available shot</th>
+<th>Rows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bundle reference (current)</td>
+<td>27</td>
+</tr>
+<tr>
+<td>Prototype only</td>
+<td>5 (#9, #19, #26, #30, #31)</td>
+</tr>
+<tr>
+<td>Spec or repo asset</td>
+<td>1 (#38), plus 1 unreviewed (#41)</td>
+</tr>
+<tr>
+<td>No shot at all</td>
+<td>6 (#17, #33, #34, #35, #36, #37)</td>
+</tr>
+<tr>
+<td>Removed</td>
+<td>1 (#28)</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>41</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>QA tier:</strong> no row has a QA capture of the built v2 app. The QA atlases on prodesk (<code>qa-atlas-v1.17.0/1.17.1-full-size.zip</code>, <code>alignsynch-qa-atlas-v1.20.0.docx</code>) and <code>~/qa/t_*-975</code> predate v2. They can serve as &ldquo;before&rdquo; images or for Administration pages about older admin tools (audit, billing, templates, docs).</p>
+<h2 id="docs-pages">Docs Pages</h2>
+<p>Every page in <code>docs.json</code>, with the status written in its frontmatter (generated from the files on disk).</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="start/what-is-alignsynch.html">What Is AlignSynch</a></td>
+<td>Built (v2.0.0-rc1.2 on main) · design deltas open per guide</td>
+</tr>
+<tr>
+<td><a href="start/quickstart.html">Quickstart</a></td>
+<td>Built (#1144, #1147, #1173, #1145) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="start/core-concepts.html">Core Concepts</a></td>
+<td>Built (v2.0.0-rc1.2) · glossary deltas open</td>
+</tr>
+<tr>
+<td><a href="start/plans-and-trial.html">Plans and the Free Trial</a></td>
+<td>Planned (Basic only: https://github.com/riolabs-ai/alignsynch/pull/1241) · trial Built (#1116, #1117, #1143)</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/pick-a-template.html">Pick a Template</a></td>
+<td>Built (#1170, via #1159 / #1127) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/set-up-details-settings-and-aspects.html">Set Up Details, Settings and Aspects</a></td>
+<td>Built (#1144, drawer via #1170 / #1133) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/create-your-account.html">Create Your Account</a></td>
+<td>Built (#1144, #1190) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/send-the-invite.html">Send the Invite</a></td>
+<td>Built (#1144, #1217) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/edit-a-draft-or-sent-invite.html">Edit a Draft or Sent Invite</a></td>
+<td>Built (#1144, #1148) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/copy-resend-or-cancel-an-invite.html">Copy, Resend or Cancel an Invite</a></td>
+<td>Built (#1149 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/if-a-draft-cant-be-created.html">If a Draft Can&rsquo;t Be Created</a></td>
+<td>Planned (https://github.com/riolabs-ai/alignsynch/issues/1226) · #1210 shipped a named 500 without this screen</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/my-relationships-and-start.html">My Relationships and Start</a></td>
+<td>Built (#1150 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/my-templates.html">My Templates</a></td>
+<td>Built (#1151, #1153 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/your-7-days-free.html">Your 7 Days Free</a></td>
+<td>Built (#1116, #1117, #1156 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/when-a-relationship-pauses.html">When a Relationship Pauses</a></td>
+<td>Built (#1143, #1235, #1236) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/add-a-card-or-take-your-extra-week.html">Add a Card or Take Your Extra Week</a></td>
+<td>Built (#1143, #1156 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/initiator/payment.html">Payment</a></td>
+<td>Built (#1156 via #1170) · Planned: Basic-only price (https://github.com/riolabs-ai/alignsynch/pull/1241), per-plan price line (https://github.com/riolabs-ai/alignsynch/issues/1230)</td>
+</tr>
+<tr>
+<td><a href="guides/counterparty/accept-or-decline-an-invite.html">Accept or Decline an Invite</a></td>
+<td>Built (#1147) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/counterparty/when-a-relationship-pauses.html">When a Relationship Pauses</a></td>
+<td>Built (#1143, #1236) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/counterparty/save-these-aspects-as-a-template.html">Save These Aspects as a Template</a></td>
+<td>Built (#1153 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/counterparty/ask-to-be-removed.html">Ask to Be Removed</a></td>
+<td>Built (#1149 via #1170) · no shot</td>
+</tr>
+<tr>
+<td><a href="guides/shared/answer-the-assessment.html">Answer the Assessment</a></td>
+<td>Built (#1173, #1235) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/shared/results-and-align.html">Results and Align</a></td>
+<td>Built (#1145, #1148) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/shared/propose-a-change.html">Propose a Change</a></td>
+<td>Built (#1155 via #1170) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/shared/chat-and-discussion.html">Chat and Discussion</a></td>
+<td>Built (#1154 via #1170) · chat does not persist yet</td>
+</tr>
+<tr>
+<td><a href="guides/shared/leave-a-relationship.html">Leave a Relationship</a></td>
+<td>Built (#1149 via #1170) · no shot</td>
+</tr>
+<tr>
+<td><a href="guides/account/account-menu.html">Account Menu</a></td>
+<td>Built (#1152 via #1170)</td>
+</tr>
+<tr>
+<td><a href="guides/account/profile-and-password.html">Profile and Password</a></td>
+<td>Built (#1152 via #1170) · bundle refresh open (https://github.com/riolabs-ai/alignsynch/issues/1233)</td>
+</tr>
+<tr>
+<td><a href="guides/account/delete-your-account.html">Delete Your Account</a></td>
+<td>Built (#1163, lib/account/purge.ts)</td>
+</tr>
+<tr>
+<td><a href="guides/admin/crud-and-permissions.html">CRUD &amp; Permissions</a></td>
+<td>Built (#1157, #1179) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="guides/admin/email-templates.html">Email Templates</a></td>
+<td>Built (#1167) · design deltas open (https://github.com/riolabs-ai/alignsynch/issues/1231, https://github.com/riolabs-ai/alignsynch/pull/1242)</td>
+</tr>
+<tr>
+<td><a href="guides/admin/who-sees-the-admin-rail.html">Who Sees the Admin Rail</a></td>
+<td>Built (#1157, #1167, nav-menu.json)</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-1-details.html">Stage 1 · Details</a></td>
+<td>Built (#1144) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-2-settings.html">Stage 2 · Settings</a></td>
+<td>Built (#1144) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-3-aspects.html">Stage 3 · Aspects</a></td>
+<td>Built (#1144) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-4-account.html">Stage 4 · Account</a></td>
+<td>Built (#1144) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-5-invite.html">Stage 5 · Invite</a></td>
+<td>Built (#1144) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/stages/stage-6-align.html">Stage 6 · Align</a></td>
+<td>Built (#1144, #1147, #1148) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/states/relationship-states-by-role.html">Relationship States by Role</a></td>
+<td>Built (#1148, #1143) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/states/status-chips.html">Status Chips</a></td>
+<td>Built (#1145, #1150) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/states/answer-scale.html">The Answer Scale</a></td>
+<td>Built (#1173)</td>
+</tr>
+<tr>
+<td><a href="reference/emails/invitation.html">Invitation Email</a></td>
+<td>Built</td>
+</tr>
+<tr>
+<td><a href="reference/emails/counterparty-joined.html">Counterparty Joined Email</a></td>
+<td>Built · design deltas open (https://github.com/riolabs-ai/alignsynch/issues/1227, https://github.com/riolabs-ai/alignsynch/pull/1240)</td>
+</tr>
+<tr>
+<td><a href="reference/emails/trial-started.html">Trial Started Line</a></td>
+<td>Planned (https://github.com/riolabs-ai/alignsynch/pull/1240)</td>
+</tr>
+<tr>
+<td><a href="reference/emails/paused-initiator.html">Paused Email (Initiator)</a></td>
+<td>Built (#1168) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/emails/paused-counterparty.html">Paused Email (Counterparty)</a></td>
+<td>Built (#1168) · design deltas open</td>
+</tr>
+<tr>
+<td><a href="reference/emails/release-notes-and-banners.html">Release Notes and Banners</a></td>
+<td>Built (#1177, #1193)</td>
+</tr>
+<tr>
+<td><a href="reference/copy/glossary.html">Glossary</a></td>
+<td>Designed</td>
+</tr>
+<tr>
+<td><a href="reference/copy/retired-terms.html">Retired Terms</a></td>
+<td>Designed</td>
+</tr>
+<tr>
+<td><a href="reference/copy/copy-rules.html">Copy Rules</a></td>
+<td>Designed</td>
+</tr>
+<tr>
+<td><a href="reference/changelog.html">Changelog</a></td>
+<td>Designed</td>
+</tr>
+</tbody>
+</table>
+        </article>
+        
+      </main>
+    </div>
+  </div>
+  <script src="/theme.js"></script>
+</body>
+</html>
