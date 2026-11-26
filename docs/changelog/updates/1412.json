@@ -1,5 +1,5 @@
 {
-  "pr": 1411,
+  "pr": 1412,
   "date": "2026-11-26",
   "area": "ops",
   "summary": "`pnpm hygiene` now refuses to start on a Node below the `engines.node` this tree declares, naming the required range, the running version and the wrapper that supplies the pin — instead of dying in Node's module loader.",

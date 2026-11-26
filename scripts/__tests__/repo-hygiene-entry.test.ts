@@ -23,7 +23,7 @@
  */
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { after, describe, it } from "node:test";
@@ -62,24 +62,62 @@ after(() => {
   for (const directory of fixtures) rmSync(directory, { recursive: true, force: true });
 });
 
+/**
+ * The child's environment: the caller's, minus every `GIT_*` variable.
+ *
+ * Measured, and it cost a stray commit: a run of this file committed its fixture commit into the
+ * *calling* worktree instead of the temporary one, because a `GIT_DIR` in the environment overrides
+ * the directory git is pointed at. Both spawns below use this — the fixture's git calls, so the guard
+ * cannot write into the tree it is testing, and the entry point's, so it reads the fixture rather
+ * than whatever repository the caller happened to be in.
+ */
+function childEnv(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  for (const key of Object.keys(env)) if (key.startsWith("GIT_")) delete env[key];
+  return env;
+}
+
+/**
+ * A git command in the fixture. `-C` as well as `cwd`: the two agree, and neither alone covers the
+ * case where a caller's environment has already redirected git.
+ */
+function fixtureGit(directory: string, ...args: string[]) {
+  return spawnSync(
+    "git",
+    [
+      "-C",
+      directory,
+      "-c",
+      "user.name=repo-hygiene",
+      "-c",
+      "user.email=repo-hygiene@example.invalid",
+      ...args,
+    ],
+    { cwd: directory, env: childEnv(), encoding: "utf8" },
+  );
+}
+
 /** A repository the job can read: one commit, an `origin/main`, nothing to prune. */
 function gitFixture(): string {
   const directory = mkdtempSync(join(tmpdir(), "alignsynch-hygiene-"));
   fixtures.push(directory);
-  const git = (...args: string[]) =>
-    spawnSync(
-      "git",
-      ["-c", "user.name=repo-hygiene", "-c", "user.email=repo-hygiene@example.invalid", ...args],
-      { cwd: directory, encoding: "utf8" },
-    );
   const steps = [
     ["init", "-q", "-b", "main", "."],
     ["commit", "-q", "--allow-empty", "-m", "fixture"],
     ["update-ref", "refs/remotes/origin/main", "HEAD"],
   ];
   for (const step of steps) {
-    const result = git(...step);
+    const result = fixtureGit(directory, ...step);
     assert.equal(result.status, 0, `git ${step.join(" ")} failed: ${result.stderr}`);
+    if (step[0] === "init") {
+      // Before anything writes: prove git resolved the directory this test meant.
+      const top = fixtureGit(directory, "rev-parse", "--show-toplevel").stdout.trim();
+      assert.equal(
+        realpathSync(top),
+        realpathSync(directory),
+        `git resolved ${top} instead of the fixture — a GIT_DIR in the environment redirects it`,
+      );
+    }
   }
   return directory;
 }
@@ -100,6 +138,7 @@ describe("the documented entry point, run as documented", () => {
     const fixture = gitFixture();
     const result = spawnSync(process.execPath, [...documentedArgv(), "--dry-run"], {
       cwd: fixture,
+      env: childEnv(),
       encoding: "utf8",
     });
     const output = `${result.stdout ?? ""}${result.stderr ?? ""}`;
