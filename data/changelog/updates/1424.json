@@ -1,0 +1,9 @@
+{
+  "pr": 1424,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "`pnpm env:render` writes every value as a single-quoted shell literal (`NAME='…'`, an embedded `'` written `'\\''`), re-parses each line it emits, and refuses a value carrying a line break instead of emitting a file that half-loads.",
+  "reader_impact": "An operator sourcing a rendered file — or anything under `bin/withenv.sh` — now gets `DATABASE_URL` at full length instead of unset, because an unquoted Neon URL ends the shell assignment at its `&`.",
+  "specs": ["docs/operations/env-manifest.md"],
+  "risk": "medium"
+}
