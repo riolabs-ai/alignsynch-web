@@ -1,0 +1,9 @@
+{
+  "pr": 1435,
+  "date": "2026-11-26",
+  "area": "flow",
+  "summary": "An answer sheet the server has frozen draws the fixture's refusal sentence and the sealed pane, in place of a scale whose next pick could never save.",
+  "reader_impact": "If your sheet was open when your seat accepted, your first pick now tells you the answers are sealed, instead of inviting a second try that could never save.",
+  "specs": ["docs/specs/flow-stages.md"],
+  "risk": "low"
+}
