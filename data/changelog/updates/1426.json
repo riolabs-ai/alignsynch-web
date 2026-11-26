@@ -1,0 +1,9 @@
+{
+  "pr": 1426,
+  "date": "2026-11-26",
+  "area": "flow",
+  "summary": "The Aspect drawer prints Title as plain text on a `cursor-default select-none` element, not a read-only input, so the pointer no longer offers an edit the model cannot take.",
+  "reader_impact": "Opening an Aspect no longer greets you with a text cursor over a title that refuses every keystroke, and the hint under it says where the name comes from and that the list shows your Prompt.",
+  "specs": ["docs/specs/flow-stages.md"],
+  "risk": "low"
+}

@@ -12,7 +12,7 @@
  *
  *   eyebrow     `New Aspect` / `Edit Aspect`
  *   heading     `Add an Aspect`, or the Aspect's own name
- *   Title       the row's name — **read-only here, and it is the only field the model cannot carry**
+ *   Title       the row's name — printed as text, never a box: the one field the model cannot carry
  *   Prompt      what both seats answer
  *   1 Means     4 lines, two columns   …the low pole's words
  *   5 Means                             …the high pole's words
@@ -26,6 +26,15 @@
  * The bundle's Title is that name, printed; the drawer prints it and says so, rather than showing
  * an input whose value the model would drop on save. A `title` column is a schema card, not this
  * one (`tests/aspect-drawer.test.tsx` pins that the field is not editable).
+ *
+ * **And it is printed as text, not as a read-only box (#1361).** The middle state this drawer used
+ * to ship — `<input readOnly>` — looks like a field and behaves like one under the pointer: the
+ * browser draws an I-beam over it and lets a selection be dragged across the value, so a reader is
+ * invited to click and type into something that will never take a keystroke. Since the answer to
+ * "is an Aspect's title editable?" is **no**, the drawing must agree: the name is a `<p>` with
+ * `cursor-default` (the arrow, not the I-beam) and `select-none`, there is no `<input>`, no
+ * `readonly` and no `aria-readonly` in the row, and `title-help` says where the name comes from and
+ * where it shows — it titles this sheet, and the list above shows the Prompt.
  *
  * **The 1–5 cells are never a field.** They are a `role="img"` band painted from the scale tokens,
  * with the two pole words repeated underneath as the live preview: the scale is the product's one
@@ -272,17 +281,21 @@ export function AspectDrawer({
           </div>
 
           <div className="flex-1 space-y-4 p-5">
-            {/* Title: drawn, not written — see the module header. */}
+            {/*
+              Title: drawn, not written — and drawn as **text**, never as a box (#1361). A
+              `readOnly` input still paints an I-beam over the value and lets a pointer select it,
+              so it advertises an edit that can never happen; a plain element with
+              `cursor-default select-none` is the honest drawing. The row keeps its id on the
+              printed name so a test can read which row it is.
+            */}
             <div className="space-y-1.5" data-aspect-drawer-title>
               <p className="text-sm font-medium">{itemLabel(words, "title-label")}</p>
-              <input
-                readOnly
-                tabIndex={-1}
-                aria-readonly="true"
-                value={newRow ? itemLabel(words, "name-new") : aspectNameOf(aspect.id)}
+              <p
                 data-aspect-drawer-name={aspect?.id ?? ""}
-                className="w-full rounded-md border border-input bg-mist px-3 py-2 text-sm text-foreground"
-              />
+                className="cursor-default select-none text-sm font-medium text-foreground"
+              >
+                {newRow ? itemLabel(words, "name-new") : aspectNameOf(aspect.id)}
+              </p>
               <p className="text-xs text-muted-foreground">{itemLabel(words, "title-help")}</p>
             </div>
 
