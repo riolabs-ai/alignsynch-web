@@ -1101,6 +1101,11 @@
           "path": "changelog/v2-0-0-rc2.md",
           "title": "v2.0.0-rc2",
           "question": "How does a route stop being lost between the tree and the rail, and how does a demo write stop reaching production?"
+        },
+        {
+          "path": "changelog/v2-1-0.md",
+          "title": "v2.1.0",
+          "question": "What makes the operator's tooling a surface with a boundary instead of a shelf of admin pages — and what can an operator reach on it now?"
         }
       ]
     }

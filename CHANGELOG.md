@@ -51,7 +51,7 @@ with a **Known limits** block, because a release that does not say what it canno
 
 ### Known limits
 
-- **The scripts need Node 24.** `engines.node: 24.x` is not advisory. The `.mjs` entry points import
+- **The scripts need Node 24.** `engines.node: 24.x` is not advisory. The script entry points import
   TypeScript source through `scripts/ts-modules.mjs`, which relies on Node's type stripping; on Node 18
   `pnpm hygiene` and `pnpm release:check` die with `ERR_UNKNOWN_FILE_EXTENSION` or
   `bad option: --disable-warning`. The failure names a file, not the engine, so it reads as a code bug.
