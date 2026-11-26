@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * scripts/release-preflight.mjs — `pnpm release:preflight <version>`: the ten facts a cut must be
+ * scripts/release-preflight.mjs — `pnpm release:preflight <version>`: the facts a cut must be
  * true before `scripts/release.sh --tag-only` writes a byte, as one command with a ✗ per failure.
  *
  * The requirement is card t_3c37542f; no GitHub issue carries it, so the card is cited rather than
@@ -14,7 +14,13 @@
  *   two cuts at once        two `release.sh --tag-only` runs sharing one `.next` and one gate slot;
  *   a local check that disagreed with CI, because the commit had never been read by a run;
  *   a `record` step that silently skipped because the shell had no `DATABASE_URL` — on both rc1
- *                           and rc1.1, each leaving `/admin/health` naming the previous release.
+ *                           and rc1.1, each leaving `/admin/health` naming the previous release;
+ *   a credential that drifted  production holding a value older than the credential set that
+ *                           replaced it. The Neon account moved on 2026-11-24 and production served
+ *                           `NEON_AUTH_COOKIE_SECRET` written 2026-10-30 until someone re-sourced it
+ *                           by hand on 2026-11-26 — nothing failed, because a value cannot be read
+ *                           back and nothing looked at the only observable it has: when it was
+ *                           written (card t_bc244ff3, check 11).
  *
  * Each of those is a fact that can be checked in about a second, so each is a check here, numbered
  * and printed with a remedy. The checks live in the cut and nowhere else: `tag is free` and `no
@@ -22,7 +28,7 @@
  * `scripts/verify.sh` or in CI — a check that only lived in CI would be a red push, and this one
  * lives where it is read, which is the cut.
  *
- * ## The ten checks
+ * ## The checks
  *
  *   1  no concurrent cut          another `release.sh` / `release-cut` on this repository, by
  *                                 scanning the process table (this process, its ancestor chain and
@@ -34,14 +40,22 @@
  *   6  entry exists, and honest   `docs/changelog/v<version>.md` exists and `release.sh --check`
  *                                 is green
  *   7  no stale build cache       `.next/dev` and `.next/types` are absent (a `next dev` ran here)
- *   8  record step can run        a database URL is in the environment, or `--no-record` was passed
- *   9  CI green at this sha       `gh run list --commit HEAD` shows a success and no failure
- *  10  no merges in flight        no open pull request, or `--allow-open-prs` was passed
+ *  8  record step can run        a database URL is in the environment, or `--no-record` was passed
+ *  9  CI green at this sha       `gh run list --commit HEAD` shows a success and no failure
+ * 10  no merges in flight        no open pull request, or `--allow-open-prs` was passed
+ * 11  credentials current        no production variable governed by a rotation in
+ *                                 `data/env/rotations.json` was last written before that rotation
+ *                                 (`pnpm env:drift`; card t_bc244ff3)
  *
  * ## Two flags, each covering exactly one check
  *
  *   `--no-record`       check 8 — print the record command and publish; the record is then owed
  *   `--allow-open-prs`  check 10 — the open queue is known and the operator accepts it
+ *
+ * Check 11 has **no flag**, on purpose. A stale credential is a fact about a value that must be
+ * re-sourced, and the one action that would clear it without a human — moving the declared date —
+ * is a claim that the credential set changed when it did not. The remedy prints the act (re-source
+ * the value) and the two ways to fail it (a wrong write, or a date bent to a green line).
  *
  * Both print a warning line naming what was waved through, so a cut that proceeds anyway says so
  * in its own output. **An unverifiable check is always ✗**: a missing or unauthenticated `gh` fails
@@ -59,14 +73,14 @@
  *
  * ## Exit
  *
- *   0  all ten pass (a warned-through check still passes)
+ *   0  all pass (a warned-through check still passes)
  *   1  at least one check failed — the ✗ lines say which, and each prints its remedy
  *   2  usage: no version, a version that is not semver, or an unknown flag
  *
  * Colour is printed only to a terminal, so a transcript captured to a file is plain text.
  *
  * Usage:
- *   pnpm release:preflight <version>                    the ten checks for a cut of <version>
+ *   pnpm release:preflight <version>                    the checks for a cut of <version>
  *   pnpm release:preflight <version> --no-record        check 8 waved through, with a warning
  *   pnpm release:preflight <version> --allow-open-prs   check 10 waved through, with a warning
  */
@@ -79,7 +93,7 @@ import { normalizeVersion } from "./release-version.mjs";
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
 
-/** The ten checks, in order. `rows[n - 1].key` is the name printed for check `n`. */
+/** The checks, in order. `rows[n - 1].key` is the name printed for check `n`. */
 export const CHECK_NAMES = [
   "no concurrent cut",
   "checkout current",
@@ -91,6 +105,7 @@ export const CHECK_NAMES = [
   "record step can run",
   "CI green at this sha",
   "no merges in flight",
+  "credentials current",
 ];
 
 /**
@@ -114,6 +129,30 @@ export const REMEDY = {
   record:
     "run under `bin/withenv.sh`, or pass `--no-record` and record separately — a silent skip leaves `/admin/health` stale",
   prs: "a merge moves main mid-cut; land or park them first (or pass --allow-open-prs)",
+  envDriftUnreadable:
+    "cannot verify production's credential freshness — export VERCEL_TOKEN (or run `vercel login`) " +
+    "so `pnpm env:drift` can read the project's env timestamps, then cut again; an unverified " +
+    "credential is the failure this check exists to prevent",
+  /**
+   * The drift list itself, one line per variable, so the refusal carries the remedy and not only a
+   * verdict. No value appears here — the report has none to give: a variable name and two dates.
+   */
+  driftList: (stale, unknown) =>
+    [
+      ...stale.map(
+        (entry) =>
+          `${entry.key} — last updated ${entry.updatedAt}, predates ${entry.rotation.id} ` +
+          `(changed ${entry.rotation.changedAt})`,
+      ),
+      ...unknown.map(
+        (entry) =>
+          `${entry.key} — no readable updatedAt, predates ${entry.rotation.id} (unknown when written)`,
+      ),
+    ].join("\n"),
+  envDriftOwner:
+    "re-source each value above and re-run — the write is the owner's, because a wrong write to a " +
+    "production environment is worse than a stale one; do not move a date in data/env/rotations.json " +
+    "to clear this line, since the date is a claim about when the credential set changed",
 };
 
 const PALETTE = {
@@ -274,7 +313,7 @@ function describe(entry) {
 
 /**
  * The verdict. Pure: `gather()` reads git, the files, `gh` and the process table; this decides. So
- * every check is a case in `tests/release-preflight.test.ts` — including ten cases where exactly one
+ * every check is a case in `tests/release-preflight.test.ts` — including a case per check where exactly one
  * check fails, which is what proves no check is shadowed by another.
  *
  * Every other check reports `bad` when its evidence could not be read at all (`status: null`, an
@@ -459,6 +498,50 @@ export function evaluate(evidence) {
     }
   }
 
+  /* 11 — credentials current ------------------------------------------------ *
+     The one check whose failure is invisible everywhere else: production serves with a stale value,
+     `env:check` never sees a value, and `vercel env pull` prints `[SENSITIVE]`. What is left is
+     time — `pnpm env:drift` holds every variable governed by a declared rotation against the day
+     that set changed, and names what is older. The refusal carries the list, so the remedy is in
+     the message instead of one line pointing at another command. */
+  const drift = evidence.envDrift;
+  if (!drift?.available) {
+    row(
+      11,
+      false,
+      `cannot read production's env timestamps${drift?.reason ? ` — ${drift.reason}` : ""}`,
+      {
+        remedy: REMEDY.envDriftUnreadable,
+      },
+    );
+  } else if ((drift.stale ?? []).length > 0 || (drift.unknown ?? []).length > 0) {
+    const stale = drift.stale ?? [];
+    const unknown = drift.unknown ?? [];
+    const first = stale[0];
+    const extra = stale.length - 1 + unknown.length;
+    row(
+      11,
+      false,
+      `${stale.length + unknown.length} variable(s) older than their rotation` +
+        (first
+          ? ` — ${first.key} last updated ${first.updatedAt}, predates ${first.rotation.id}`
+          : "") +
+        (extra > 0 ? ` (+${extra} more, named in the remedy)` : ""),
+      {
+        drift: { stale, unknown },
+        remedy: [REMEDY.driftList(stale, unknown), REMEDY.envDriftOwner].join("\n"),
+      },
+    );
+  } else {
+    row(
+      11,
+      true,
+      drift.declared === false
+        ? "no data/env/rotations.json in this tree — no rotation declared, nothing to compare"
+        : `${drift.compared ?? 0} governed variable(s) written on or after their rotation`,
+    );
+  }
+
   const failures = rows.filter((entry) => entry.status === "bad");
   const warnings = rows.filter((entry) => entry.warning);
   return { ok: failures.length === 0, rows, failures, warnings };
@@ -475,7 +558,7 @@ export function render(result, { version = "(no version)", colour = false } = {}
   const c = colour ? PALETTE : NO_COLOUR;
   const lines = [];
   lines.push(
-    `${c.bold}release:preflight${c.off}${c.dim} — v${version}, the ten facts a cut must be true${c.off}`,
+    `${c.bold}release:preflight${c.off}${c.dim} — v${version}, the ${CHECK_NAMES.length} facts a cut must be true${c.off}`,
   );
   lines.push("");
   for (const entry of result.rows) {
@@ -492,7 +575,7 @@ export function render(result, { version = "(no version)", colour = false } = {}
   if (result.ok) {
     const flagged = result.warnings.length;
     lines.push(
-      `  ${c.green}all ten checks pass${c.off}` +
+      `  ${c.green}all ${CHECK_NAMES.length} checks pass${c.off}` +
         (flagged > 0
           ? ` — ${flagged} waved through, named above; the cut carries them into its output`
           : " — the cut may proceed"),
@@ -500,7 +583,7 @@ export function render(result, { version = "(no version)", colour = false } = {}
   } else {
     const failed = result.failures.map((entry) => entry.n).join(", ");
     lines.push(
-      `  ${c.red}${result.failures.length} of 10 checks failed (${failed}) — the cut refuses${c.off}`,
+      `  ${c.red}${result.failures.length} of ${CHECK_NAMES.length} checks failed (${failed}) — the cut refuses${c.off}`,
     );
     lines.push(`  ${c.dim}fix the ✗ lines above, then run this again; nothing was changed${c.off}`);
   }
@@ -669,6 +752,50 @@ function prEvidence() {
   }
 }
 
+/**
+ * Production's credential freshness, for check 11: `scripts/env-drift.mjs --json`, run as a child
+ * rather than imported, because that script owns the network and the token and this one owns the
+ * decisions. Its exit 1 is a *report* (stale rows exist), not a failure of the run — the JSON body is
+ * read either way. Anything else — no token, an API refusal, a body this file cannot parse — is
+ * `available: false`, which the check reports as a failure rather than as "nothing stale".
+ */
+function driftEvidence() {
+  /* A tree that declares no rotation has nothing to compare, and that is a fact about the tree
+     rather than a waiver: `scripts/env-drift.mjs` still refuses (exit 2) when the file is absent, so
+     the strict reading lives in the operator's own command. The probe trees in
+     `tests/release-record-step.test.ts` and `tests/release-prerelease.test.ts` are exactly this
+     shape — a throwaway repository that carries `release.sh` and nothing else — and a gate that
+     demanded a Vercel token from them would be a gate that cannot be tested offline. */
+  if (!existsSync(join(ROOT, "data/env/rotations.json"))) {
+    return { available: true, declared: false, compared: 0, stale: [], unknown: [] };
+  }
+  const run = spawnSync(
+    process.execPath,
+    [join(ROOT, "scripts/env-drift.mjs"), "--json", "--target", "production"],
+    { cwd: ROOT, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
+  );
+  if (run.status !== 0 && run.status !== 1) {
+    const reason = String(run.stderr ?? "")
+      .trim()
+      .split("\n")
+      .filter(Boolean)
+      .pop();
+    return {
+      available: false,
+      reason: reason ?? `env-drift exited ${run.status ?? "without a status"}`,
+    };
+  }
+  try {
+    const body = JSON.parse(run.stdout);
+    if (body?.available !== true) {
+      return { available: false, reason: body?.reason ?? "env-drift returned no report" };
+    }
+    return { available: true, ...body };
+  } catch {
+    return { available: false, reason: "env-drift returned a report this script cannot read" };
+  }
+}
+
 function gather(opts) {
   const version = opts.version;
   fetchRefs();
@@ -709,6 +836,7 @@ function gather(opts) {
     ci: ciEvidence(head),
     prs: prEvidence(),
     allowOpenPrs: opts.allowOpenPrs,
+    envDrift: driftEvidence(),
   };
 }
 
@@ -718,11 +846,14 @@ function gather(opts) {
 
 const say = (line = "") => process.stdout.write(`${line}\n`);
 
-const USAGE = `  release:preflight <version>                    the ten checks for a cut of <version>
+const USAGE = `  release:preflight <version>                    the ${CHECK_NAMES.length} checks for a cut of <version>
   release:preflight <version> --no-record        check 8 waved through, with a warning
   release:preflight <version> --allow-open-prs   check 10 waved through, with a warning
 
-Exit: 0 all ten pass · 1 a check failed (the ✗ lines name it) · 2 usage.`;
+Check 11 reads Vercel's env timestamps through the env:drift report: export VERCEL_TOKEN, or run
+'vercel login' once on this machine.
+
+Exit: 0 all ${CHECK_NAMES.length} pass · 1 a check failed (the ✗ lines name it) · 2 usage.`;
 
 function usageDie(message) {
   process.stderr.write(`release:preflight: ${message}\n\n${USAGE}\n`);

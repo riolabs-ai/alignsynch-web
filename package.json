@@ -92,6 +92,7 @@
     "payment:e2e": "node --import ./scripts/ts-modules.mjs --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/payment-e2e.mjs",
     "objstore:smoke": "node --import ./scripts/ts-modules.mjs --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/objstore-smoke.mjs",
     "env:check": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/env-manifest.ts --check",
+    "env:drift": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/env-drift.mjs",
     "env:example": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/env-manifest.ts --write-example",
     "env:matrix": "node scripts/env-matrix.mjs",
     "env:render": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --import ./scripts/ts-modules.mjs scripts/env-render.ts",
