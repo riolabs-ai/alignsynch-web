@@ -137,4 +137,25 @@ describe("the prototype catalog workflow", () => {
     expect(smoke.block).toContain('[ "$rows" -ge "$MIN_ENTRIES" ]');
     expect(smoke.block).toContain("::error::catalog deploy did not converge");
   });
+
+  it("smokes the example page's assets, not only the page (#1436)", () => {
+    // A page that answers 200 while `css/tokens.css` answers 404 was the whole defect: the row
+    // count and the deep link both stayed green while every V2 prototype rendered unstyled.
+    expect(WORKFLOW).toContain(
+      "SMOKE_PAGE: project-spec/spec-design-v2-bundles/04-spec-design-page-align-v2/align.html",
+    );
+    const assets = WORKFLOW.match(/^\s*SMOKE_ASSETS: (.*)$/m);
+    expect(assets, "SMOKE_ASSETS must be declared").not.toBeNull();
+    for (const file of [
+      "css/tokens.css",
+      "images/alignsynch-icon.png",
+      "js/proto.js",
+      "js/tw-config.js",
+    ]) {
+      expect(assets?.[1]).toContain(file);
+    }
+    const smoke = step("smoke every published path");
+    expect(smoke.block).toContain('[ "$broken" -eq 0 ]');
+    expect(smoke.block).toContain('"$SITE/p/$page_dir/$asset"');
+  });
 });

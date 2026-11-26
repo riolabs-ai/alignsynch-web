@@ -45,6 +45,12 @@ env:
   # 220 leaves room to retire a handful without a red run, while still failing a
   # checkout that cannot see the tree at all.
   MIN_ENTRIES: 220
+  # The four files this page named and got four 404s for (#1436). Publishing the page
+  # alone is the defect; a 200 on each of them, from the deployed site, is the proof it
+  # is gone. The builder's asset gate proves the same thing on `.catalog-site` before the
+  # deploy; this asks the live site, because a green build and a 404 deploy have differed.
+  SMOKE_PAGE: project-spec/spec-design-v2-bundles/04-spec-design-page-align-v2/align.html
+  SMOKE_ASSETS: css/tokens.css images/alignsynch-icon.png js/proto.js js/tw-config.js
 
 jobs:
   deploy:
@@ -138,14 +144,23 @@ jobs:
         if: steps.root.outputs.present == 'true'
         run: |
           set -euo pipefail
+          page_dir=${SMOKE_PAGE%/*}
           for attempt in 1 2 3 4 5 6; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE/p/$DEEP_LINK")
             rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})' )
-            echo "attempt $attempt: deep link $code · live rows $rows"
-            if [ "$code" = "200" ] && [ "$rows" -ge "$MIN_ENTRIES" ]; then exit 0; fi
+            # The assets the example page names. A page that answers 200 while its stylesheet
+            # answers 404 is exactly the defect #1436 opened for.
+            broken=0
+            for asset in $SMOKE_ASSETS; do
+              asset_code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE/p/$page_dir/$asset")
+              echo "  asset $asset: $asset_code"
+              if [ "$asset_code" != "200" ]; then broken=$((broken + 1)); fi
+            done
+            echo "attempt $attempt: deep link $code · live rows $rows · broken assets $broken"
+            if [ "$code" = "200" ] && [ "$rows" -ge "$MIN_ENTRIES" ] && [ "$broken" -eq 0 ]; then exit 0; fi
             sleep 10
           done
-          echo "::error::catalog deploy did not converge — deep link $code, live rows $rows"
+          echo "::error::catalog deploy did not converge — deep link $code, live rows $rows, broken assets $broken"
           exit 1
 
       - name: summary
@@ -159,6 +174,7 @@ jobs:
             echo "| commit | \`${GITHUB_SHA:0:8}\` |"
             echo "| required row | \`$DEEP_LINK\` |"
             echo "| floor | $MIN_ENTRIES rows |"
+            echo "| asset smoke | \`$SMOKE_PAGE\` → $SMOKE_ASSETS |"
             echo "| tree | prototypes/ present: ${{ steps.root.outputs.present }} |"
             echo "| site | $SITE |"
           } >> "$GITHUB_STEP_SUMMARY"

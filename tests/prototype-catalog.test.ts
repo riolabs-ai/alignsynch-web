@@ -119,12 +119,16 @@ function writeAndCommit(root: string, rel: string, html: string, message: string
   const full = join(root, rel);
   mkdirSync(dirname(full), { recursive: true });
   writeFileSync(full, html);
-  git(root, "add", "--", rel);
+  // The page names a stylesheet, and the stylesheet is beside it, because a catalogue page with no
+  // refs at all is a tree the asset gate cannot check — and it refuses to pass on nothing (#1436).
+  const sheet = join(dirname(full), "page.css");
+  writeFileSync(sheet, "body{color:#111}\n");
+  git(root, "add", "--", rel, join(dirname(rel), "page.css"));
   git(root, "commit", "-q", "-m", message);
 }
 
 function page(title: string): string {
-  return `<!doctype html><html><head><title>${title}</title></head><body><h1 id="anchor">${title}</h1></body></html>\n`;
+  return `<!doctype html><html><head><title>${title}</title><link rel="stylesheet" href="page.css"></head><body><h1 id="anchor">${title}</h1></body></html>\n`;
 }
 
 interface Run {

@@ -6,6 +6,25 @@
  * byte-for-byte into `<out>/p/<catalog path>` and writes `<out>/index.html` +
  * `<out>/catalog.json`.
  *
+ * ASSETS BESIDE THE PAGES (#1436). A page is not a design document on its own: it
+ * names a stylesheet, a script, a font and a handful of images, and a catalogue
+ * that carries the page alone publishes an unstyled draft. So for every page this
+ * copies, the builder resolves the page's **relative** refs against the tree the
+ * page came from and carries each target to the path the page looks for it, plus
+ * one hop through a stylesheet's `url()` — that hop is the only way a `@font-face`
+ * source is named. Root-absolute refs (`/assets/x.png`) are counted and reported,
+ * never resolved: these pages are mounted under `/p/`, and a ref written for a
+ * domain root cannot be satisfied there without rewriting the page.
+ *
+ * ASSET GATE. After writing, every published page's refs are resolved against the
+ * built site. An **asset** ref that does not exist there is a broken build: a
+ * stylesheet that 404s is the defect this gate exists for. A **page** ref that
+ * does not exist is either one of the recorded dead refs
+ * (`prototype-refs.mjs::KNOWN_DEAD_PAGE_REFS` — prototype-owner evidence, printed
+ * by name) or a new one, which fails: the list is an allowance, not a bucket, and
+ * a rotted entry fails too. Both counts print on every run, so a build that
+ * checked nothing cannot pass by having nothing to check.
+ *
  * SOURCES — where the prototypes live now (#1405). The catalog's paths are the
  * paths the live site has served since it was a snapshot, so they are declared,
  * not derived:
@@ -61,6 +80,9 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+
+import { collectLocalRefs } from "./prototype-refs.mjs";
+import { inspectSite, reportGate } from "./prototype-asset-gate.mjs";
 
 const DEFAULT_SOURCES = [
   { dir: "prototypes", prefix: "" },
@@ -165,13 +187,76 @@ function walk(root) {
         visit(full);
         continue;
       }
-      if (entry.isFile() && HTML_EXT.has(path.extname(entry.name).toLowerCase())) {
-        found.push(full);
-      }
+      if (entry.isFile()) found.push(full);
     }
   };
   visit(root);
   return found.sort();
+}
+
+const isHtml = (file) => HTML_EXT.has(path.extname(file).toLowerCase());
+
+/** Where a file inside `source` lands in the site, relative to `<out>/p`. */
+function catalogPathOf(source, file) {
+  const inner = path.relative(source.dir, file).split(path.sep).join("/");
+  return source.prefix ? `${source.prefix}/${inner}` : inner;
+}
+
+/**
+ * Carry every asset the pages name, at the path each page looks for it.
+ *
+ * The ref is resolved **exactly** — the deploy is case-sensitive, so a page that
+ * asks for `images/Foo.png` beside a file called `images/foo.png` is broken there
+ * even where the exporter's macOS was forgiving. `scripts/prototype-assets.mjs`
+ * is the tool that lands an import on the page's own spelling; this only copies.
+ */
+function carryAssets(pages, out) {
+  const carried = new Map(); // destination -> source
+  const conflicts = [];
+  const outside = [];
+  const unresolved = [];
+
+  for (const page of pages) {
+    const collected = collectLocalRefs(page.file, {
+      sourceRoot: page.source.dir,
+      resolve: (base, refPath) => {
+        const target = path.resolve(base, refPath);
+        return fs.existsSync(target) && fs.statSync(target).isFile() ? target : null;
+      },
+    });
+    for (const item of collected.outside) outside.push(`${page.catalogPath} → ${item.ref}`);
+    for (const item of collected.dead) {
+      if (item.kind === "asset") unresolved.push(`${page.catalogPath} → ${item.ref}`);
+    }
+    for (const asset of collected.assets) {
+      const destination = path.join(out, "p", catalogPathOf(page.source, asset.target));
+      const previous = carried.get(destination);
+      if (previous && previous !== asset.target) {
+        conflicts.push(`${catalogPathOf(page.source, asset.target)}`);
+        continue;
+      }
+      carried.set(destination, asset.target);
+    }
+  }
+
+  for (const [destination, source] of carried) {
+    if (fs.existsSync(destination)) continue; // a page already occupies this path
+    fs.mkdirSync(path.dirname(destination), { recursive: true });
+    fs.copyFileSync(source, destination);
+  }
+
+  return { carried, conflicts, outside, unresolved };
+}
+
+/** The carry's own line, printed before the gate so a page that names nothing is visible. */
+function carryReport(assets) {
+  console.log(
+    `assets: ${assets.carried.size} carried · ${assets.unresolved.length} named by a page and present in no tree`,
+  );
+  if (assets.outside.length) {
+    console.log(`assets: ${assets.outside.length} ref(s) climb out of their own tree:`);
+    for (const line of assets.outside) console.log(`  outside-tree ${line}`);
+  }
 }
 
 function titleOf(file, fallback) {
@@ -262,10 +347,12 @@ function main() {
   fs.mkdirSync(path.join(out, "p"), { recursive: true });
 
   const entries = [];
+  const pages = [];
   const seen = new Map();
 
   for (const source of sources) {
     for (const file of walk(source.dir)) {
+      if (!isHtml(file)) continue;
       const inner = path.relative(source.dir, file).split(path.sep).join("/");
       const catalogPath = source.prefix ? `${source.prefix}/${inner}` : inner;
       if (seen.has(catalogPath)) {
@@ -278,6 +365,7 @@ function main() {
       const target = path.join(out, "p", catalogPath);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.copyFileSync(file, target);
+      pages.push({ file, source, catalogPath });
 
       const prov = provenance(file);
       const stat = fs.statSync(file);
@@ -348,6 +436,41 @@ function main() {
   console.log(`sources: ${sources.map((s) => `${s.dir}=>${s.prefix || "/"}`).join(" | ")}`);
   console.log(`out: ${out}`);
 
+  const assets = carryAssets(pages, out);
+  const report = inspectSite(path.join(out, "p"));
+  carryReport(assets);
+  reportGate(report);
+
+  if (assets.unresolved.length) {
+    throw new Error(
+      `${assets.unresolved.length} asset ref(s) name a file that exists in no source tree: ${assets.unresolved.slice(0, 5).join(" | ")} — an asset a page asks for and no tree has is a dead ref, and one is never invented`,
+    );
+  }
+  if (assets.conflicts.length) {
+    throw new Error(
+      `${assets.conflicts.length} asset path(s) are claimed by two different files: ${assets.conflicts.slice(0, 5).join(", ")}`,
+    );
+  }
+  if (assets.outside.length) {
+    throw new Error(
+      `${assets.outside.length} ref(s) climb out of the tree they belong to and cannot be published under /p/: ${assets.outside.slice(0, 5).join(" | ")}`,
+    );
+  }
+  if (report.broken.length) {
+    throw new Error(
+      `${report.broken.length} asset ref(s) do not exist in the built site — the catalogue would publish a page whose stylesheet, script or image 404s`,
+    );
+  }
+  if (report.unknown.length) {
+    throw new Error(
+      `${report.unknown.length} page ref(s) exist nowhere and are not recorded as dead: ${report.unknown.slice(0, 5).join(" | ")}${report.unknown.length > 5 ? " …" : ""} — fix the link, or record it in KNOWN_DEAD_PAGE_REFS`,
+    );
+  }
+  // A recorded dead ref that resolves again is reported, never fatal: the list is an allowance
+  // about the *shipped* tree, and a fixture or a partial build has none of those pages at all. The
+  // no-rot authority is `tests/prototype-catalog-assets.test.ts`, which asserts the list equals the
+  // tree in both directions on the tree itself.
+
   if (entries.length < opts.minEntries) {
     throw new Error(
       `catalog has ${entries.length} entries, expected at least ${opts.minEntries} — refusing to publish an incomplete catalog`,
@@ -359,6 +482,15 @@ function main() {
   if (opts.failOnUntracked && untracked.length) {
     throw new Error(
       `${untracked.length} prototype(s) are not tracked by git, so their date would be a file mtime guess: ${untracked.slice(0, 10).join(", ")}${untracked.length > 10 ? ", …" : ""}`,
+    );
+  }
+  // Last, because it is the weakest statement: a run that already failed on its row count, its
+  // required deep link or an untracked row should say that, not "nothing was checked". But a run
+  // that resolved no asset ref at all is still a refusal — a gate that checked nothing is not a
+  // pass, which is exactly how 170 unstyled pages shipped green (#1436).
+  if (!report.pages || !report.assetRefs) {
+    throw new Error(
+      `the asset gate resolved ${report.assetRefs} asset ref(s) across ${report.pages} published page(s) — a gate that checked nothing is not a pass`,
     );
   }
 }

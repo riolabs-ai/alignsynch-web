@@ -31,7 +31,12 @@ builder's sources are declared in one place (`DEFAULT_SOURCES` in the script):
 | `prototypes/project-reqs/` | `project-reqs/…`         |    3 | the requirement exhibits from the same history                                                                                |
 | `docs/`                    | `quizhub/quizhub/docs/…` |   55 | this repo's docs tree; the long `quizhub/quizhub` prefix is kept because it is the path every existing deep link already uses |
 
-225 rows in total. The old snapshot's 252 also counted 24 pages of `inbox/` — scratch, not product
+225 rows in total. Beside those pages sit **329 asset files** (stylesheets, scripts, fonts, images
+and the markdown the docs preview links to) — imported only because a page names them, never by
+copying a tree. The catalogue carries them into the site; see
+[the assets beside the pages](#the-assets-beside-the-pages-1436).
+
+The old snapshot's 252 also counted 24 pages of `inbox/` — scratch, not product
 history, and deliberately **not** published — and four incidental HTML files the walker picked up
 (`quizhub/documentation/…` and `lib/quizhub/…` copies of the same player page). Neither is a
 prototype, so neither is committed, and the live catalogue is 27 rows smaller than the snapshot for
@@ -80,8 +85,76 @@ than a red workflow:
 - `--fail-on-untracked` — a prototype that git does not track gets an mtime guess. The builder marks
   that row (`dateSource: "mtime"`, amber `*`); CI refuses it outright, so a guess can never ship as
   a date.
+- the **asset gate** — every published page's asset refs must resolve in the built output, and the
+  counts print on every run (see [the assets beside the pages](#the-assets-beside-the-pages-1436)).
+  A gate that resolved nothing is a red build, not a pass.
 
 `.catalog-site/` is gitignored: it is the deploy input, not a committed artifact.
+
+## The assets beside the pages (#1436)
+
+A page on its own is an unstyled draft. `prototypes/` was committed as **170 `.html` files and
+nothing else**, so `spec-design-v2-bundles/04-spec-design-page-align-v2/align.html` asked for
+`css/tokens.css`, `images/alignsynch-icon.png`, `js/proto.js` and `js/tw-config.js` and got four
+404s — and every V2 prototype rendered as bare text. The gate stayed green because the only check
+counted rows: a page can be published, counted, and have every stylesheet 404.
+
+Three pieces close it, and each is a separate answer to a separate question:
+
+| Piece                            | Question it answers                                                | Where it lives                        |
+| -------------------------------- | ------------------------------------------------------------------ | ------------------------------------- |
+| `scripts/prototype-assets.mjs`   | which files are the catalogue's to carry?                          | the committed tree, once per import    |
+| the builder                      | does the built site serve them where the page looks for them?      | `scripts/build-prototype-catalog.mjs` |
+| the asset gate                   | does any published page load a 404 in the built site?              | `scripts/prototype-asset-gate.mjs`    |
+
+**Importing.** Only what a **tracked** page references is committed — resolving every relative ref
+on the 170 pages, one hop through each stylesheet's `url()` for the fonts, is **329 files /
+21.6 MB** (135 png · 57 js · 45 css · 42 woff2 · 41 linked markdown · 8 avif · 1 json). The
+exported source tree is 370 MB and is never committed, nor are the `.bak-*` snapshots in it. The
+copy lands on the **page's own spelling**, because the export came from macOS and the deploy is
+case-sensitive.
+
+```bash
+# re-import after a prototype is re-exported; --check is read-only and exits 1 on drift
+node scripts/prototype-assets.mjs \
+  --from ~/Desktop/dev.local/alignsynch/project-spec:project-spec \
+  --from ~/Desktop/dev.local/alignsynch/project-reqs:project-reqs --check
+```
+
+**Carrying.** The builder resolves each page's relative refs against the tree the page came from
+and copies every target into `.catalog-site/p/<path the page asks for>`, plus one hop through a
+stylesheet's `url()` — that hop is the only way a `@font-face` source is named. A page that names
+an asset no tree has is a build error, not a warning: nothing is invented to silence one.
+
+**Gating.** After writing, the gate resolves every published page's refs against the built site
+and prints its population before its verdict:
+
+```
+asset gate: 225 page(s) · 978 asset ref(s) + 175 stylesheet url() ref(s) · 2586 page ref(s) · broken = 0
+asset gate: dead page refs = 33 on 6 page(s), 10 distinct target(s) […] · root-absolute refs = 5497 (276 assets) — reported, not gated
+```
+
+| Ref                                                            | Verdict                                                                              |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| relative, an asset, missing from the built site                 | **red** — this is the defect the gate exists for, and the counts prove it looked      |
+| relative, a page, missing                                       | red unless it is one of the recorded dead refs, which print by name                   |
+| recorded dead ref that resolves again                          | reported here, **fails `tests/prototype-catalog-assets.test.ts`** (an allowance that rotted is a finding) |
+| root-absolute (`/assets/x.png`)                                | counted and reported, never gated                                                     |
+| no refs at all resolved                                        | **red** — a gate that checked nothing is not a pass                                   |
+
+The **33 dead refs** (6 pages, 10 distinct targets) are prototype-owner evidence: six pages in
+`spec-design-v2-rc1.3-bundle/**` were exported as single screens with their siblings' nav links and
+without the sibling pages, so each links to a page that was never in the bundle. Nothing is missing
+that was ever there, and no file is invented to silence one.
+
+The **root-absolute** family is a different defect and deliberately out of this fix's scope: every
+one of them is in `spec-docs-v2/_preview/**`, a docs preview sub-site whose root was `_preview/` in
+the export. Mounted under `/p/`, `/assets/…` and `/guides/…` resolve against the catalogue's own
+domain root. Satisfying them means serving that tree at the root or rewriting the refs — and the
+issue forbids rewriting. The census is printed on every build so the number is never silent.
+
+The deploy is smoked on those four files too, not only on the deep link: a page that answers 200
+while its stylesheet answers 404 is precisely what shipped as "documented" the first time.
 
 ## Two absences, two answers
 
