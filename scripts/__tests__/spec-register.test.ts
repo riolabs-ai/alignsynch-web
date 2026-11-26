@@ -50,10 +50,12 @@ function sound(): SpecValidation {
   const prefix = ["WEB", "APP", "ADMIN", "OPS"];
   return {
     version: 1,
-    release: "2.0.0-rc1.2",
-    main: "601ce26",
-    generatedAt: "2026-11-19",
-    source: { file: "spec-scope-v2/VALIDATION.csv", sha256: "a".repeat(64) },
+    register: {
+      release: "2.0.0-rc1.2",
+      main: "601ce26",
+      generatedAt: "2026-11-19",
+      csvSha256: "a".repeat(64),
+    },
     quotesIncluded: false,
     rows: [
       ...SPEC_STORY_GROUPS.map((story, at) =>
@@ -109,5 +111,21 @@ describe("specRegisterProblems", () => {
     const row = { ...sound().rows[0], quote: "an agreement sentence" };
     const parsedRow = zSpecValidation.safeParse({ ...sound(), rows: [row] });
     assert.equal(parsedRow.success, false);
+  });
+
+  /**
+   * The shape the badges misread (#1439). A register still carrying `release` at the top level is
+   * the file that printed `2.0.0-rc1.2` where the app's version belongs, so the schema refuses it
+   * by name rather than loading it and leaving a component to pick the wrong key again.
+   */
+  it("refuses the old top-level release/main shape", () => {
+    const { register, ...rest } = sound();
+    const legacy = { ...rest, release: register.release, main: register.main };
+    const parsed = zSpecValidation.safeParse(legacy);
+    assert.equal(parsed.success, false);
+    assert.match(JSON.stringify(parsed.error?.issues), /register/);
+
+    const bothShapes = { ...legacy, register };
+    assert.equal(zSpecValidation.safeParse(bothShapes).success, false);
   });
 });

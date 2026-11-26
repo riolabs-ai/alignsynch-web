@@ -53,7 +53,7 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
 
     /* The submenu (AS-06). */
     { id: "rail-heading", label: "Project Spec" },
-    { id: "rail-subtitle", label: "v{release} · Read-only" },
+    { id: "rail-subtitle", label: "v{version} · Read-only" },
     { id: "rail-overview", label: "Overview" },
     { id: "rail-validation", label: "Validation" },
     { id: "rail-pinned", label: "Pinned" },
@@ -78,9 +78,22 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
     { id: "status-legend", label: "☑ Met · ◐ Partial · ☐ Open · → Moved" },
     { id: "status-scope-ratio", label: "{met}/{total}" },
     { id: "status-scope", label: "{prefix} · {label}" },
+    /**
+     * The two identities, and they are never merged into one line (#1439). `app-*` is *this build*
+     * — `package.json`'s version and the commit that was compiled. `register-*` is the *snapshot*
+     * the matrix was generated from, with its own release label, date, commit and CSV digest.
+     */
+    { id: "app-version", label: "App {version}" },
+    { id: "app-commit", label: "build @ {sha}" },
+    { id: "register-release", label: "Register {release}" },
+    { id: "register-generated", label: "generated {date} · @{sha}" },
+    { id: "register-csv", label: "VALIDATION.csv@{sha}" },
+    { id: "register-snapshot-note", label: "Snapshot, not the app's version" },
     { id: "meta-register", label: "Register" },
     { id: "meta-main-sha", label: "main @ {sha}" },
-    { id: "meta-register-value", label: "v2 · {rows} rows · {date}" },
+    { id: "meta-register-value", label: "{rows} rows · {date}" },
+    { id: "meta-csv", label: "Register CSV" },
+    { id: "meta-csv-value", label: "VALIDATION.csv sha256 {sha}" },
     { id: "meta-evidence", label: "Evidence" },
     { id: "meta-evidence-value", label: "Code and docs citations checked at main @ {sha}" },
     { id: "meta-release-map", label: "Release Map" },
@@ -137,6 +150,17 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
     },
     { id: "matrix-col-requirement", label: "Requirement · Definition of Done" },
     { id: "matrix-col-evidence", label: "Release Evidence" },
+    /**
+     * What the counts are, said on the page (#1439). The matrix is a *snapshot* of the agreement
+     * register, regenerated when `VALIDATION.csv` changes — no GitHub edit moves a number here,
+     * and a reader who changes an issue and reloads has to be told that before they conclude the
+     * page is broken.
+     */
+    {
+      id: "matrix-snapshot",
+      label:
+        "Register snapshot — regenerated when VALIDATION.csv changes, not live from GitHub. The numbers below are the agreement's own record.",
+    },
     { id: "matrix-dod", label: "Definition of Done" },
     { id: "matrix-today", label: "v2.0 Today" },
     { id: "matrix-next", label: "Next" },
@@ -156,6 +180,15 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
 
     /* The GitHub pull (#1296) — the register's editable layer, read-only here. */
     { id: "issues-heading", label: "GitHub" },
+    /**
+     * The one column that *is* live, and how live (#1439). The 60 s is
+     * `SPEC_ISSUES_REVALIDATE_SECONDS` in `lib/spec/issues-cache.ts`; a reader who edits an issue
+     * sees it here within a minute, or immediately through the refresh control beside this line.
+     */
+    {
+      id: "issues-live",
+      label: "live from GitHub · 60 s cache · refresh on demand",
+    },
     { id: "issues-col", label: "Issue" },
     { id: "issues-none", label: "—" },
     { id: "issues-open", label: "Open" },

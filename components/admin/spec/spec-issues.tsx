@@ -262,6 +262,15 @@ export function SpecIssuesBar({
             {words("issues-degraded")}
           </span>
         ) : null}
+        {/**
+         * The one column that is *live*, and how live (#1439). The counts above it are a register
+         * snapshot and never move when an issue is edited; this line says which half of the page
+         * has a cache to clear, so a reader does not conclude the page is broken when a number
+         * holds still.
+         */}
+        <p data-spec-issues-live className="mt-0.5 text-[11px]">
+          {words("issues-live")}
+        </p>
       </div>
 
       <a

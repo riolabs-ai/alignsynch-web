@@ -258,6 +258,14 @@ export function ValidationMatrix({
         </p>
         <h1 className="text-2xl font-semibold tracking-tight">{words("matrix-heading")}</h1>
         <p className="max-w-prose text-sm text-muted-foreground">{words("matrix-subtitle")}</p>
+        {/**
+         * What the numbers are, in the page's own voice (#1439). No GitHub edit moves a count in
+         * this table, and a reader who changed an issue and reloaded saw nothing move — this line
+         * is the answer they were owed. The live column says its own case in `SpecIssuesBar`.
+         */}
+        <p className="max-w-prose text-[11px] text-muted-foreground" data-spec-snapshot-notice>
+          {words("matrix-snapshot")}
+        </p>
       </header>
 
       <SpecIssuesBar copy={copy} read={issues} next={ADMIN_SPEC_VALIDATION_PATH} />
@@ -333,7 +341,7 @@ export function ValidationMatrix({
                       key={row.id}
                       copy={copy}
                       row={row}
-                      main={doc.main}
+                      main={doc.register.main}
                       issue={specIssueFor(issues, row.id)}
                       issues={column}
                     />

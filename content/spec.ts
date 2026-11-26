@@ -205,19 +205,39 @@ export const zSpecRow = z
 export type SpecRow = z.infer<typeof zSpecRow>;
 
 /**
- * The document. `version` is the shape's version, `main` the commit the citations were checked
- * against, `source.sha256` the CSV digest the output was made from — so a regenerated file is
- * distinguishable from an edited one, and the page can print the register it is reading.
+ * The register's identity — one block, and **not the app's**.
+ *
+ * `release` is the *agreement register's* release label and `main` the commit its citations were
+ * checked against; `generatedAt` is the day the CSV was read and `csvSha256` the CSV's digest, so a
+ * regenerated file is distinguishable from an edited one and the page can print the snapshot it is
+ * reading.
+ *
+ * **Why a block rather than four top-level keys.** They used to be top level, and the Project Spec's
+ * badges printed `release` where a reader reads the app's version: the surface said `2.0.0-rc1.2`
+ * beside a `2.1.0` build for a release, and no check tied the two. A nested block with its own name
+ * makes that mistake a type error rather than a plausible one, and the `.strict()` document below
+ * refuses a file that still carries the old shape — `data:check` E42 names it by path instead of
+ * loading it.
+ */
+export const zSpecRegister = z
+  .object({
+    release: z.string().min(1),
+    main: z.string().regex(/^[0-9a-f]{7,40}$/, "register.main is a commit sha"),
+    generatedAt: zIsoDate,
+    csvSha256: z.string().regex(/^[0-9a-f]{64}$/, "register.csvSha256 is the CSV's digest"),
+  })
+  .strict();
+
+export type SpecRegister = z.infer<typeof zSpecRegister>;
+
+/**
+ * The document. `version` is the shape's version and `register` is the snapshot's identity —
+ * there is no top-level `release` and no top-level `main`, deliberately (see `zSpecRegister`).
  */
 export const zSpecValidation = z
   .object({
     version: z.literal(1),
-    release: z.string().min(1),
-    main: z.string().regex(/^[0-9a-f]{7,40}$/, "main is a commit sha"),
-    generatedAt: zIsoDate,
-    source: z
-      .object({ file: z.string().min(1), sha256: z.string().regex(/^[0-9a-f]{64}$/) })
-      .strict(),
+    register: zSpecRegister,
     /** `false` and only `false`: this module describes the repo copy, never the private one. */
     quotesIncluded: z.literal(false),
     rows: z.array(zSpecRow).min(1),

@@ -25,6 +25,7 @@ import { describe, expect, it } from "vitest";
 import { SpecFrame } from "@/components/admin/spec/spec-frame";
 import { SpecNotice } from "@/components/admin/spec/spec-notice";
 import { SpecSubmenu } from "@/components/admin/spec/spec-submenu";
+import { SpecStatusBox } from "@/components/admin/spec/spec-status-box";
 import { StoryPage } from "@/components/admin/spec/story-page";
 import { ValidationMatrix } from "@/components/admin/spec/validation-matrix";
 import {
@@ -44,7 +45,7 @@ import {
   SpecUnreadable,
   SPEC_VALIDATION_SOURCE,
 } from "@/lib/spec/file";
-import { specEvidenceLink } from "@/lib/spec/evidence";
+import { specDateLabel, specEvidenceLink } from "@/lib/spec/evidence";
 
 const copy = adminSpecPageCopy;
 
@@ -246,20 +247,21 @@ describe("the Validation matrix", () => {
 
   it("links every code citation to main at the register's recorded sha", () => {
     const doc = register();
+    const main = doc.register.main;
     const markup = renderToStaticMarkup(createElement(ValidationMatrix, { copy, doc }));
     const cited = [...markup.matchAll(/href="(https:\/\/github\.com\/[^"]+)"/g)].map(
       (match) => match[1],
     );
     expect(cited.length).toBeGreaterThan(0);
     for (const href of cited) {
-      expect(href).toContain(`/blob/${doc.main}/`);
+      expect(href).toContain(`/blob/${main}/`);
     }
     // A citation with a line becomes an anchor, and one without stays a bare path.
-    expect(specEvidenceLink({ kind: "code", ref: "lib/x.ts:12" }, doc.main).href).toBe(
-      `https://github.com/riolabs-ai/alignsynch/blob/${doc.main}/lib/x.ts#L12`,
+    expect(specEvidenceLink({ kind: "code", ref: "lib/x.ts:12" }, main).href).toBe(
+      `https://github.com/riolabs-ai/alignsynch/blob/${main}/lib/x.ts#L12`,
     );
-    expect(specEvidenceLink({ kind: "code", ref: "lib/x.ts" }, doc.main).href).toBe(
-      `https://github.com/riolabs-ai/alignsynch/blob/${doc.main}/lib/x.ts`,
+    expect(specEvidenceLink({ kind: "code", ref: "lib/x.ts" }, main).href).toBe(
+      `https://github.com/riolabs-ai/alignsynch/blob/${main}/lib/x.ts`,
     );
   });
 
@@ -422,5 +424,94 @@ describe("the frame", () => {
     );
     expect(markup).not.toContain("data-spec-submenu=");
     expect(markup).toContain("Consulting Agreement (NDA, Exhibit C)");
+  });
+});
+
+/**
+ * The version-identity check (#1439) — **the assertion is on the printed string**, not on the data
+ * file, because the defect was a component printing the register's `release` where a reader reads
+ * the app's version: the surface said `2.0.0-rc1.2` beside a `2.1.0` build, and every gate stayed
+ * green because nothing read the markup.
+ *
+ * `APP_VERSION` is the value `next.config.mjs` inlines from `package.json` at build time, so the
+ * case sets it from `package.json` — the same pair a built artifact carries — and then demands
+ * that each admin spec surface print exactly that version, and that the register's release appears
+ * only under the register's own label.
+ */
+describe("the two identities", () => {
+  /** `package.json`, read here rather than imported: this is the version a build would inline. */
+  function packageVersion(): string {
+    const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")) as {
+      version: string;
+    };
+    return pkg.version;
+  }
+
+  /** Run `body` with the build-time version set, as `next build` would set it. */
+  function asBuilt<T>(body: () => T): T {
+    const previous = process.env.APP_VERSION;
+    process.env.APP_VERSION = packageVersion();
+    try {
+      return body();
+    } finally {
+      if (previous === undefined) delete process.env.APP_VERSION;
+      else process.env.APP_VERSION = previous;
+    }
+  }
+
+  /** An element's own text, tags stripped — what a reader sees inside it. */
+  function textOf(markup: string, pattern: RegExp): string | null {
+    const match = markup.match(pattern);
+    return match === null ? null : match[1].replace(/<[^>]+>/g, "").trim();
+  }
+
+  it("prints package.json's version as the app's, and the register's release as the register's", () => {
+    const version = packageVersion();
+    const doc = register();
+
+    const statusBox = asBuilt(() =>
+      renderToStaticMarkup(createElement(SpecStatusBox, { copy, doc })),
+    );
+    const app = textOf(statusBox, /data-spec-app-version="[^"]*"[^>]*>([\s\S]*?)<\/p>/);
+    expect(app).not.toBeNull();
+    // The app's line: this build's version, from package.json and nothing else.
+    expect(app).toContain(`App ${version}`);
+    expect(app?.startsWith(`App ${version}`)).toBe(true);
+    // …and never the register's release, which is the bug this case exists to catch.
+    expect(app).not.toContain(doc.register.release);
+
+    const registerLine = textOf(statusBox, /data-spec-register="[^"]*"[^>]*>([\s\S]*?)<\/p>/);
+    expect(registerLine).not.toBeNull();
+    expect(registerLine).toContain(doc.register.release);
+    expect(registerLine).toContain(specDateLabel(doc.register.generatedAt));
+    expect(registerLine).toContain(`@${doc.register.main}`);
+    expect(registerLine).toContain(`VALIDATION.csv@${doc.register.csvSha256.slice(0, 8)}`);
+    // Two facts, two labels: the panel does not merge them into one line.
+    expect(registerLine).not.toBe(app);
+
+    // The rail's subtitle is the app's version too — it read `doc.release` before this card.
+    const frame = asBuilt(() =>
+      renderToStaticMarkup(
+        createElement(
+          SpecFrame,
+          { copy, doc, current: { kind: "validation" as const } },
+          createElement("p", null, "x"),
+        ),
+      ),
+    );
+    expect(frame).toContain(`v${version} · Read-only`);
+    expect(frame).not.toContain(`v${doc.register.release} · Read-only`);
+  });
+
+  it("says which half is a snapshot and which half is live", () => {
+    const markup = renderToStaticMarkup(createElement(ValidationMatrix, { copy, doc: register() }));
+    // The matrix: a register snapshot, and it says so in visible copy.
+    const snapshot = textOf(markup, /data-spec-snapshot-notice[^>]*>([\s\S]*?)<\/p>/);
+    expect(snapshot).toContain("Register snapshot");
+    expect(snapshot).toContain("VALIDATION.csv");
+    expect(snapshot).toContain("not live from GitHub");
+    // The issue column: live, with its cache window stated.
+    const live = textOf(markup, /data-spec-issues-live[^>]*>([\s\S]*?)<\/p>/);
+    expect(live).toBe("live from GitHub · 60 s cache · refresh on demand");
   });
 });
