@@ -1,0 +1,11 @@
+{
+  "pr": 1432,
+  "date": "2026-11-26",
+  "area": "v2",
+  "summary": "The relationship card carries two `neutral` chips under the names — `Basic Mode`/`Advanced Mode` and `Soft`/`Full` — read from the latest round's `session` columns, and drawn only when a round exists.",
+  "reader_impact": "A member scanning four relationships sees each one's Mode and Setting beside its Gap bar, so two pairings configured differently no longer look alike until opened.",
+  "specs": [
+    "docs/specs/v2-bundles/05-spec-design-page-start-my-relationships-v2/IMPLEMENTATION-PROMPT.md"
+  ],
+  "risk": "low"
+}
