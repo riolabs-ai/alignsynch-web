@@ -196,12 +196,14 @@ const SPECS = [
   "/admin/spec",
   "/admin/docs",
   "/admin/spec/validation",
+  // 2026-11-26 — the v2 draft pages' door (`UI Specs v2`), moved here from the Project Spec submenu.
+  "/admin/spec/ui-v2",
   "/admin/docs/updates",
   "/admin/docs/releases",
 ];
 
 /**
- * What an admin's rail draws, start to finish: the five sections and their twenty-four rows. One
+ * What an admin's rail draws, start to finish: the five sections and their twenty-five rows. One
  * order for every role; a seat that cannot reach a row loses that row and nothing else moves.
  */
 const ADMIN_RAIL = [

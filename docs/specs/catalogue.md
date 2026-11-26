@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Template catalogue · prev [Account deletion](account-deletion-spec.md) · next [Transactional email lifecycle](flow-emails.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Template catalogue · prev [The rail's doors](admin-rail-doors.md) · next [Transactional email lifecycle](flow-emails.md)
 
 <!-- docs-nav:end -->
 
@@ -215,6 +215,6 @@ So the split requires one column, nothing else:
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Template catalogue · prev [Account deletion](account-deletion-spec.md) · next [Transactional email lifecycle](flow-emails.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Template catalogue · prev [The rail's doors](admin-rail-doors.md) · next [Transactional email lifecycle](flow-emails.md)
 
 <!-- docs-nav:end -->

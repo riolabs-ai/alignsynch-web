@@ -1,6 +1,6 @@
 {
-  "version": 5,
-  "note": "v5 (2026-11-23): the five-section rail. The groups are now the taxonomy the `unlisted` reasons used to bury — Start, Operations, Content & configuration, Specs & docs, Member — in a stable order, and a surface joins the section its family names. The schema did not change; the arrangement did, and the version is how a later edit is a bump plus a diff rather than a silent reinterpretation of the same number. No route was added, removed, renamed or redirected: `data:check` E43 still accounts for every route under app/(mainlayout), and every href drawn here resolved before this version did.",
+  "version": 6,
+  "note": "v6 (2026-11-26): a row may say it leaves the app (`leaving`). The v2 draft pages are another origin with no route in this tree, so the rail reaches them through an internal door (`/admin/spec/ui-v2`, a redirect under the shell) and the href is indistinguishable from in-app navigation. `leaving` is the row stating what the click does — a new tab, the external marker, \"opens in a new tab\" — which `NavRow` already draws through `LeavingLink`. One row moved in: `admin-spec-ui-v2` in Specs & docs, which was the Project Spec submenu's last row (`Docs — draft pages`) and is now the rail's own door, labelled with the owner's words. No route was removed and `data:check` E43 still accounts for every route under app/(mainlayout).",
   "groups": [
     {
       "id": "group-start",
@@ -137,6 +137,14 @@
           "needs": "stakeholder",
           "capability": "spec-read",
           "note": "The project spec's validation page (#1252), surfaced 2026-11-23 (nav evaluation F4). It was `unlisted` on \"the submenu reaches its pages\"; the spec's two pages are one family, and a reader asking what is proven should not have to open the home first. Same gate pair as its parent, because the page calls `requireSpecReader()` itself."
+        },
+        {
+          "id": "admin-spec-ui-v2",
+          "href": "/admin/spec/ui-v2",
+          "icon": "library",
+          "needs": "admin",
+          "leaving": true,
+          "note": "The v2 draft pages — the owner's move of 2026-11-26. It was the Project Spec submenu's last row (`Docs — draft pages`, a `LeavingLink` at the bottom of the 208px column) and it belongs in the rail, under the label the owner gave it, `UI Specs v2`. The destination is another origin (`ADMIN_SPEC_DOCS_URL`, `data/pages/admin-spec.ts`), which the rail cannot hold as an href — every row must resolve against `content/routes.ts` (E10, `nav:menu --check`) and be accounted for by the tree (E43) — so the row points at an internal door, `/admin/spec/ui-v2`, which redirects. **A rewrite was considered first and is impossible, measured 2026-11-26:** the docs home carries 59 distinct root-absolute `href`/`src` values (`/guides/…`, `/assets/…`, `/theme.js`) and no relative ones, so a `/spec-docs/:path*` proxy would send every in-page link to *our* origin's 404s unless it also took over `/`. `leaving: true` is what keeps the departure honest: `NavRow` draws it through `LeavingLink`, so the click opens a new tab with the external marker and a name ending \"opens in a new tab\", exactly as the submenu row did, instead of teleporting the reader off-site in the tab they are working in. `library` is the docs family's glyph (the docs home draws it): these are pages to read, not a queue to work."
         },
         {
           "id": "admin-docs-updates",

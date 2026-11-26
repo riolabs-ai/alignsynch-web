@@ -321,6 +321,16 @@ export const uiRegistry: readonly UiEntry[] = zUiRegistry.parse([
   },
   {
     kind: "route",
+    surface: "/admin/spec/ui-v2",
+    status: "fixture",
+    templates: ["alignsynch"],
+    capability:
+      "The door to the v2 draft pages — **no screen at all**: it gates like the spec family and answers a 307 to `ADMIN_SPEC_DOCS_URL`, so the rail's `UI Specs v2` row reaches a destination on another origin without an external `href` in `data/nav-menu.json`.",
+    notes:
+      "2026-11-26 — the owner's move of the Project Spec submenu's last row (`Docs — draft pages`, a `LeavingLink`) into the rail's Specs & docs group. **This route exists for the gate, not for the reader**: every rail row's `href` must resolve in `content/routes.ts` (`nav:menu --check`) and every page under `app/(mainlayout)` is accounted for by `data:check` E43, so an off-origin destination becomes a row only through an internal door. **The departure is announced before the click**: the row carries `leaving: true` (document v6), so `NavRow` draws it through `LeavingLink` — a new tab, `rel=\"noopener noreferrer\"`, the external marker and a name ending \"opens in a new tab\" — instead of teleporting the reader off-site in the tab they were working in, which is why a plain `redirect()` here is honest. The destination is written once, in `data/pages/admin-spec.ts`; nothing in this route or in the document spells it. `status: fixture` because the only thing it reads is that fixture constant. Registered `wide` in `data/surface-columns.ts` (it draws no column — there is no body to place), excluded from the operator surface in `lib/operator/routes.ts` (an address, not a screen), and its one word, `UI Specs v2`, is `data/pages/shell.ts::nav-alignsynch`'s like every other rail label. `tests/admin-spec-ui-v2.test.ts` holds the route, the redirect, the gate order and the one-door claim.",
+  },
+  {
+    kind: "route",
     surface: "/admin/gaps",
     status: "db",
     templates: ["alignsynch"],

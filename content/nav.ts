@@ -63,8 +63,21 @@ import { USER_ROLES } from "./role-ladder";
  * Member), the group ids are words a reader can recognise rather than `group-admin`/`group-app`,
  * and no route moved. The version says the rail is a different rail, so an older build reading it
  * refuses rather than drawing half of it.
+ *
+ * **6 (2026-11-26)** — a row may now say it **leaves the app** (`leaving`), which the schema could
+ * not express while every departure in the rail was a public marketing route the runtime could
+ * recognise by itself (`lib/marketing-routes.ts::leavesApp`). The v2 draft pages are a different
+ * *origin* that no route in this tree names, so the rail reaches them through an internal door —
+ * a route under the shell that redirects — and that door's href is indistinguishable from any
+ * other in-app address. `leaving` is the row saying what the click does: a new tab, the external
+ * marker and the "opens in a new tab" name, which is exactly what `LeavingLink` gives every other
+ * departure and what the Project Spec's submenu carried before this row moved to the rail. Without
+ * it the row would teleport the reader off-site in the tab they were using, which is the defect the
+ * flag exists to prevent. The schema gained one optional key, so a v5 document is still *readable*
+ * — but a v5 build would draw this row as ordinary in-app navigation, which is the wrong fact, and
+ * the version is how that build refuses instead.
  */
-export const NAV_DOCUMENT_VERSION = 5;
+export const NAV_DOCUMENT_VERSION = 6;
 
 /**
  * Every glyph a rail row may draw. A name, not a component: the descriptor holds no JSX, and the
@@ -146,6 +159,23 @@ export const zNavRow = z
     label: z.string().min(1).optional(),
     /** An explicit sort key within the group. Absent means "here, in document order". */
     order: z.number().int().optional(),
+    /**
+     * This row's click **leaves the app** — v6, and the one fact a row's href cannot carry (#1441).
+     *
+     * `lib/marketing-routes.ts::leavesApp` recognises a departure when the destination is a public
+     * marketing page, because the public tree is in this repository. A destination on a *different
+     * origin* is not: the v2 draft pages are a Vercel deployment of documents that do not live here,
+     * so the rail reaches them through an internal door (`/admin/spec/ui-v2`, a route that
+     * redirects) and the href reads as ordinary in-app navigation. `leaving` is the row saying what
+     * the click does — `components/layout/nav-menus.tsx::NavRow` draws it through `LeavingLink`,
+     * which owns `target="_blank"`, `rel="noopener noreferrer"`, the external marker and the
+     * accessible name ending "opens in a new tab".
+     *
+     * Only `true` is a value: a row that does not leave says nothing, and `false` would be a second
+     * way to write the default. The validator resolves the href like any other row's, so this flag
+     * never excuses a destination the tree does not answer.
+     */
+    leaving: z.literal(true).optional(),
     /** Provenance for a row whose position is a decision — carried, never drawn. */
     note: z.string().min(1).optional(),
   })

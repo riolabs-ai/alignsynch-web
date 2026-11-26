@@ -136,6 +136,9 @@ describe("the shell's menus", () => {
       // #901 — the docs home: the manifest's 117 pages had no way in but the address bar.
       "/admin/docs",
       "/admin/spec/validation",
+      // 2026-11-26 — `UI Specs v2`: the v2 draft pages, moved out of the Project Spec submenu. Its
+      // click leaves the app (another origin behind this door), so it is a row, not a second menu.
+      "/admin/spec/ui-v2",
       "/admin/docs/updates",
       "/admin/docs/releases",
       // #1129 — Start, the signed-in landing, is the first row of the member's own section.

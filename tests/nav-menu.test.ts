@@ -124,6 +124,10 @@ const SPECS = [
   "/admin/spec",
   "/admin/docs",
   "/admin/spec/validation",
+  // 2026-11-26 — the v2 draft pages' internal door, `UI Specs v2`: the Project Spec submenu's last
+  // row, moved to the rail by the owner. It sits with the spec rows it belongs to, and its click
+  // leaves the app (see the departure case below).
+  "/admin/spec/ui-v2",
   "/admin/docs/updates",
   "/admin/docs/releases",
 ];
@@ -295,8 +299,9 @@ describe("the menu descriptor", () => {
         );
       }
     }
-    // Every staff row, counted: 1 + 6 + 6 + 5 = 18 `/admin` rows, and none of them unaccounted for.
-    expect(allItems().filter((item) => item.href.startsWith("/admin"))).toHaveLength(18);
+    // Every staff row, counted: 1 + 6 + 6 + 6 = 19 `/admin` rows (the v2 drafts door joined SPECS
+    // on 2026-11-26), and none of them unaccounted for.
+    expect(allItems().filter((item) => item.href.startsWith("/admin"))).toHaveLength(19);
   });
 
   /**
@@ -441,7 +446,7 @@ describe("the ladder decides the rows", () => {
     }
     // …and the sections are drawn in the order the brief named them.
     expect(menuFor("admin").map((group) => group.id)).toEqual(SECTION_IDS);
-    expect(EVERY_SECTION).toHaveLength(24);
+    expect(EVERY_SECTION).toHaveLength(25);
   });
 
   /**
@@ -476,6 +481,66 @@ describe("the ladder decides the rows", () => {
     expect(railHrefs("member")).not.toContain("/admin/docs");
   });
 
+  /**
+   * 2026-11-26 — the v2 draft pages, moved out of the Project Spec submenu and into Specs & docs
+   * under the owner's words, `UI Specs v2`.
+   *
+   * Four claims, and the fourth is the one a "move the row" brief can get wrong:
+   *
+   *   1. it is **one row in the document**, in the group the spec family lives in, at
+   *      `/admin/spec/ui-v2` — an address the route manifest answers, never the external URL;
+   *   2. it is drawn for the seats the **admin** rung admits and for nobody below it: a
+   *      stakeholder reads the spec but does not open the drafts, and a support seat outranks that
+   *      rung and still does not see it;
+   *   3. its label is the fixture's (`UI Specs v2`), which is to say the owner's words rather than
+   *      a word typed into the document;
+   *   4. the click **leaves the app**, so `NavRow` draws it through `LeavingLink`: a new tab, both
+   *      rel tokens, the external marker and a name that ends "opens in a new tab". Without the
+   *      document's `leaving` flag the href would look in-app and the reader would be teleported
+   *      off-site in the tab they were working in — the departure the submenu's row used to own.
+   */
+  it("draws UI Specs v2 for an operator, as a departure", () => {
+    const row = allItems().find((item) => item.href === "/admin/spec/ui-v2");
+    expect(row, "the document carries no /admin/spec/ui-v2 row").toBeDefined();
+    expect(row?.leaving).toBe(true);
+    expect(menuFor("admin").find((group) => group.id === "group-specs")?.items).toContainEqual(
+      expect.objectContaining({
+        href: "/admin/spec/ui-v2",
+        id: "admin-spec-ui-v2",
+        needs: "admin",
+      }),
+    );
+
+    // The rung decides who sees it: admin and owner, and no seat below them.
+    for (const role of ["admin", "owner"] as const) {
+      expect(hrefsFor(role), `${role} does not draw the drafts door`).toContain(
+        "/admin/spec/ui-v2",
+      );
+    }
+    for (const role of ["member", "stakeholder", "support", null] as const) {
+      expect(hrefsFor(role), `${role} draws a door it would be refused`).not.toContain(
+        "/admin/spec/ui-v2",
+      );
+    }
+
+    // The word is the fixture's — read it out of `nav-alignsynch`, not out of this file.
+    const nav = sectionOf(shellPageCopy, "nav-alignsynch");
+    expect(itemLabel(nav, "admin-spec-ui-v2")).toBe("UI Specs v2");
+
+    // …and the anchor is a departure: new tab, safe rel, the marker, and the announcement.
+    const html = railHtml("admin");
+    const anchor = new RegExp(`<a\\b[^>]*href="/admin/spec/ui-v2"[^>]*>`).exec(html)?.[0];
+    expect(anchor, "the rail draws no anchor for the drafts door").toBeDefined();
+    expect(anchor).toContain('target="_blank"');
+    expect(anchor).toContain('rel="noopener noreferrer"');
+    expect(anchor).toMatch(
+      /aria-label="UI Specs v2 — opens in a new tab"|aria-label="UI Specs v2[^"]*opens in a new tab"/,
+    );
+    // The `ExternalLink` marker is inside the link, beside the label — the visual half.
+    expect(html.slice(html.indexOf(anchor ?? "")).slice(0, 600)).toContain("<svg");
+    expect(html).toContain("UI Specs v2");
+  });
+
   it("gives an owner everything an admin sees — the top rung is not a second list", () => {
     expect(MENUS.owner).toEqual(MENUS.admin);
     expect(MENUS.owner).toEqual(allItems().map((item) => item.href));
@@ -485,14 +550,14 @@ describe("the ladder decides the rows", () => {
     const counts = USER_ROLES.map((role) => MENUS[role].length);
     // 2026-11-23 — the counts are the sections added up, and they moved for reasons a reader can
     // check: a member keeps 6 (Member, which now carries the help pair); a stakeholder has 8 (the
-    // two spec rows plus Member); a support seat has 7 (the inbox plus Member); a staff rung has 24
-    // (START 1 + OPERATIONS 6 + CONTENT 6 + SPECS 5 + MEMBER 6), because four rows left `unlisted`
-    // and one (`/admin/dashboard`) joined the rail.
-    expect(counts).toEqual([6, 8, 7, 24, 24]);
+    // two spec rows plus Member); a support seat has 7 (the inbox plus Member); a staff rung has 25
+    // (START 1 + OPERATIONS 6 + CONTENT 6 + SPECS 6 + MEMBER 6), because four rows left `unlisted`
+    // and one (`/admin/dashboard`) joined the rail; 2026-11-26 adds the v2 drafts door to SPECS.
+    expect(counts).toEqual([6, 8, 7, 25, 25]);
     // Not decoration: the first two rungs differ by exactly the rows the second exists for.
     expect(counts[1]).toBe(counts[0] + 2);
     expect(counts[2]).toBe(counts[0] + 1);
-    expect(counts[3]).toBe(counts[2] + 17);
+    expect(counts[3]).toBe(counts[2] + 18);
   });
 
   it("shows a signed-out visitor the member menu, and never a staff row", () => {

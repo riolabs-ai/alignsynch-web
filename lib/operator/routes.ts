@@ -109,11 +109,20 @@ export const OPERATOR_ACTION_FILES: readonly string[] = [
  * A pattern here that is also a page under `app/(mainlayout)/admin` is what the seam test asserts
  * against; the documentation *pages* stay readable to any console admin, and template authoring is
  * the initiator's own product surface.
+ *
+ * **`/admin/spec/ui-v2` is a door, not a surface** (2026-11-26). It gates like its spec siblings
+ * (`requireAdminProduct`, `requireOperator`, `requireAdmin`) and then answers `redirect()` to the
+ * v2 draft pages on another origin, so it renders nothing: there is no operator view behind it to
+ * hold to the seam's import rules and no container for it to draw. That is why it is named here
+ * rather than in `OPERATOR_ROUTES` — the seam test refuses an admin page that is neither, and the
+ * exclusion is about what the file *renders*, not about how strictly it gates.
  */
 export const OPERATOR_EXCLUDED_PATTERNS: readonly string[] = [
   "/admin/docs/[...slug]",
   "/admin/templates",
   "/admin/templates/[id]",
+  // The redirect door to the v2 draft pages (`UI Specs v2`): an address, not a screen.
+  "/admin/spec/ui-v2",
   "/admin/console",
   "/admin/console/relationships",
   "/admin/console/templates",

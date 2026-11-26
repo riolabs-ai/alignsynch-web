@@ -91,6 +91,17 @@ export interface NavItem {
    * a prefix rule lit it beside whichever `/dashboard/*` page the reader was on.
    */
   readonly exact?: true;
+  /**
+   * This row's click **leaves the app** — v6 of the document, and the fact a href cannot carry.
+   *
+   * The renderer already knows how to draw a departure (`NavRow` → `LeavingLink`: a new tab, the
+   * external marker, a name ending "opens in a new tab"), and it decides that by itself for a
+   * public marketing route (`lib/marketing-routes.ts::leavesApp`). A destination on a **different
+   * origin** has no such signature: the v2 draft pages live in a separate deployment, so their
+   * rail row points at an internal door that redirects and the href is indistinguishable from any
+   * other in-app address. The document says so, and this is that fact arriving in the rail.
+   */
+  readonly leaving?: true;
   /** The first-run tour's anchor (`data-tour`), for the one row a tour step points at. */
   readonly tourAnchor?: string;
 }
@@ -142,6 +153,9 @@ function toItem(row: NavRowRecord): NavItem {
     needs: row.needs,
   };
   if (row.exact === true) item.exact = true;
+  // The document's `leaving` says the click opens a new tab onto another origin — carried through
+  // as written, `true` or absent, because the schema admits no third value.
+  if (row.leaving === true) item.leaving = true;
   if (row.tourAnchor !== undefined) item.tourAnchor = row.tourAnchor;
   // The document's `capability` is validated against `NAV_CAPABILITIES` by `nav:menu --check`
   // (the schema states it as a string — `content/nav.ts` may not import the chrome's module), so

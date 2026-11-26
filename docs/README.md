@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**211 documents in 9 sections.** Every page carries the same nav block, generated
+**212 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -41,7 +41,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Guides](#guides) — 4 documents
 - [Reference](#reference) — 10 documents
 - [Operations](#operations) — 26 documents
-- [Specs & design briefs](#specs-design-briefs) — 89 documents
+- [Specs & design briefs](#specs-design-briefs) — 90 documents
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
@@ -115,12 +115,14 @@ The gate, releasing, deploying, iteration and the history behind them.
 What the product promises, written down before it was built.
 
 - [`specs/account-deletion-spec.md`](specs/account-deletion-spec.md) — **Account deletion** — What happens to a shared record when one person deletes their account?
+- [`specs/admin-rail-doors.md`](specs/admin-rail-doors.md) — **The rail's doors** — How may the Admin sidebar reach a destination on another origin — and how does the click say it leaves?
 - [`specs/catalogue.md`](specs/catalogue.md) — **Template catalogue** — How is the catalogue grouped, and what does each category mean?
 - [`specs/flow-emails.md`](specs/flow-emails.md) — **Transactional email lifecycle** — Which emails send, when, and to whom?
 - [`specs/flow-reinvite.md`](specs/flow-reinvite.md) — **Re-invite** — What happens when an invitation expires — and why not a void?
 - [`specs/flow-stages.md`](specs/flow-stages.md) — **The five flow stages (binding spec)** — What are the stages, which fields does stage 1 carry, and where does the flow end?
 - [`specs/maintenance-fields.md`](specs/maintenance-fields.md) — **Maintenance fields** — Which fields does the relationship-maintenance form carry?
 - [`specs/operator-seam.md`](specs/operator-seam.md) — **Operator seam** — Which files are the operator tooling, what may they read, and how is the arrow enforced?
+- [`specs/spec-register-coverage.md`](specs/spec-register-coverage.md) — **The spec register's GitHub join** — Which agreement rows does a GitHub issue name, which rows have none, and would a backfill buy anything?
 - [`specs/pay-to-complete/ADR.md`](specs/pay-to-complete/ADR.md) — **ADR** — Which choice was made, what alternative did it beat, and what does it cost?
 - [`specs/pay-to-complete/COPY-INVENTORY.md`](specs/pay-to-complete/COPY-INVENTORY.md) — **Payer copy inventory** — Which payer strings already exist, at which line, and which are still unwritten?
 - [`specs/pay-to-complete/PAYER-PRESENT.md`](specs/pay-to-complete/PAYER-PRESENT.md) — **Payer-present state** — What does the spec actually say about a charge that needs the payer, and which of its strings may a mockup quote?

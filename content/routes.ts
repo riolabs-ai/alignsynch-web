@@ -55,6 +55,11 @@ const STATIC_ROUTES = [
   // group) behind `requireAdminProduct()` and the `spec-read` gate. Three addresses, one gate.
   "/admin/spec",
   "/admin/spec/validation",
+  // 2026-11-26 — the v2 draft pages' internal door: the rail's `UI Specs v2` row, a redirect to
+  // `ADMIN_SPEC_DOCS_URL`. A static segment beside `[group]`, so Next resolves it before a story
+  // segment could, and the one way an off-origin destination becomes a rail row (E43 accounts for
+  // this page; the rail's href resolves here).
+  "/admin/spec/ui-v2",
   "/admin/gaps",
   // #920 — the growth model: 36 cohorts on the way to a $3M run-rate, charted from one committed
   // artifact (`data/demo/growth-model.json`), with the sampled operational set beside it.

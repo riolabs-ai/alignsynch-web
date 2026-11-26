@@ -574,6 +574,7 @@ function AlignSynchMenu({
                     onNavigate={onNavigate}
                     tourAnchor={item.tourAnchor}
                     hidden={hidden?.includes(item.href)}
+                    leaving={item.leaving === true}
                   />
                 </Fragment>
               );

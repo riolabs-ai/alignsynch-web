@@ -24,17 +24,21 @@
 import { zPageCopy, type PageCopy } from "../../content/pages";
 
 /**
- * The v2 docs preview — the one destination the Project Spec's submenu leaves for.
+ * The v2 docs preview — the one destination the Project Spec's **drafts door** leaves for.
  *
- * **One home, and it is here rather than in the component** (`components/admin/spec/spec-submenu.tsx`
- * reads it; it does not spell it). A URL typed into a component is the string no fixture check can
- * see, and the row's whole job is that address — so it sits beside the surface's words, where a
- * move of the preview is a one-line diff in a file the gate already reads.
+ * **One home, and it is here rather than in a component.** `app/(mainlayout)/admin/spec/ui-v2/page.tsx`
+ * reads it (it does not spell it) and redirects; the rail's `UI Specs v2` row points at that route,
+ * never at this address (`data/nav-menu.json` rows must resolve against `content/routes.ts`). A URL
+ * typed into a component is the string no fixture check can see, and the door's whole job is that
+ * address — so it sits beside the surface's words, where a move of the preview is a one-line diff
+ * in a file the gate already reads.
  *
  * **Public, and the card says so.** The preview is an unauthenticated Vercel deployment of the
  * draft docs; this file is the copy surface for the spec, which is NDA material, so the rule is
- * worth stating: nothing here may carry a token, a signed URL or a private host. The link opens in
- * a new tab and prints "draft" beside it, because the pages it leads to are drafts.
+ * worth stating: nothing here may carry a token, a signed URL or a private host. The door was the
+ * submenu's last row until 2026-11-26 (`Docs — draft pages`, a `LeavingLink`); it is the rail's
+ * `UI Specs v2` row now, which keeps the new tab and the "opens in a new tab" name, because the
+ * pages it leads to are drafts on another origin.
  */
 export const ADMIN_SPEC_DOCS_URL = "https://alignsynch-v2-docs-preview.vercel.app/";
 
@@ -60,8 +64,8 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
     { id: "rail-story", label: "Story" },
     { id: "rail-around", label: "Around the Story" },
     { id: "rail-count", label: "{met}/{total}" },
-    /* The one row that leaves the app — last, so the register's own order is untouched. */
-    { id: "rail-docs", label: "Docs — draft pages" },
+    /* The drafts door is not here any more (2026-11-26): it is the rail's `UI Specs v2` row, and
+     * its one word lives in `data/pages/shell.ts::nav-alignsynch` with every other rail label. */
 
     /* The status box — s02's aside, drawn on Overview and Validation alike. */
     { id: "status-heading", label: "Phase 6 · Delivery Certification" },
