@@ -66,11 +66,33 @@ function write(root: string, rel: string, body: string): string {
   return full;
 }
 
+/** This checkout's git environment, removed — a fixture must never reach the real repository. */
+function scrubbedEnv(): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  for (const name of [
+    "GIT_DIR",
+    "GIT_WORK_TREE",
+    "GIT_INDEX_FILE",
+    "GIT_COMMON_DIR",
+    "GIT_OBJECT_DIRECTORY",
+    "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+    "GIT_NAMESPACE",
+  ]) {
+    delete env[name];
+  }
+  env.GIT_CONFIG_GLOBAL = "/dev/null";
+  env.GIT_CONFIG_SYSTEM = "/dev/null";
+  return env;
+}
+
 function run(script: string, cwd: string, ...args: string[]) {
+  const env = scrubbedEnv();
+  env.GIT_CEILING_DIRECTORIES = dirname(cwd);
   try {
     const stdout = execFileSync(process.execPath, [script, ...args], {
       cwd,
       encoding: "utf8",
+      env,
       stdio: ["ignore", "pipe", "pipe"],
     });
     return { status: 0, stdout, stderr: "" };
