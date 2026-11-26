@@ -1,0 +1,9 @@
+{
+  "pr": 1431,
+  "date": "2026-11-26",
+  "area": "flow",
+  "summary": "Stage 5 collects an optional plain-text note (400 characters) and stores it on `session_invite.invite_note`, so the invitation mail and the `/invite/<token>` first step quote the sender's own paragraph.",
+  "reader_impact": "A person who is invited reads the sender's own words on the invitation page and in the email, and the sender's field survives a reload because the stage draws the stored row, not the browser's memory.",
+  "specs": ["docs/specs/flow-stages.md"],
+  "risk": "low"
+}

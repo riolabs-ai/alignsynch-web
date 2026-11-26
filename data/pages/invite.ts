@@ -108,6 +108,15 @@ export const invitePageCopy: PageCopy = zPageCopy.parse({
         { id: "privacy", label: "until you both share." },
         { id: "join", label: "Join {initiator}" },
         { id: "decline", label: "Not for you? Decline the invitation" },
+        /**
+         * #1275 — the note's caption, and the one line on this page nobody but the sender wrote.
+         *
+         * The note itself is the row's own text (`InvitePreview.note`), quoted under this caption
+         * and drawn only when there is something to quote. The caption names the **Initiator**
+         * because this is their paragraph, which is the opposite of `goal-caption` directly above:
+         * that one quotes the template, so it names the template.
+         */
+        { id: "note-caption", label: "A note from {initiator}" },
       ],
     },
     {

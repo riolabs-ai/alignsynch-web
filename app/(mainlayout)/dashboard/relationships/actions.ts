@@ -640,6 +640,8 @@ export async function resendInviteAction(payload: {
     counterpartyName: result.counterpartyName,
     templateTitle: result.templateTitle,
     token: result.inviteToken,
+    // #1275 — the note the invitation already carries; the re-invite writes nothing over it.
+    note: result.note,
   });
   const mail = await sendInvitation(message).catch(() => ({ outcome: "failed" as const }));
 

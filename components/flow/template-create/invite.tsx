@@ -233,6 +233,9 @@ export default async function TemplateCreateInvitePage({
       draft={draft}
       sessionRecordId={screen.sessionRecordId}
       relationshipId={screen.relationshipId}
+      // #1275 — the invitation's note, read off the row. The stage renders it as the field's
+      // initial value, so a reload arrives with the paragraph somebody already wrote.
+      inviteNote={screen.invite?.note ?? null}
       // #1216 — `Back` names the relationship, so stage 4 re-enters on the row it already wrote
       // instead of finding no draft and starting the flow again from an empty stage 1.
       backHref={createCommitForPath(slug, screen.sessionRecordId)}

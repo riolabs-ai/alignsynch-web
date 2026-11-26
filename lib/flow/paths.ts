@@ -695,6 +695,19 @@ export function sendInvitationPath(sessionRecordId: string): string {
 }
 
 /**
+ * `/assessment/instances/[instanceId]/note` — Stage 5's personal note, saved as it is drafted
+ * (#1275).
+ *
+ * A sub-path of the session for the same reason the send is: the note belongs to the session's
+ * invitation row, and the address says which invitation is being annotated. It is **not** the
+ * send's address with a flag — the two are different acts, one writing a draft and one publishing
+ * it, and a refusal has to be readable as which of them refused.
+ */
+export function inviteNotePath(sessionRecordId: string): string {
+  return `${sessionPath(sessionRecordId)}/note`;
+}
+
+/**
  * `/assessment/instances/[instanceId]/sent` — the invitation's confirmation screen (#691).
  *
  * A child of the session, beside `answer`, `accept` and `report`, because the screen is about one

@@ -334,7 +334,7 @@ describe("the session bundle reads the invitation's deadline", () => {
     await initiatorScreen(BEFORE_EXPIRY);
 
     const [bundleQuery] = callsMatching(
-      /^SELECT email, counterparty_name, created_at, claimed_at, expires_at, resent_at, resent_count, revoked_at, revoked_by FROM session_invite/,
+      /^SELECT email, counterparty_name, created_at, claimed_at, expires_at, resent_at, resent_count, revoked_at, revoked_by, invite_note FROM session_invite/,
     );
     expect(bundleQuery).toBeDefined();
     expect(bundleQuery.values).toEqual([SESSION_ID]);

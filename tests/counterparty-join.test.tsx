@@ -45,6 +45,8 @@ const PREVIEW: InvitePreview = {
   viewerRole: null,
   relationshipTitle: "Staying Close",
   templateSummary: "Relationship Basics, answered by Avery and Rowan.",
+  // #1275 — the note is optional on the row, so these fixtures read the ordinary state: no note.
+  note: null,
   mode: "basic",
   setting: "soft",
   aspects: [

@@ -457,7 +457,39 @@ export const assessmentCreatePageCopy: PageCopy = zPageCopy.parse({
           label:
             "The invitation did not go out — the request could not reach the app. Nothing was sent and nothing was charged. Try again, or keep the draft.",
         },
-        { id: "note-heading", label: "What you can do later" },
+        { id: "note-heading", label: "Add a note for {name}" },
+        { id: "note-heading-unnamed", label: "Add a note for them" },
+        /**
+         * #1275 — the invitation's personal note. Optional, plain text, capped at
+         * `lib/flow/invite-note.ts::INVITE_NOTE_MAX`, and saved as it is drafted so a reload keeps
+         * it (`POST /assessment/instances/<id>/note`).
+         *
+         * `note-body` says the three things a person deciding whether to write one needs: it is
+         * theirs alone, it is optional, and both the page and the email carry it. `{name}` is the
+         * Counterparty's first name, the same value the panel's heading uses.
+         */
+        {
+          id: "note-body",
+          label:
+            "A short note in your own words. It is optional, and {name} reads it on the invitation and in the email.",
+        },
+        // The field's own label, drawn above the textarea and used as its accessible name.
+        { id: "note-label", label: "Your note" },
+        { id: "note-placeholder", label: "Anything you want them to read first." },
+        // The counter under the field: how much of the ceiling is used, and whether it is stored.
+        { id: "note-count", label: "{count} of {max} characters" },
+        { id: "note-saving", label: "Saving…" },
+        { id: "note-saved", label: "Saved" },
+        {
+          id: "note-refused",
+          label: "The note did not save. Check your connection and try again.",
+        },
+        /**
+         * The preview panel's fourth fact (#1275). The three beside it are the invitation's own
+         * envelope — from whom, about what, to which address — and this one is the paragraph that
+         * travels inside it, quoted back under a caption so a sender reads what the recipient will.
+         */
+        { id: "preview-note-caption", label: "Your note" },
         /**
          * #1127 — the plan chip, drawn on stage 5 when the reader chose a plan on `/pricing`.
          *

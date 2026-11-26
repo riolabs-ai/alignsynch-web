@@ -84,6 +84,9 @@ const SAMPLE_FACTS: Readonly<Record<string, unknown>> = {
     counterparty: SAMPLE_NAMES.counterparty,
     template: SAMPLE_NAMES.template,
     link: SAMPLE_NAMES.invitationLink,
+    // #1275 — the note is optional, and the sample carries one so the preview shows the block the
+    // owner's reader will actually receive rather than a shorter mail than the product sends.
+    note: "I have been thinking about how we decide things when we are both tired. Want to compare notes?",
   } satisfies InvitationFacts,
   "invitation-reminder": {
     inviter: SAMPLE_NAMES.initiator,

@@ -88,6 +88,23 @@ export function JoinInviteStep({
           <p className="text-base text-foreground">
             {fillLabel(itemLabel(invitation, "how"), values)}
           </p>
+          {/* #1275 — the Initiator's own words, quoted back under their name. Drawn only when there
+              is something to quote: an empty quotation signed by a person who wrote nothing is
+              worse than no quotation. The band mirrors the goal figure below it so the two read as
+              one family — one paragraph quoted from the sender, one from the template. */}
+          {preview.note === null || preview.note.trim() === "" ? null : (
+            <figure
+              data-invite-note="true"
+              className="rounded-md border-l-4 border-initiator bg-initiator-tint px-3 py-2.5"
+            >
+              <blockquote className="whitespace-pre-line text-sm leading-6 text-foreground">
+                {preview.note}
+              </blockquote>
+              <figcaption className="mt-1 text-xs font-semibold text-initiator-ink">
+                {fillLabel(itemLabel(invitation, "note-caption"), values)}
+              </figcaption>
+            </figure>
+          )}
           {preview.templateSummary === null ? null : (
             <figure className="rounded-md border-l-4 border-initiator bg-initiator-tint px-3 py-2.5">
               <blockquote className="text-sm leading-6 text-foreground">

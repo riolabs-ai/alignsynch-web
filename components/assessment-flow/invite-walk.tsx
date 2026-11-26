@@ -118,6 +118,7 @@ export function InviteWalk({
   relationshipId,
   paid,
   onPaid,
+  onBeforeSend,
   checkout,
   planIncluded,
   carriedPlan,
@@ -155,6 +156,15 @@ export function InviteWalk({
    * tier to join a plan they hold. Absent means "not measured", and the panel is the choice.
    */
   planIncluded?: { readonly name: string; readonly entitled: boolean };
+  /**
+   * #1275 — **the last thing awaited before the invitation goes out.** Stage 5 hands its note's
+   * flush down here so the send can never mail an invitation whose note is still in the debounce
+   * window, or whose note failed to store. Answers `true` when the row holds what the field shows.
+   *
+   * Optional, and absent is the ordinary state of a walk mounted by the purchase path, whose
+   * caller has no note field: nothing is awaited and the send behaves exactly as it did.
+   */
+  onBeforeSend?: () => Promise<boolean>;
   /**
    * The plan the reader chose on `/pricing`, carried through the catalogue, the template, stage 1 and
    * the account round-trip (#1043). The row is drawn **already selected** and the checkout this panel
@@ -394,6 +404,17 @@ export function InviteWalk({
     setSendRefusal(null);
     setSending(true);
     try {
+      /**
+       * #1275 — **the note is stored before the invitation that carries it.** The flush is the
+       * stage's own writer, awaited here rather than raced: a note typed in the last few hundred
+       * milliseconds would otherwise be mailed as the version in the row, and a note that failed to
+       * save would go out missing with nothing said. A failed flush stops the send with the field's
+       * own sentence — the person can try again, and nothing was published.
+       */
+      if (onBeforeSend !== undefined && !(await onBeforeSend())) {
+        setSendRefusal(itemLabel(invite, "note-refused"));
+        return;
+      }
       const response = await fetch(sendInvitationPath(sessionRecordId), {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },

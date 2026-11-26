@@ -111,6 +111,7 @@ import { invitationLink } from "@/lib/flow/email";
 import { aspectListProblem, aspectWriteProblem, aspectsToWrite } from "@/lib/flow/aspects";
 import { claimEmailMatches, confirmationMatches, type ClaimRefusal } from "@/lib/flow/claim";
 import { COUNTERPARTY_DECLINED_BY, inviteStateOf } from "@/lib/flow/invite-state";
+import { INVITE_NOTE_MAX, noteToStore } from "@/lib/flow/invite-note";
 import {
   readMembershipForRelationship,
   readSubscriptionLive,
@@ -1438,6 +1439,13 @@ export type ResendResult =
       readonly expiresAt: Date;
       /** `resent_count` after this write — 1 on the first re-invite. */
       readonly resentCount: number;
+      /**
+       * #1275 — the personal note already on the invitation, or `null`. A re-invite carries the
+       * note it carried the first time: the mail this returns is addressed by, and re-sends, the
+       * same invitation row, and a corrected address is a correction of the address, not a
+       * withdrawal of what the person wrote.
+       */
+      readonly note: string | null;
     }
   | { readonly ok: false; readonly code: ResendRefusal; readonly reason: string };
 
@@ -1485,9 +1493,10 @@ export async function resendInvite(input: ResendInput): Promise<ResendResult> {
       resent_count: number;
       initiator_name: string | null;
       title: string;
+      invite_note: string | null;
     }>(
       `SELECT iv.email, iv.counterparty_name, iv.claimed_at, iv.expires_at,
-              iv.resent_at, iv.resent_count,
+              iv.resent_at, iv.resent_count, iv.invite_note,
               (SELECT p.name FROM party p
                 WHERE p.session_record_id = iv.session_record_id AND p.role = 'initiator') AS initiator_name,
               t.title
@@ -1545,6 +1554,12 @@ export async function resendInvite(input: ResendInput): Promise<ResendResult> {
     const inviteToken = mintToken();
     const email = corrected ?? invite.email;
     const expiresAt = inviteExpiry(now);
+    /**
+     * #1275 — the note column is **not** touched here. `saveInviteNote()` is its one writer (Stage 5
+     * while the relationship is a draft), and a reissue that also wrote it would be a second writer
+     * of one value: the send's mail reads what the row holds, so a corrected address re-sends the
+     * note the invitation already carried rather than a copy that travelled another way.
+     */
     await client.query(
       `UPDATE session_invite
           SET token_hash = $2, email = $3, expires_at = $4, resent_at = $5,
@@ -1569,6 +1584,7 @@ export async function resendInvite(input: ResendInput): Promise<ResendResult> {
       templateTitle: invite.title,
       expiresAt,
       resentCount: invite.resent_count + 1,
+      note: invite.invite_note,
     };
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
@@ -1627,6 +1643,12 @@ export type SendResult =
       readonly counterpartyName: string;
       readonly templateTitle: string;
       readonly expiresAt: Date;
+      /**
+       * #1275 — the note the invitation carries, read back from the row after the reissue. The
+       * stage saved it before this call (its flush is awaited), so the send's own write leaves the
+       * column alone and this is the value the row holds — the same one the recipient will read.
+       */
+      readonly note: string | null;
     }
   | {
       readonly ok: false;
@@ -1771,7 +1793,123 @@ export async function sendDraftInvitation(input: {
     counterpartyName: reissued.counterpartyName,
     templateTitle: reissued.templateTitle,
     expiresAt: reissued.expiresAt,
+    note: reissued.note,
   };
+}
+
+/* ------------------------------------------------------------------ *\
+ * The invitation's personal note (#1275)
+ * ------------------------------------------------------------------ */
+
+export const INVITE_NOTE_REFUSALS = [
+  "not-initiator",
+  "no-invitation",
+  "already-published",
+  "too-long",
+] as const;
+
+export type InviteNoteRefusal = (typeof INVITE_NOTE_REFUSALS)[number];
+
+export type SaveInviteNoteResult =
+  | { readonly ok: true; readonly note: string | null }
+  | { readonly ok: false; readonly code: InviteNoteRefusal; readonly reason: string };
+
+/**
+ * Save the note Stage 5 is drafting (#1275) — the write that makes the field survive a reload.
+ *
+ * **This is a draft write, and the send is the other one.** The stage calls it on a committed
+ * gesture (the field's flush, `components/assessment-flow/stage-invite.tsx`) and the send calls it
+ * nowhere: `sendDraftInvitation()` reads what this stored, so the mail and the recipient's step
+ * quote one value rather than two. Two writers of one column would be two chances to disagree
+ * about what the invitation says.
+ *
+ * **Authorised exactly as the send is.** Who is asking comes from this browser's `flow_party_*`
+ * cookie and then the signed-in account — a role out of Postgres, never a field in the post — and
+ * only the Initiator may write. The status guard is in the UPDATE's own predicate as well as in the
+ * read above it, because a send that lands between the two must win: once the relationship is
+ * `published`, the note is part of what the recipient was told and editing it would rewrite their
+ * invitation after the fact.
+ *
+ * `too-long` is the one refusal that is about the value rather than the asker: the ceiling is
+ * `lib/flow/invite-note.ts::INVITE_NOTE_MAX`, the stage's `maxLength` is derived from it, and the
+ * column's CHECK says the same number — so a note refused here is a post that ignored both.
+ */
+export async function saveInviteNote(input: {
+  readonly sessionRecordId: string;
+  /** The note as it was typed. Normalised here, never by the caller. */
+  readonly raw: string;
+  readonly viewerTokens?: readonly string[];
+  readonly viewerUserId?: string | null;
+}): Promise<SaveInviteNoteResult> {
+  const stored = noteToStore(input.raw);
+  if (!stored.ok) {
+    return {
+      ok: false,
+      code: "too-long",
+      reason: `the note is longer than ${INVITE_NOTE_MAX} characters, so it was not stored`,
+    };
+  }
+
+  const [found] = await query<{ status: string | null; has_invite: boolean }>(
+    `SELECT r.status, ai.relationship_id IS NOT NULL AND EXISTS (
+              SELECT 1 FROM session_invite iv WHERE iv.session_record_id = ai.record_id
+            ) AS has_invite
+       FROM session ai
+       LEFT JOIN relationship r ON r.id = ai.relationship_id
+      WHERE ai.record_id = $1`,
+    [input.sessionRecordId],
+  );
+  if (found === undefined || found.has_invite !== true) {
+    return {
+      ok: false,
+      code: "no-invitation",
+      reason: `session "${input.sessionRecordId}" carries no invitation to write a note on`,
+    };
+  }
+
+  const reader = await getPool().connect();
+  let viewerRole: PartyRole | undefined;
+  try {
+    viewerRole =
+      (await partyRoleForTokens(reader, input.sessionRecordId, input.viewerTokens ?? [])) ??
+      (await partyRoleForUser(reader, input.sessionRecordId, normalizedUserId(input.viewerUserId)));
+  } finally {
+    reader.release();
+  }
+  if (viewerRole !== "initiator") {
+    return {
+      ok: false,
+      code: "not-initiator",
+      reason:
+        viewerRole === undefined
+          ? "this browser is not a party to that session, so it cannot write its invitation's note"
+          : `this browser answers as the ${viewerRole}; only the Initiator writes the invitation's note`,
+    };
+  }
+
+  // The status guard lives in the predicate, not only in the read above: a send committing between
+  // the two must make this write match nothing rather than overwrite a published invitation.
+  const written = await query<{ invite_note: string | null }>(
+    `UPDATE session_invite iv
+        SET invite_note = $2
+      WHERE iv.session_record_id = $1
+        AND EXISTS (
+          SELECT 1 FROM session ai
+            JOIN relationship r ON r.id = ai.relationship_id
+           WHERE ai.record_id = iv.session_record_id
+             AND r.status IN ('draft', 'pending')
+        )
+      RETURNING iv.invite_note`,
+    [input.sessionRecordId, stored.note],
+  );
+  if (written.length === 0) {
+    return {
+      ok: false,
+      code: "already-published",
+      reason: `the invitation for "${input.sessionRecordId}" has gone out; its note is part of what was sent`,
+    };
+  }
+  return { ok: true, note: written[0]?.invite_note ?? null };
 }
 
 /**
@@ -2847,6 +2985,15 @@ export interface SessionBundle {
      * and `inviteStateOf()` picks the sentence from the pair.
      */
     readonly declined: boolean;
+    /**
+     * `invite_note` — the Initiator's personal note, or `null` (#1275).
+     *
+     * A `Date`-free string, the only prose the invitation row carries: it is written by Stage 5
+     * while the relationship is still a draft (`saveInviteNote()`) and read by the recipient's
+     * join step and the invitation mail. Optional so a bundle fixture written before the column
+     * existed still type-checks; the production read always supplies it.
+     */
+    readonly note?: string | null;
   } | null;
   readonly answerCounts: Readonly<Record<PartyRole, number>>;
   /**
@@ -2904,9 +3051,10 @@ export async function readSessionBundle(
     resent_count: number;
     revoked_at: Date | null;
     revoked_by: string | null;
+    invite_note: string | null;
   }>(
     `SELECT email, counterparty_name, created_at, claimed_at, expires_at, resent_at, resent_count,
-            revoked_at, revoked_by
+            revoked_at, revoked_by, invite_note
        FROM session_invite WHERE session_record_id = $1`,
     [sessionRecordId],
   );
@@ -2946,6 +3094,12 @@ export async function readSessionBundle(
             resentCount: invite.resent_count,
             revoked: invite.revoked_at != null,
             declined: invite.revoked_by === COUNTERPARTY_DECLINED_BY,
+            /**
+             * #1275 — the Initiator's own words, as the row holds them. `null` is the ordinary
+             * state (the note is optional) and every reader draws nothing for it rather than an
+             * empty quotation.
+             */
+            note: invite.invite_note,
           },
     answerCounts: { initiator: answered("initiator"), counterparty: answered("counterparty") },
     voided: session.voided === true,
@@ -3269,6 +3423,12 @@ export async function readFlowScreen(input: {
           // on: whether another re-invite may happen is decided inside `resendInvite()`.
           resentAt: bundle.invite.resentAt === null ? null : bundle.invite.resentAt.toISOString(),
           resentCount: bundle.invite.resentCount,
+          /**
+           * #1275 — the note Stage 5 drafted, read back from the row on every render. This is what
+           * makes the field survive a reload: the stage's initial value is this string, never a
+           * component's memory of what was typed.
+           */
+          note: bundle.invite.note,
         };
 
   return projectScreen({
@@ -3393,6 +3553,15 @@ export interface InvitePreview {
    * caption is true, where inventing a sentence and signing it with the Initiator's name is not.
    */
   readonly templateSummary: string | null;
+  /**
+   * **The Initiator's own words, for this person** (#1275) — the note Stage 5 drafted, or `null`.
+   *
+   * It is the one string on this preview that nobody but the sender wrote: not the template's, not
+   * the fixture's, not a sentence this product composed. The join's first step quotes it under the
+   * sender's name for that reason, and draws nothing at all when it is absent — an empty quotation
+   * attributed to a person who did not write one is worse than no quotation.
+   */
+  readonly note: string | null;
   /** `session.mode` — "Basic Mode" or "Advanced Mode", said in plain words on step 1 (#1125). */
   readonly mode: AssessmentMode | null;
   /** `session.alignment_setting` — Soft or Full, said in plain words on step 1 (#1125). */
@@ -3452,6 +3621,7 @@ export async function previewInvite(
     viewerRole: null,
     relationshipTitle: null,
     templateSummary: null,
+    note: null,
     mode: null,
     setting: null,
     aspects: [],
@@ -3471,9 +3641,10 @@ export async function previewInvite(
     session_name: string | null;
     mode: string;
     alignment_setting: string;
+    invite_note: string | null;
   }>(
     `SELECT iv.session_record_id, ai.relationship_id, iv.counterparty_name, iv.claimed_at,
-            iv.expires_at, iv.revoked_at, iv.revoked_by,
+            iv.expires_at, iv.revoked_at, iv.revoked_by, iv.invite_note,
             (SELECT p.name FROM party p
               WHERE p.session_record_id = iv.session_record_id AND p.role = 'initiator') AS initiator_name,
             t.title, t.summary, ai.name AS session_name, ai.mode, ai.alignment_setting
@@ -3528,6 +3699,7 @@ export async function previewInvite(
     viewerRole: viewerRole ?? null,
     relationshipTitle: row.session_name,
     templateSummary: row.summary,
+    note: row.invite_note,
     mode: zAssessmentMode.safeParse(row.mode).data ?? null,
     setting: zAlignmentSetting.safeParse(row.alignment_setting).data ?? null,
     aspects: aspects.map((aspect) => ({ id: aspect.item_id, prompt: aspect.prompt })),

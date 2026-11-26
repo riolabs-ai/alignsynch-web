@@ -270,6 +270,7 @@ export function CreateRelationship({
   carriedPlan,
   planIntent,
   trialEndsAt,
+  inviteNote,
   copyBlocked,
   signedIn = true,
 }: {
@@ -352,6 +353,14 @@ export function CreateRelationship({
    * payment out of every stage of this flow.
    */
   trialEndsAt?: string;
+  /**
+   * #1275 — the invitation's note as the row holds it, or `null` for none.
+   *
+   * Read by the page through `readFlowScreen()` (`screen.invite.note`) and handed to stage 5 as the
+   * field's initial value. Stage 5 is its only reader: no earlier stage can write one, because the
+   * invitation does not exist until stage 4's write and the note is not part of the draft.
+   */
+  inviteNote?: string | null;
   /** What the account's plan already covers (#870), measured by the page. */
   planIncluded?: { readonly name: string; readonly entitled: boolean };
   /**
@@ -925,6 +934,7 @@ export function CreateRelationship({
             draft={draft}
             sessionRecordId={sessionRecordId ?? ""}
             relationshipId={relationshipId ?? ""}
+            {...(inviteNote === undefined ? {} : { initialNote: inviteNote })}
             {...(checkout === undefined ? {} : { checkout })}
             {...(initialPaid === undefined ? {} : { initialPaid })}
             {...(planIncluded === undefined ? {} : { planIncluded })}
