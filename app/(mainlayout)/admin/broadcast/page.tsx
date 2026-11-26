@@ -45,7 +45,7 @@ import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
 import { DatabaseUnavailableError } from "@/lib/db/client";
 import { readBroadcastConsole, type BroadcastConsoleRead } from "@/lib/db/news-signups";
 import { mailKeyMode } from "@/lib/email/key-mode";
-import { DEFAULT_FROM, mailEndpoint } from "@/lib/flow/email";
+import { resolvedMailSettings } from "@/lib/flow/email";
 import { BROADCAST_COOLDOWN_HOURS } from "@/lib/admin/broadcast-rules";
 
 import { previewBroadcastAction, sendBroadcastAction } from "./actions";
@@ -80,9 +80,12 @@ export default async function AdminBroadcastPage() {
   // One instant for this render: the list's cooldown count and the composer's window are the same
   // measurement, so the stat and a refusal cannot disagree about "lately".
   const now = new Date();
-  const keyMode = mailKeyMode(process.env);
-  const endpoint = mailEndpoint(process.env);
-  const sender = process.env.RESEND_FROM?.trim() || DEFAULT_FROM;
+  // The two governed values a send reads, resolved once (`env > setting > default`, #1443 §11):
+  // the endpoint decides the key mode the banner prints, and the sender is the From header the
+  // composer shows. Reading `process.env` directly here would draw a banner about a different
+  // deployment than the one `sendMail` posts to.
+  const { from: sender, endpoint } = await resolvedMailSettings();
+  const keyMode = mailKeyMode(process.env, endpoint);
 
   let read: BroadcastConsoleRead | null = null;
   let unreadable: string | null = null;

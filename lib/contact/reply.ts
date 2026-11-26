@@ -40,7 +40,7 @@
  */
 import { brand } from "@/data/brand";
 import { adminInboxPageCopy } from "@/data/pages/admin-inbox";
-import { DEFAULT_FROM, mailEndpoint } from "@/lib/flow/email";
+import { resolvedMailSettings } from "@/lib/flow/email";
 import { fillLabel, itemLabel, sectionOf } from "@/lib/page-copy";
 
 /** How much of the provider's refusal a row keeps. Enough to read, short enough to be a column. */
@@ -152,11 +152,11 @@ export async function sendReply(
     );
     return { kind: "unset" };
   }
-  const from = process.env.RESEND_FROM?.trim() || DEFAULT_FROM;
+  const { from, endpoint } = await resolvedMailSettings();
 
   let response: Response;
   try {
-    response = await fetchImpl(mailEndpoint(), {
+    response = await fetchImpl(endpoint, {
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({

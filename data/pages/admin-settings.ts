@@ -63,7 +63,7 @@ export const adminSettingsPageCopy: PageCopy = zPageCopy.parse({
         {
           id: "values-note",
           label:
-            "Names, sources and dates only. A value is never read, never printed and never written by this screen.",
+            "Names, sources and dates only. A secret is never read, never printed and never written by this screen. The one value it can show is a governed non-secret setting, drawn in its own band below.",
         },
         { id: "unsplit", label: "one answer serves all three deployments" },
         { id: "split", label: "two answers, split by deployment" },
@@ -159,9 +159,79 @@ export const adminSettingsPageCopy: PageCopy = zPageCopy.parse({
       ],
     },
     {
+      id: "governance",
+      heading: "Settings an admin may change without a deploy",
+      body: "Four deployment variables can be stored here and win over the application's default. One rule decides which answer is used, and it is never inverted: the deployment's environment variable first, then a stored value, then the default in code. The two rows under them are read before a process serves a request or when the tree is built, so a stored value could never be obeyed — they say so instead of offering a field that would lose.",
+      items: [
+        {
+          id: "precedence",
+          label: "env > setting > default",
+          body: "An environment variable always wins. A stored value wins over the default in code and loses to the environment.",
+        },
+        { id: "source-env", label: "environment" },
+        { id: "source-setting", label: "stored setting" },
+        { id: "source-default", label: "default" },
+        {
+          id: "env-wins",
+          label: "shadowed by env",
+          body: "The environment also carries this variable, so the environment's value is the one in use. A save here is recorded in the audit log and changes nothing this deployment renders until the variable is removed.",
+        },
+        { id: "writable", label: "writable" },
+        {
+          id: "fixed",
+          label: "not writable at runtime",
+          body: "Read before the process serves a request, or when the tree is built. A stored value could not reach the reader, so this row refuses rather than promising an override that would lose.",
+        },
+        { id: "current-label", label: "Current value" },
+        { id: "field-label", label: "{key}" },
+        { id: "read-by", label: "Read by {where}" },
+        { id: "stored", label: "Stored: {value}" },
+        { id: "not-stored", label: "No stored value — the default or the environment answers." },
+        { id: "save", label: "Save" },
+        { id: "clear", label: "Clear stored value" },
+        {
+          id: "none",
+          label: "No governed setting is registered in this tree.",
+          body: "The registry in `lib/admin/settings/governed.ts` is the whole list, so an empty one means the module could not be read — not that this deployment has nothing an admin can set.",
+        },
+        {
+          id: "env-wins-note",
+          label:
+            "An edit to a shadowed row is refused by nothing and changes nothing — the environment still wins.",
+        },
+        {
+          id: "store-absent",
+          label: "No setting store in this deployment, so nothing can be stored here yet.",
+          body: "The table exists once the migration has run against this deployment's database. Until then the precedence is the same rule with the middle arm empty: env > default.",
+        },
+        {
+          id: "store-unmigrated",
+          label: "The setting table is not in this database yet.",
+          body: "`pnpm db:migrate` applies it. Until then nothing is stored, so env > default is what every reader resolves.",
+        },
+        {
+          id: "store-unreadable",
+          label: "The setting table could not be read: {reason}",
+          body: "A value is never resolved from a partial read, so the values below are the environment's and the code's — nothing stored is being obeyed. A save will fail until the store answers again.",
+        },
+        { id: "saved", label: "{key} saved. The audit log carries the value it replaced." },
+        { id: "cleared", label: "{key} cleared. The environment or the default answers now." },
+        {
+          id: "refused-vault-sourced",
+          label: "That key is a secret. Settings never store or return one.",
+        },
+        { id: "refused-unknown-key", label: "That name is not a governed setting." },
+        {
+          id: "refused-fixed-by-deployment",
+          label: "That setting cannot be overridden at runtime. The reason is on its row.",
+        },
+        { id: "refused-invalid-value", label: "That value is not one this setting accepts." },
+      ],
+    },
+    {
       id: "change",
       heading: "Where a change happens",
-      body: "Computed from the source, so the answer moves with the table. There is no form on this screen and no write path: a change is a pull request or a provider console.",
+      body: "Computed from the source, so the answer moves with the table. A secret's change is a pull request or a provider console; the governed non-secret settings above are the only ones this screen writes.",
       items: [
         {
           id: "vault",

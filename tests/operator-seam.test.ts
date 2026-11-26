@@ -188,7 +188,7 @@ describe("the operator surface is enumerated, not remembered", () => {
     ).toEqual([]);
   });
 
-  it("names the seven write modules, so a page gate cannot close an address and leave the action", () => {
+  it("names the eight write modules, so a page gate cannot close an address and leave the action", () => {
     expect(OPERATOR_ACTION_FILES).toEqual([
       "app/(mainlayout)/admin/billing/actions.ts",
       "app/(mainlayout)/admin/broadcast/actions.ts",
@@ -197,6 +197,7 @@ describe("the operator surface is enumerated, not remembered", () => {
       "app/(mainlayout)/admin/instances/[id]/actions.ts",
       "app/(mainlayout)/admin/instances/[id]/report/actions.ts",
       "app/(mainlayout)/admin/review/actions.ts",
+      "app/(mainlayout)/admin/settings/actions.ts",
     ]);
     const sources = tree();
     for (const action of OPERATOR_ACTION_FILES) expect(sources[action]).toBeDefined();

@@ -62,7 +62,7 @@ import {
   mailKeyModeRefusal,
   mailKeyModeSends,
 } from "@/lib/email/key-mode";
-import { type MailEnv, sendMail } from "@/lib/flow/email";
+import { type MailEnv, resolvedMailSettings, sendMail } from "@/lib/flow/email";
 
 export {
   BROADCAST_BODY_MAX,
@@ -288,7 +288,13 @@ export async function sendBroadcast(
   options: BroadcastOptions = {},
 ): Promise<BroadcastSent> {
   const env = options.env ?? process.env;
-  const keyMode = readMailKeyMode(env);
+  // The endpoint is a governed setting (#1443 §11), so the refusal has to judge where mail actually
+  // goes rather than where an env var says it goes: a deployment whose `RESEND_ENDPOINT` came from
+  // the `setting` table is a capture deployment, and refusing it as `live` would be a wrong answer
+  // in the dangerous direction. A caller that supplies its own env record is a test driving the pure
+  // derivation, and keeps the env-only answer it asked for.
+  const endpoint = options.env === undefined ? (await resolvedMailSettings()).endpoint : undefined;
+  const keyMode = readMailKeyMode(env, endpoint);
   const mailRefusal = mailKeyModeRefusal(keyMode);
   if (mailRefusal !== undefined || !mailKeyModeSends(keyMode)) {
     throw new BroadcastRefused(

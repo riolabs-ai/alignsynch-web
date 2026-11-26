@@ -35,6 +35,15 @@ const reader = vi.hoisted(() => ({ mode: "real" as "real" | "unreadable" }));
 /** A spy, so "a refused request never reads" is a claim about a call. */
 const readSpy = vi.hoisted(() => vi.fn());
 
+/**
+ * The page hands the governed band its server action; the module is replaced here so this suite
+ * proves the **render** and its gates without the write path's graph (`lib/auth/require-role`,
+ * `pg`). `tests/admin-settings-write.test.ts` proves the write itself against a fake transaction.
+ */
+vi.mock("@/app/(mainlayout)/admin/settings/actions", () => ({
+  updateSettingAction: async () => {},
+}));
+
 vi.mock("@/lib/brand-boundary", async (importOriginal) => {
   const real = await importOriginal<typeof import("@/lib/brand-boundary")>();
   const { notFound } = await import("next/navigation");
@@ -180,13 +189,39 @@ describe("/admin/settings — the surface", () => {
     expect(rows).toHaveLength(ENV_ROWS.length + OUT_OF_SCOPE.length);
   });
 
-  it("is read-only: no form, no input, no button, no server action", async () => {
+  it("draws the directory band with no form, no input and no button", async () => {
     gate.role = "admin";
     const html = await render();
-    expect(html).not.toContain("<form");
-    expect(html).not.toContain("<input");
-    expect(html).not.toContain("<button");
-    expect(html).not.toContain("<textarea");
+    // The directory is still a directory (#1443 v1). The one write surface is the governed band
+    // below it, which starts at `data-settings-band="governance"`; nothing before that marker is a
+    // control, so a provider card can never grow one by accident.
+    const directory = html.slice(0, html.indexOf('data-settings-band="governance"'));
+    expect(directory.length).toBeGreaterThan(0);
+    expect(directory).not.toContain("<form");
+    expect(directory).not.toContain("<input");
+    expect(directory).not.toContain("<button");
+    expect(directory).not.toContain("<textarea");
+  });
+
+  it("writes only through the governed band, one form per writable key (§11)", async () => {
+    gate.role = "admin";
+    const html = await render();
+    const { WRITABLE_KEYS } = await import("@/lib/admin/settings/governed");
+
+    const forms = html.match(/<form[^>]*action=/g) ?? [];
+    expect(forms).toHaveLength(WRITABLE_KEYS.length);
+    // A field exists for the four writable keys and for no other name — a `vault`-sourced row has
+    // no input here because the registry never draws one.
+    const inputs = [...html.matchAll(/<input[^>]*name="value"/g)];
+    expect(inputs).toHaveLength(WRITABLE_KEYS.length);
+    for (const key of WRITABLE_KEYS) {
+      expect(html).toContain(`data-settings-key="${key}"`);
+    }
+    // The two rows a stored value could not move are drawn and carry their reason, but no control.
+    for (const fixed of ["NAV_SOURCE", "DEMO_ALLOW_PRODUCTION"]) {
+      expect(html).toContain(`data-settings-key="${fixed}"`);
+    }
+    expect(html).toContain("data-settings-fixed-reason");
   });
 
   it("prints the census's own date beside the counts it qualifies", async () => {

@@ -290,6 +290,21 @@ export const ADMIN_ACTIONS = [
   "review.todo",
   "review.issue",
   "review.comment",
+  /**
+   * #1443 §11 — the one write on `/admin/settings`: store a governed non-secret value so an
+   * operator can move a knob without a deploy.
+   *
+   * `admin`, because the four governed keys are deployment configuration — the drift alarm's
+   * threshold, the freshness window, the From address and the endpoint every mail posts to. A
+   * `support` seat reads nothing on that screen (the page's own gate is `admin`) and may not turn
+   * these knobs: pointing `RESEND_ENDPOINT` elsewhere stops every invitation leaving the product,
+   * which is not a courtesy write.
+   *
+   * One name for save and for clear, because the audit question is "what did this key say", not
+   * "which button was pressed": `after: null` is the record of a cleared row, and `act()` stores
+   * both sides either way.
+   */
+  "setting.update",
 ] as const;
 
 export type AdminAction = (typeof ADMIN_ACTIONS)[number];
@@ -427,6 +442,11 @@ export const ACTION_REQUIREMENTS: Readonly<Record<AdminAction, UserRole>> = {
   "review.todo": "admin",
   "review.issue": "admin",
   "review.comment": "admin",
+  /**
+   * #1443 §11 — storing a governed non-secret value. `admin`: the four keys are deployment
+   * configuration, and one of them (`RESEND_ENDPOINT`) decides where every outbound mail goes.
+   */
+  "setting.update": "admin",
 };
 
 // The one floor #503 does not name, and the stricter reading this tree took.
@@ -560,6 +580,13 @@ export const AUDIT_TARGET_TABLES = [
    * A template id is not a row, so pointing there would give the log's join nothing to land on.
    */
   "email_template_version",
+  /**
+   * #1443 §11 — the `setting` table the Settings write path writes. The target **id is the key**
+   * (`RESEND_FROM`), because a setting row's identity *is* its variable name: the audit row then
+   * answers "what did RESEND_FROM say before and after" with no join, and the table's own
+   * `updated_by`/`updated_at` carry the same actor and instant beside the row.
+   */
+  "setting",
 ] as const;
 
 export type AuditTargetTable = (typeof AUDIT_TARGET_TABLES)[number];

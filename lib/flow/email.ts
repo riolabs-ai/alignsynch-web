@@ -40,6 +40,13 @@
  */
 import { brand } from "@/data/brand";
 import { resetRequestPageCopy } from "@/data/pages/password-reset";
+import {
+  RESEND_ENDPOINT as RESEND_ENDPOINT_KEY,
+  RESEND_ENDPOINT_FALLBACK,
+  RESEND_FROM as RESEND_FROM_KEY,
+  RESEND_FROM_FALLBACK,
+} from "@/lib/admin/settings/governed";
+import { resolveSettingValues } from "@/lib/admin/settings/values";
 import { invitationTemplate } from "@/lib/email/templates";
 import { renderTemplateForSend } from "@/lib/email/send";
 import { RESET_TTL_MINUTES } from "@/lib/auth/reset-token";
@@ -47,7 +54,7 @@ import { sessionPath, relationshipScreenPath } from "@/lib/flow/paths";
 import { fillLabel, itemLabel, sectionOf } from "@/lib/page-copy";
 
 /** Resend's documented send endpoint. `fetch` is the client; no SDK, no dependency. */
-export const RESEND_ENDPOINT = "https://api.resend.com/emails";
+export const RESEND_ENDPOINT = RESEND_ENDPOINT_FALLBACK;
 
 /**
  * The endpoint a send actually goes to: Resend's, unless `RESEND_ENDPOINT` names another one.
@@ -77,12 +84,41 @@ export type MailEnv = Record<string, string | undefined>;
  * is still the real provider — a trailing slash is a URL spelling, not a different destination.
  */
 export function mailEndpointIsCapture(env: MailEnv = process.env): boolean {
-  const endpoint = mailEndpoint(env).replace(/\/+$/, "");
-  return endpoint !== RESEND_ENDPOINT.replace(/\/+$/, "");
+  return endpointIsCapture(mailEndpoint(env));
+}
+
+/** Is this endpoint somewhere other than Resend's own? The comparison, without an env record. */
+export function endpointIsCapture(endpoint: string): boolean {
+  return endpoint.replace(/\/+$/, "") !== RESEND_ENDPOINT.replace(/\/+$/, "");
+}
+
+/**
+ * The two governed settings a send reads, resolved once: `env > setting > default`.
+ *
+ * **This is the change #1443's write path exists for.** `RESEND_FROM` and `RESEND_ENDPOINT` are
+ * now read through `lib/admin/settings/values.ts` rather than off `process.env`, so a value an
+ * admin stores on `/admin/settings` reaches the send. The precedence is not negotiable in the
+ * other direction: a deployment variable still wins, and the settings page draws `shadowed by env`
+ * beside a field that loses.
+ *
+ * `sendMail`, `lib/contact/mail.ts` and `lib/contact/reply.ts` all call this rather than a copy of
+ * the expression, so the From header and the endpoint cannot disagree between two senders.
+ */
+export interface MailSettings {
+  readonly from: string;
+  readonly endpoint: string;
+}
+
+export async function resolvedMailSettings(): Promise<MailSettings> {
+  const values = await resolveSettingValues([RESEND_FROM_KEY, RESEND_ENDPOINT_KEY]);
+  return {
+    from: values[RESEND_FROM_KEY] ?? DEFAULT_FROM,
+    endpoint: values[RESEND_ENDPOINT_KEY] ?? RESEND_ENDPOINT,
+  };
 }
 
 /** Resend's documented development sender, used only when `RESEND_FROM` is unset. */
-export const DEFAULT_FROM = "onboarding@resend.dev";
+export const DEFAULT_FROM = RESEND_FROM_FALLBACK;
 
 /** The default base URL: the local dev server `AGENTS.md` documents. */
 export const DEFAULT_BASE_URL = "http://localhost:3000";
@@ -418,11 +454,11 @@ export async function sendMail(
     );
     return "unset";
   }
-  const from = process.env.RESEND_FROM?.trim() || DEFAULT_FROM;
+  const { from, endpoint } = await resolvedMailSettings();
 
   let response: Response;
   try {
-    response = await fetchImpl(mailEndpoint(), {
+    response = await fetchImpl(endpoint, {
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({

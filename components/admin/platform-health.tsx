@@ -404,7 +404,9 @@ function DeployCard({ copy, facts }: { copy: PageCopy; facts: HealthFacts }) {
   const limitSource =
     drift.limit.origin === "env"
       ? fillLabel(itemLabel(sources, "config-env"), { variable: drift.limit.variable })
-      : fillLabel(itemLabel(sources, "config-default"), { variable: drift.limit.variable });
+      : drift.limit.origin === "setting"
+        ? fillLabel(itemLabel(sources, "config-setting"), { variable: drift.limit.variable })
+        : fillLabel(itemLabel(sources, "config-default"), { variable: drift.limit.variable });
 
   return (
     <Card className={drift.exceeded ? "border-destructive" : undefined}>

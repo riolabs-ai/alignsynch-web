@@ -6,9 +6,10 @@
 
 <!-- docs-nav:end -->
 
-Status: **built** — `/admin/settings` ships with issue #1443. Scope was deliberately one screen and
-one data file, and stayed that way; what §11 names is still deferred. Two notes where the build
-settled an open point, both recorded here rather than in a card:
+Status: **built**, including §12's **D6-B write path** (shipped as the named follow-up). Scope was
+deliberately one screen and one data file, and stayed that way; the write path is a band on the same
+screen, bounded to non-secrets. Two notes where the build settled an open point, both recorded here
+rather than in a card:
 
 - **§4 carries an eighth card, `repo`.** The seven vendor accounts cannot be total over the table: a
   literal (`BRAND`), a derived value (`APP_VERSION`) and a tooling knob (`PARITY_UPDATE`) have no
@@ -209,11 +210,12 @@ says so), and widening it to all 16 doors is the duplicate navigation that file 
   stays a command; the page reads its output.
 - **Never invent a status.** `not checked`, `not measured in this deployment`, and `0 findings` are
   three different sentences.
-- **No write path in v1.** No form, no server action, no `act()` call. The page imports no module
-  that can mutate, and a test asserts it (the `/admin/health` "read-only, structurally" rule).
+- **No write path beyond §12's governed band.** The directory has no form, no server action and no
+  `act()` call, and a test asserts it. D6-B added exactly one write surface: the four non-secret
+  keys on the same page, behind the same gates, refused by name for anything vault-sourced.
 - **No second table of variables.** If a fact is in `scripts/env-manifest.ts`, it is read from there.
-- **No `settings` table** until there is a v1.5 decision to write (§9). `db/migrations/` has 45 files
-  and no global setting table; adding one to render a read-only row would be the opposite of KISS.
+- **No `settings` table for v1.** D6-B is the v1.5 decision to write, and its table (`0046_setting.sql`)
+  holds four governed keys and nothing else; a row for any other name is refused by the schema.
 
 ## 8. Known gaps this spec does not close
 
@@ -283,9 +285,22 @@ need a schema change.
 
 ## 12. Deferred, explicitly
 
-**D6-B — the write path** (the named follow-up, not built here): a `setting` table, a read path with
-`env > setting > default` precedence, a `shadowed by env` badge, the form, and an `act()` assertion
-that the audit row carries both sides. One card, blocked on this one landing.
+**D6-B — the write path** — **built**. A `setting` table (`0046_setting.sql`: `key` pk, `value`
+jsonb-string, `updated_at`, `updated_by`, and a `key IN (…)` CHECK that is the allow-list), a read path
+with `env > setting > default` precedence (`lib/admin/settings/governed.ts` decides, `values.ts` opens
+the table), the `shadowed by env` badge where the edit happens, the form on the same page behind the
+same three gates, and `act()` with `setting.update` so the audit row carries both sides with the role
+floor read inside the writing transaction.
+
+The governed set is **six keys, four writable**. The card named six; two of them cannot honour a
+stored value and are drawn as refused rows with their reason instead of a field that would silently
+lose — `NAV_SOURCE` is read at build time and inlined into both bundles (a runtime read is a React
+`#418` hydration mismatch, and the gate builds with no `DATABASE_URL`), and `DEMO_ALLOW_PRODUCTION`
+is read once at process start as the second switch on the production demo door. The four that are
+request-time — `PLATFORM_HEALTH_DRIFT_LIMIT`, `PLATFORM_HEALTH_FRESHNESS_HOURS`, `RESEND_FROM`,
+`RESEND_ENDPOINT` — are the ones every reader now resolves through `resolveSetting`/`resolveSettingValues`.
+That narrowing is the honest reading of "precedence is never inverted": a row nothing could obey is
+refused, not promised.
 
 Provider validity probes (§8.2) · credential scope inventory (§8.1) · a `/admin/settings/<provider>`
 detail route · onboarding wizards (Hermes `pm install` / Vercel "New Project" style) — the interactive
