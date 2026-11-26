@@ -91,29 +91,52 @@ function isAdminView(path: string): boolean {
   );
 }
 
+/**
+ * The admin pages that render **no container at all** because they render nothing: a door that
+ * gates and answers `redirect()`. Named rather than derived, because the derived rule below is
+ * exactly right for a screen and cannot express a page that does not draw one — and it carries a
+ * positive assertion, so the exemption can never hide a page that quietly stopped rendering.
+ *
+ * One today: `/admin/spec/ui-v2` (2026-11-26) — the rail's `UI Specs v2` row, a 307 to the v2
+ * draft pages on another origin.
+ */
+const REDIRECT_DOORS = ["app/(mainlayout)/admin/spec/ui-v2/page.tsx"];
+
 describe("the admin console's shared column", () => {
-  it("exists — thirty-two pages today, and every one of them is a page module", () => {
+  it("exists — thirty-three pages today, and every one of them is a page module", () => {
     // Eighteen from #717's wave, plus the documentation hub and one document (#892), plus the
     // growth console (#920) and the brand and audience profile (#906), plus the features index and
     // the release shelf (#893), plus the CRUD & Permissions matrix (#1126), plus the transactional-
     // mail register and one template's editor (#1138), plus #1252's three spec routes (Overview,
     // Validation, one group's page), plus the update ledger (the owner ask of 2026-11-21), plus the
-    // read-only landing (#1374). The count is a floor on the walk, not a list: the two cases below
-    // derive the pages and hold each one to the rule, so a thirty-third page inherits it.
+    // read-only landing (#1374), plus the v2 drafts door (2026-11-26). The count is a floor on the
+    // walk, not a list: the two cases below derive the pages and hold each one to the rule, so a
+    // thirty-fourth page inherits it.
     const pages = adminPages();
-    expect(pages.length).toBe(32);
+    expect(pages.length).toBe(33);
   });
 
   it("is what every admin page renders inside — the product's container or the operator's, by surface", () => {
     const pages = adminPages();
     for (const path of pages) {
       const file = code(path);
+      // A redirect door renders no screen, so it owes no column — and it must really redirect.
+      if (REDIRECT_DOORS.includes(path)) {
+        expect(file, `${path} is exempt as a redirect door but does not redirect`).toContain(
+          "redirect(",
+        );
+        continue;
+      }
       const operator = OPERATOR_PAGE_FILES.includes(path);
       const column = operator ? "OperatorFrame" : "StageColumn";
       const specifier = operator ? "@/components/operator/frame" : "stage-column";
       expect(file, `${path} imports the shared column`).toContain(specifier);
       expect(file, `${path} renders the shared column`).toContain(`<${column}>`);
       expect(file, `${path} closes the shared column`).toContain(`</${column}>`);
+    }
+    // The exemption list is not a hiding place: every name in it is a page this walk found.
+    for (const page of REDIRECT_DOORS) {
+      expect(pages, `${page} is exempted but is not an admin page`).toContain(page);
     }
     // The operator list is a subset of the directory walk, never a parallel list: a page named
     // there that this walk cannot find is a seam that guards nothing.

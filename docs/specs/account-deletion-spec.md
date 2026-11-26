@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Account deletion · next [Template catalogue](catalogue.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Account deletion · next [The rail's doors](admin-rail-doors.md)
 
 <!-- docs-nav:end -->
 
@@ -570,6 +570,6 @@ deletion** (the route in §4.3 is a runbook step, and a console surface is a pro
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Account deletion · next [Template catalogue](catalogue.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Account deletion · next [The rail's doors](admin-rail-doors.md)
 
 <!-- docs-nav:end -->

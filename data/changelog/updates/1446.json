@@ -1,0 +1,9 @@
+{
+  "pr": 1446,
+  "date": "2026-11-26",
+  "area": "nav",
+  "summary": "The Admin rail's Specs and docs group carries `UI Specs v2`, which opens the v2 draft pages in a new tab through a new internal door that redirects, and the Project Spec submenu no longer carries the departing Docs row.",
+  "reader_impact": "An admin finds `UI Specs v2` in the rail and one click opens the draft docs in a marked new tab; the Project Spec submenu has no second door to the same pages.",
+  "specs": ["docs/specs/admin-rail-doors.md"],
+  "risk": "low"
+}

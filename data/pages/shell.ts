@@ -394,6 +394,13 @@ export function shellCopy(brand: Brand): PageCopy {
            */
           { id: "admin-spec", label: "Project Spec" },
           /**
+           * 2026-11-26 — the owner's words, verbatim: the v2 draft pages door, moved out of the
+           * Project Spec submenu into the rail's Specs & docs group. It said `Docs — draft pages`
+           * at the bottom of the submenu; the row now says what the pages are, and "v2" is the
+           * owner's own name for the bundle rather than a word this file invented.
+           */
+          { id: "admin-spec-ui-v2", label: "UI Specs v2" },
+          /**
            * The five words that are the 2026-11-23 reorganisation (#nav evaluation, `data/nav-menu.json`
            * v5). The rail's sections are the taxonomy the `unlisted` reasons used to bury, and each one
            * is a heading a reader can point at: **Start** (the admin landing), **Operations** (the six
