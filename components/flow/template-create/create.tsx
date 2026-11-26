@@ -55,9 +55,12 @@ import { ADVANCE_CLASSES } from "@/components/assessment-flow/stage-foot";
 import { assessmentCreatePageCopy } from "@/data/pages/assessment-create";
 import { currentUserIfConfigured } from "@/lib/auth/session";
 import { EMPTY_CREATE_DRAFT, parseCreateDraft, type CreateDraft } from "@/lib/flow/create-draft";
+import { initiatorNameFor } from "@/lib/flow/initiator-name";
 import { type CopyReadiness, stageRefusal } from "@/lib/flow/create-copy";
 import { planIntentFromSearch } from "@/lib/flow/plan-intent";
 import { readLibraryTemplate } from "@/lib/db/template-library";
+import { readUserProfileByUserId } from "@/lib/db/user-profiles";
+import type { UserProfile } from "@/content/identity";
 import {
   RELATIONSHIP_TEMPLATES_PATH,
   relationshipTemplatePath,
@@ -103,6 +106,27 @@ async function savedDraft(templateRecordId: string): Promise<CreateDraft> {
   );
 }
 
+/**
+ * The signed-in person's saved profile row, or `null` — an unreadable row is not a failed stage.
+ *
+ * The same shape as `lib/auth/shell-account.ts::profileOf`, and for the same reason: this read only
+ * supplies stage 1's **default** name, so a `user_profile` query that fails must not take the whole
+ * create screen down with it. The session still holds a name, so the Initiator is prefilled from
+ * that instead, and the log line is how an operator learns the profile read is broken.
+ *
+ * A brand-new account has an auth user and no row until it first saves `/settings`
+ * (`lib/db/user-profiles.ts` says so), which is why the answer is allowed to be `null` rather than
+ * being an error.
+ */
+async function profileOf(userId: string): Promise<UserProfile | null> {
+  try {
+    return await readUserProfileByUserId(userId);
+  } catch (error) {
+    console.error("create: user_profile could not be read — using the session's name alone", error);
+    return null;
+  }
+}
+
 export default async function TemplateCreatePage({
   params,
   searchParams,
@@ -123,6 +147,18 @@ export default async function TemplateCreatePage({
   const viewer = await currentUserIfConfigured();
   const viewerUserId = viewer?.userId ?? null;
   const detail = await readLibraryTemplate(slug, viewerUserId);
+  /**
+   * **The Initiator's name is a default, and it is the viewer's own (#1360).**
+   *
+   * Resolved here because a session and a `user_profile` row are the server's to read. A visitor
+   * resolves to nothing at all and is handed no prop, so the signed-out form is exactly the form it
+   * was; a signed-in member's name arrives answered and stays editable, with a saved draft and any
+   * keystroke outranking it (`stage-one-fields.tsx::seedNames`).
+   */
+  const initiatorPrefill = initiatorNameFor(
+    viewer,
+    viewerUserId === null ? null : await profileOf(viewerUserId),
+  );
 
   // A refusal that sent us here and a template nobody can read are two different states: the first
   // is a screen (the band, and a way back), the second is a 404 — an address nobody posted from is
@@ -228,6 +264,7 @@ export default async function TemplateCreatePage({
       problemLink={refusal?.link ?? null}
       {...(publishAction === undefined ? {} : { publishAction })}
       {...(blocked ? { copyBlocked: true } : {})}
+      {...(initiatorPrefill.first === "" ? {} : { initiatorPrefill })}
       {...(planIntent === null ? {} : { planIntent })}
     />
   );

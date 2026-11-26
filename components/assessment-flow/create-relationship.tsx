@@ -68,6 +68,7 @@ import type { PageCopy } from "@/content/pages";
 import type { AspectDraft } from "@/lib/flow/aspects";
 import { fieldSentence } from "@/lib/flow/create-copy";
 import type { CreateDraft } from "@/lib/flow/create-draft";
+import type { NameParts } from "@/lib/flow/names";
 import {
   CREATE_STAGE_HEADING_ID,
   RELATIONSHIPS_PATH,
@@ -272,6 +273,7 @@ export function CreateRelationship({
   trialEndsAt,
   inviteNote,
   copyBlocked,
+  initiatorPrefill,
   signedIn = true,
 }: {
   copy: PageCopy;
@@ -391,6 +393,16 @@ export function CreateRelationship({
    * the last line of defence.
    */
   copyBlocked?: boolean;
+  /**
+   * **The signed-in viewer's own name, so stage 1 does not ask them for it again (#1360).**
+   *
+   * The page resolves it (`lib/flow/initiator-name.ts`) because a name is a session and a profile
+   * row, and neither can be read inside the client component that draws the fields. It is a
+   * **default**: the fields seed themselves from it at mount, a saved draft outranks it, and any
+   * keystroke outranks both. Absent for a visitor, which is the whole of the signed-out rule —
+   * the visitor's form is byte-for-byte what it was (#1042: one intent, one door).
+   */
+  initiatorPrefill?: NameParts;
   /**
    * **Is this viewer signed in?** The v2 header's exit word is the only thing it changes: a member
    * leaves with `Save and Exit`, a visitor with `Exit`, because a visitor has no account for
@@ -798,6 +810,7 @@ export function CreateRelationship({
                   email: draft.email,
                   description: draft.description,
                 }}
+                {...(initiatorPrefill === undefined ? {} : { initiatorPrefill })}
                 descriptionDefault={template.summary}
                 /*
                  * The five controls `whoDraft()` refuses, in the order the stage draws them —

@@ -36,6 +36,7 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 import { StageOneFields, type StageOneCopy, type StageOneValues } from "./stage-one-fields";
+import type { NameParts } from "@/lib/flow/names";
 
 /**
  * One control the stage refuses to advance past, and the two sentences it can be refused with.
@@ -96,6 +97,7 @@ export function StageOneForm({
   planIntent,
   copy,
   values,
+  initiatorPrefill,
   descriptionDefault,
   requirements,
   foot,
@@ -115,6 +117,12 @@ export function StageOneForm({
   planIntent?: { readonly planId: string; readonly interval: string };
   copy: StageOneCopy;
   values: StageOneValues;
+  /**
+   * The signed-in viewer's own name, as the two Initiator halves (#1360). Handed straight to the
+   * fields, which seed their state from it at mount — the form itself never reads it, because the
+   * controls are uncontrolled and the DOM stays the answer of record.
+   */
+  initiatorPrefill?: NameParts;
   /** The template's own summary — the description's default, never a second fixture. */
   descriptionDefault: string;
   /** The five required controls, in the order the stage draws them. */
@@ -166,6 +174,7 @@ export function StageOneForm({
       <StageOneFields
         copy={copy}
         values={values}
+        {...(initiatorPrefill === undefined ? {} : { initiatorPrefill })}
         descriptionDefault={descriptionDefault}
         problems={problems}
       />

@@ -1,0 +1,9 @@
+{
+  "pr": 1432,
+  "date": "2026-11-26",
+  "area": "flow",
+  "summary": "Stage 1 prefills the Initiator's first and last name from the signed-in viewer's own name — `user_profile.display_name` when they have saved a profile, else the name the auth provider holds — and hands them down as editable field defaults.",
+  "reader_impact": "A signed-in member starting a relationship sees their own name already in the two Initiator fields and can type over it; a visitor's form is unchanged and draws empty fields.",
+  "specs": ["docs/specs/flow-stages.md"],
+  "risk": "low"
+}
