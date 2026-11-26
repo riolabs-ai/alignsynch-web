@@ -77,7 +77,15 @@ import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import {
+import { requireDeclaredNode } from "./require-node.mjs";
+
+// The engine check comes first, and the rules module is loaded **after** it with a dynamic import.
+// A static import would be resolved while Node links this module — before any statement here runs —
+// so on an older engine the failure is `ERR_UNKNOWN_FILE_EXTENSION` naming a file that was never
+// wrong, which is the message #1410 exists to replace (#1412 shipped the hook, not the path).
+requireDeclaredNode();
+
+const {
   CACHE_DIR_NAMES,
   decideBranch,
   decideCache,
@@ -86,7 +94,7 @@ import {
   formatBytes,
   IDLE_MS,
   summaryLine,
-} from "./repo-hygiene-rules.ts";
+} = await import("./repo-hygiene-rules.ts");
 
 /** `node:sqlite` is optional: without it every card's state is unknown and every tree is kept. */
 const require = createRequire(import.meta.url);

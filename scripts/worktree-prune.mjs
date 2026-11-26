@@ -65,7 +65,15 @@ import { existsSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { homedir } from "node:os";
 import { isAbsolute, join, relative, resolve } from "node:path";
-import { basenameOf, decideWorktree, EXCLUDED_PATHS } from "./worktree-prune-rules.ts";
+import { requireDeclaredNode } from "./require-node.mjs";
+
+// The engine check runs before the rules module is loaded, and that module is therefore a dynamic
+// import: a static one is resolved at link time, before this line would run, so a direct
+// `node scripts/worktree-prune.mjs` on an older engine died in Node's loader with
+// `ERR_UNKNOWN_FILE_EXTENSION` instead of naming the runtime the tree declares (#1410).
+requireDeclaredNode();
+
+const { basenameOf, decideWorktree, EXCLUDED_PATHS } = await import("./worktree-prune-rules.ts");
 
 /** `node:sqlite` is optional for this script: it is loaded through require() so a runtime without it
  * still runs the prune, keeping every worktree because no card's state can be read. */
