@@ -2,8 +2,8 @@
   "pr": 1409,
   "date": "2026-11-26",
   "area": "ops",
-  "summary": "The prototype catalog builds from `scripts/build-prototype-catalog.mjs` on every push to main; dates come from `git log`, versions from the nearest release tag, and a prototype with no git provenance is marked rather than guessed.",
-  "reader_impact": "The catalog's 252 rows carry real provenance — 77 git dates and 54 release tags, with 175 untracked rows flagged amber — and every deep link still resolves on the public, `noindex` site.",
+  "summary": "The catalog rebuilds on every push to main from prototypes committed in this repo; dates come from `git log`, versions from the nearest tag plus the distance past it.",
+  "reader_impact": "All 225 rows carry a git date and a tag-derived version — no mtime guesses, no path-inferred versions — and the deep link at `/p/project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html` still resolves.",
   "specs": ["docs/operations/prototype-catalog.md"],
   "risk": "low"
 }

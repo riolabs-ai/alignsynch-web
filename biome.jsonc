@@ -78,6 +78,14 @@
     // (`gitnexus analyze`), which owns their formatting and rewrites them on every run, so biome
     // padding the generated tables' pipes would be undone by the next generation and re-dirty the
     // tree in between — the `lib/email/bodies.generated.ts` case, one file class over.
+    // `prototypes/**` is the sixth case and the largest (#1405): 170 product-history prototypes —
+    // the approved design handoffs of `project-spec/` and `project-reqs/` — committed so the
+    // catalogue at `alignsynch-mockups.vercel.app` rebuilds from this repository instead of a
+    // workstation. They are committed **byte-identical to what the live site already serves**: a
+    // file whose sha256 changes is a deep link whose pixels change, and the catalogue compares the
+    // copy, not a reformat. Biome's HTML a11y rules and its formatter both want to edit the
+    // artefact, so the folder is excluded whole — the same rule as the five above, one directory
+    // higher because these are not read by the app at all.
     "includes": [
       "**",
       "!pnpm-lock.yaml",
@@ -90,6 +98,7 @@
       "!docs/specs/v2-bundles",
       "!docs/specs/v2-prototype",
       "!docs/specs/recovered-branches-triage.md",
+      "!prototypes",
       "!lib/email/bodies.generated.ts"
     ]
   },

@@ -69,6 +69,12 @@ tests/parity/artifacts/
 # committed half is `docs/` itself, and tests/docs-source.test.ts is what holds the two equal.
 /.docs-bundle/
 
+# The prototype catalogue's build output (#1405): `node scripts/build-prototype-catalog.mjs --out
+# .catalog-site` writes `index.html`, `catalog.json` and a verbatim copy of every prototype under
+# `p/`. It is a build artifact and Vercel's deploy input — never committed; the committed half is
+# `prototypes/` plus `docs/`, and `.github/workflows/prototype-catalog.yml` rebuilds it on merge.
+/.catalog-site/
+
 # The demo walkthrough's captures (`node scripts/demo-walkthrough.mjs`): 20 screenshots of
 # the live demo branch, ~6 MB, beside the run's own report.json. The committed half is
 # `docs/operations/demo-walkthrough.md` — the steps, the routes, the expected text — on the same
