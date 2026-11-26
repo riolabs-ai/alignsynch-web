@@ -28,6 +28,32 @@ The shipped case is `/admin/spec/ui-v2` (2026-11-26): the rail's **UI Specs v2**
 `https://alignsynch-v2-docs-preview.vercel.app/`. It replaced the Project Spec submenu's last row
 (`Docs — draft pages`), which was the only other way into the drafts.
 
+## Why a rewrite is not the answer (measured)
+
+The obvious alternative is to **mount** the drafts at an internal path — a `rewrites()` entry in
+`next.config.mjs` mapping a prefix onto the docs deployment — so the row points at a path on our own
+origin and nothing leaves the app. That cannot work against this deployment, and the measurement is
+the whole argument:
+
+```text
+GET https://alignsynch-v2-docs-preview.vercel.app/          → 307 → https://alignsynch-v2-spec-docs.vercel.app/
+GET https://alignsynch-v2-spec-docs.vercel.app/             → 200, 44 707 bytes
+  href/src attributes: 59 distinct root-absolute values (`/guides/…`, `/assets/…`, `/theme.js`, `/`)
+                       0 relative, 3 absolute (Google Fonts only)
+```
+
+The docs app links with **root-absolute** addresses. Served under `/spec-docs/`, its own navigation
+(`/guides/initiator/payment.html`), its logo (`/assets/brand/alignsynch-logo.png`) and its script
+(`/theme.js`) would all resolve against **our** origin, where none of them exist — the first click on
+the first page is a 404. Making the prefix work would mean proxying `/guides`, `/assets`, `/theme.js`
+and `/` as well, and `/` is this product's own marketing home. So the door redirects and the click
+announces itself; a mount would be a surface that renders once and dead-ends.
+
+The docs deployment also answers no `X-Frame-Options` and no CSP `frame-ancestors`, so an `<iframe>`
+mount is _technically_ possible — and is the fallback if the owner ever wants the drafts inside the
+shell. It is not the default because it nests a second app's chrome inside the admin column, loses
+the address (no deep link, no back button) and hides the drafts' own navigation behind a scroll frame.
+
 ## Why the row carries `leaving`
 
 `components/layout/nav-menus.tsx::NavRow` already draws a departure correctly — `LeavingLink`, which
