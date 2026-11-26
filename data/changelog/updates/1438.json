@@ -1,0 +1,9 @@
+{
+  "pr": 1438,
+  "date": "2026-11-26",
+  "area": "infra",
+  "summary": "The prototype catalogue carries the 329 files its 170 pages reference into `.catalog-site` and gates every published page's asset refs against the built site, so a page with a 404 stylesheet fails the build instead of shipping.",
+  "reader_impact": "A person opening any V2 prototype at alignsynch-mockups.vercel.app sees the page as it was drawn — stylesheet, logo, fonts and scripts — instead of bare text.",
+  "specs": ["docs/operations/prototype-catalog.md"],
+  "risk": "low"
+}
