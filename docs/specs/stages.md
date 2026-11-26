@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Stages · prev [Help Center design spec (handoff)](spec-help-center/README.md) · next [The two-party flow](two-party-flow.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Stages · prev [Settings & integrations](settings-integrations.md) · next [The two-party flow](two-party-flow.md)
 
 <!-- docs-nav:end -->
 
@@ -122,6 +122,6 @@ stage.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Stages · prev [Help Center design spec (handoff)](spec-help-center/README.md) · next [The two-party flow](two-party-flow.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Stages · prev [Settings & integrations](settings-integrations.md) · next [The two-party flow](two-party-flow.md)
 
 <!-- docs-nav:end -->
