@@ -41,6 +41,39 @@ An empty prefix means a file keeps its path relative to the source directory; `-
 <dir>[:<prefix>]` declares an extra one, and two sources claiming the same catalogue path is a
 refusal rather than a last-write-wins.
 
+## The assets beside the pages (#1436)
+
+A prototype page is an artefact and its `src`/`href` are its own words, so the catalogue adapts to
+them: the file a page points at is published **at the path the page looks for**, not one the builder
+chose. Until #1436 only `.html` was carried, so 170 pages published with none of their `css/`, `js/`,
+`images/` or `fonts/` — every V2 prototype rendered unstyled on the live site while the row count
+stayed green.
+
+| Question                | Answer                                                                                                                                                                                                                |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| What is committed?      | only what a tracked page references: **329 files, 22.7 MB** (135 png · 57 js · 45 css · 42 woff2 · 8 avif · 41 linked md · 1 json). The authoring tree is 370 MB — `.bak-*`, `reference/` and unlinked files stay out |
+| How is it imported?     | `node scripts/import-prototype-assets.mjs --from ~/Desktop/dev.local/alignsynch` (the directory that _contains_ `project-spec/`); `--dry-run` prints the plan, `--report <file>` writes the page → target JSON        |
+| What does the build do? | copies each page, then resolves every relative ref on it and copies that file to the same catalogue path; a stylesheet is followed one hop for `url(…)` so `@font-face` fonts arrive with the CSS                     |
+| What is not an asset?   | root-relative refs (`/pricing`, `/admin/docs`) are the app's routes and are neither copied nor checked; `#anchor` fragments and external URLs are ignored                                                             |
+
+Two failure modes, deliberately different:
+
+| Ref                                                      | Verdict    | What happens                                                                                               |
+| -------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------- |
+| points at a css/js/image/font/json that nothing provides | **broken** | build exits 1 naming `page -> target`. Budget is zero — this is the class #1436 shipped                    |
+| points at a sibling `.html` that exists nowhere          | **dead**   | printed as `dead: page -> target`, build still exits 0. No copy can fix it; it is prototype-owner evidence |
+
+Every build prints the counts it judged, so a catalogue whose pages have nothing to check cannot pass
+by having nothing to check:
+
+```text
+assets: 411 copied (27.1 MB) | pages with no local refs: 49
+assets checked: 1664 | assets broken: 0 | dead refs: 33 (reported, not failing)
+```
+
+`--min-assets 300` is the floor under those numbers (CI passes it); it is well below today's count and
+still refuses a build whose copy pass found no pages to read.
+
 ## What the two columns mean
 
 The catalogue used to guess both. It no longer does.
@@ -68,18 +101,23 @@ repository. A filename that happens to contain `v2` is not evidence and is not r
 pnpm catalog:build   # node scripts/build-prototype-catalog.mjs --out .catalog-site …
 ```
 
-which is exactly what CI runs: `--min-entries 220 --fail-on-untracked --require
-project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html`. The three guards exist
-because a build that quietly loses most of its rows, or fills a date in from a file's mtime, is worse
-than a red workflow:
+which is exactly what CI runs: `--min-entries 220 --min-assets 300 --fail-on-untracked --require
+project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html`. The guards exist
+because a build that quietly loses most of its rows, or fills a date in from a file's mtime, or
+publishes pages whose stylesheets 404, is worse than a red workflow:
 
 - `--min-entries 220` — a checkout that cannot see the tree fails instead of publishing a short
   catalogue over a complete one (225 rows ship today; the floor leaves room to retire a few).
+- `--min-assets 300` — the asset gate must have judged something: 1 664 refs are resolved today, and
+  a build that checked none of them is a broken copy pass, not a clean catalogue.
 - `--require <path>` — the deep link in the card, so the one URL the release note names can never
   fall out of the set silently.
 - `--fail-on-untracked` — a prototype that git does not track gets an mtime guess. The builder marks
   that row (`dateSource: "mtime"`, amber `*`); CI refuses it outright, so a guess can never ship as
   a date.
+
+Broken asset refs are not a flag: they are a hard exit 1 with `page -> target` named, and the only
+budget is zero.
 
 `.catalog-site/` is gitignored: it is the deploy input, not a committed artifact.
 

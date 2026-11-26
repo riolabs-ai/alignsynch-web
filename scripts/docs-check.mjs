@@ -56,8 +56,21 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
  * Directories no link rule can say anything about: generated output, the vendor drop, other
  * checkouts. `lib/quizhub/` is a vendored template (gitignored) and its HTML-ish markdown is not
  * this repo's prose.
+ *
+ * `prototypes/` is the artefact drop (#1405, #1436): the approved design handoffs, committed
+ * byte-identical to what the catalogue serves, with the prose and reference documents beside them
+ * that their *pages* link to. They are never imported by the app and never edited here — biome
+ * already excludes the whole folder for the same reason — so a `../assets/…png` inside one of them
+ * is a finding about a design document, not about this tree. Without the exclusion the gate reads
+ * those documents as pages of the docs hub and fails on links into the authoring tree they came
+ * from, which is not a checkout this repository can resolve.
+ *
+ * `.catalog-site/` is the catalogue's own build output (gitignored, `pnpm catalog:build`): the same
+ * generated-output class as `.next/`, and walking it makes a local run judge the deploy input
+ * instead of the tree.
  */
 const SKIP_DIRS = new Set([
+  ".catalog-site",
   ".git",
   ".next",
   ".datacheck",
@@ -65,6 +78,7 @@ const SKIP_DIRS = new Set([
   ".vercel",
   ".worktrees",
   "node_modules",
+  "prototypes",
 ]);
 
 /** Every markdown file in the checkout that a reader could be handed. */

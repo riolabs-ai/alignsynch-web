@@ -45,6 +45,10 @@ env:
   # 220 leaves room to retire a handful without a red run, while still failing a
   # checkout that cannot see the tree at all.
   MIN_ENTRIES: 220
+  # The asset floor (#1436): 1 664 local refs are resolved today. A build that checked
+  # nothing — because the glob moved, or the copy pass stopped finding pages — cannot
+  # pass by having nothing to check. Broken refs are a hard zero in the builder, not here.
+  MIN_ASSETS: 300
 
 jobs:
   deploy:
@@ -112,12 +116,23 @@ jobs:
       # No --allow-empty here on purpose: this step only runs when the tree was
       # found, so the builder keeps its strict default and a source that vanished
       # between the two steps still fails loudly.
+      #
+      # THIS IS THE ASSET GATE (#1436). The builder copies every local ref each page
+      # points at, then re-reads the built site and prints:
+      #
+      #   assets: N copied (M MB) | pages with no local refs: N
+      #   assets checked: N | assets broken: 0 | dead refs: N (reported, not failing)
+      #
+      # A missing css/js/image/font is `broken` and exits 1. A link to a page that
+      # exists nowhere is `dead`, printed by name and not failed — it is prototype-owner
+      # evidence and no copy can fix it.
       - name: build catalog
         if: steps.root.outputs.present == 'true'
         run: |
           node scripts/build-prototype-catalog.mjs \
             --out "$CATALOG_OUT" \
             --min-entries "$MIN_ENTRIES" \
+            --min-assets "$MIN_ASSETS" \
             --fail-on-untracked \
             --require "$DEEP_LINK"
 
@@ -158,7 +173,7 @@ jobs:
             echo "|---|---|"
             echo "| commit | \`${GITHUB_SHA:0:8}\` |"
             echo "| required row | \`$DEEP_LINK\` |"
-            echo "| floor | $MIN_ENTRIES rows |"
+            echo "| floor | $MIN_ENTRIES rows · $MIN_ASSETS asset refs |"
             echo "| tree | prototypes/ present: ${{ steps.root.outputs.present }} |"
             echo "| site | $SITE |"
           } >> "$GITHUB_STEP_SUMMARY"

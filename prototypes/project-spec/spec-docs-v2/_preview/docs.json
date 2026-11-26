@@ -1,0 +1,179 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "AlignSynch",
+  "description": "See where you stand with the people who matter, and talk it through.",
+  "theme": "mint",
+  "colors": {
+    "primary": "#37474F",
+    "light": "#08ADD5",
+    "dark": "#2A373E"
+  },
+  "logo": {
+    "light": "/assets/brand/alignsynch-logo.png",
+    "dark": "/assets/brand/alignsynch-logo.png"
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Project Spec 2.0",
+        "groups": [
+          {
+            "group": "Overview",
+            "pages": [
+              "scope/index"
+            ]
+          },
+          {
+            "group": "Validation",
+            "expanded": true,
+            "pages": [
+              "scope/validation"
+            ]
+          },
+          {
+            "group": "Story",
+            "pages": [
+              "scope/01-play-with-aspects",
+              "scope/02-register",
+              "scope/03-invite",
+              "scope/04-opinions",
+              "scope/05-share",
+              "scope/06-discuss"
+            ]
+          },
+          {
+            "group": "Around the Story",
+            "pages": [
+              "scope/07-billing",
+              "scope/08-coaches",
+              "scope/09-admin",
+              "scope/10-website",
+              "scope/11-launch-and-operations"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Builder Docs",
+        "groups": [
+          {
+            "group": "Introduction",
+            "pages": [
+              "start/what-is-alignsynch",
+              "start/quickstart",
+              "start/core-concepts",
+              "start/plans-and-trial"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "groups": [
+          {
+            "group": "Initiator",
+            "pages": [
+              "guides/initiator/pick-a-template",
+              "guides/initiator/set-up-details-settings-and-aspects",
+              "guides/initiator/create-your-account",
+              "guides/initiator/send-the-invite",
+              "guides/initiator/edit-a-draft-or-sent-invite",
+              "guides/initiator/copy-resend-or-cancel-an-invite",
+              "guides/initiator/if-a-draft-cant-be-created",
+              "guides/initiator/my-relationships-and-start",
+              "guides/initiator/my-templates",
+              "guides/initiator/your-7-days-free",
+              "guides/initiator/when-a-relationship-pauses",
+              "guides/initiator/add-a-card-or-take-your-extra-week",
+              "guides/initiator/payment"
+            ]
+          },
+          {
+            "group": "Counterparty",
+            "pages": [
+              "guides/counterparty/accept-or-decline-an-invite",
+              "guides/counterparty/when-a-relationship-pauses",
+              "guides/counterparty/save-these-aspects-as-a-template",
+              "guides/counterparty/ask-to-be-removed"
+            ]
+          },
+          {
+            "group": "Both People",
+            "pages": [
+              "guides/shared/answer-the-assessment",
+              "guides/shared/results-and-align",
+              "guides/shared/propose-a-change",
+              "guides/shared/chat-and-discussion",
+              "guides/shared/leave-a-relationship"
+            ]
+          },
+          {
+            "group": "Account & Settings",
+            "pages": [
+              "guides/account/account-menu",
+              "guides/account/profile-and-password",
+              "guides/account/delete-your-account"
+            ]
+          },
+          {
+            "group": "Admin",
+            "pages": [
+              "guides/admin/crud-and-permissions",
+              "guides/admin/email-templates",
+              "guides/admin/who-sees-the-admin-rail"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Stages 1–6",
+            "pages": [
+              "reference/stages/stage-1-details",
+              "reference/stages/stage-2-settings",
+              "reference/stages/stage-3-aspects",
+              "reference/stages/stage-4-account",
+              "reference/stages/stage-5-invite",
+              "reference/stages/stage-6-align"
+            ]
+          },
+          {
+            "group": "States & Status",
+            "pages": [
+              "reference/states/relationship-states-by-role",
+              "reference/states/status-chips",
+              "reference/states/answer-scale"
+            ]
+          },
+          {
+            "group": "Emails",
+            "pages": [
+              "reference/emails/invitation",
+              "reference/emails/counterparty-joined",
+              "reference/emails/trial-started",
+              "reference/emails/paused-initiator",
+              "reference/emails/paused-counterparty",
+              "reference/emails/release-notes-and-banners"
+            ]
+          },
+          {
+            "group": "Copy & Glossary",
+            "pages": [
+              "reference/copy/glossary",
+              "reference/copy/retired-terms",
+              "reference/copy/copy-rules"
+            ]
+          },
+          {
+            "group": "Changelog",
+            "pages": [
+              "reference/changelog"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

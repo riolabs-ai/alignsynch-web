@@ -106,7 +106,7 @@
     "format": "biome format --write .",
     "format:check": "biome format .",
     "prototype:save": "node scripts/prototype-save.mjs",
-    "catalog:build": "node scripts/build-prototype-catalog.mjs --out .catalog-site --min-entries 220 --fail-on-untracked --require project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html"
+    "catalog:build": "node scripts/build-prototype-catalog.mjs --out .catalog-site --min-entries 220 --min-assets 300 --fail-on-untracked --require project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "^1.3.1",

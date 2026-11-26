@@ -1,0 +1,9 @@
+{
+  "pr": 1437,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "The prototype catalogue now publishes the `css/`, `js/`, `images/` and `fonts/` its pages point at — 329 files, at the paths the pages already used — and its build fails when a published page's asset reference resolves to nothing.",
+  "reader_impact": "A V2 prototype on `alignsynch-mockups.vercel.app` now renders styled and wordmark-ed instead of unstyled with broken images, and a prototype that ships without its assets turns the build red.",
+  "specs": ["docs/specs/catalogue.md"],
+  "risk": "low"
+}
