@@ -82,7 +82,7 @@ links (45 unique, 69 total)
   /relationship-templates/teacher-student              1
   /relationship-templates/team                         1
   /terms                                               1
-  https://github.com/riolabs-ai/alignsynch/releases/tag/v2.0.0-rc2 1
+  https://github.com/riolabs-ai/alignsynch/releases/tag/v2.1.0 1
 
 counts
   elements  372

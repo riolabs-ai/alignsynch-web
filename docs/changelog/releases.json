@@ -1,6 +1,11 @@
 {
   "releases": [
     {
+      "version": "2.1.0",
+      "theme": "the operator surface",
+      "headline": "`feat(operator)` — an operator's tooling can now change without editing the user platform, and a new coupling fails a test — one read contract, one arrow, a baseline that only shrinks (#1391) (#1395)"
+    },
+    {
       "version": "2.0.0-rc2",
       "theme": "the rail reconciles and the demo lane refuses — a destination can no longer exist in the tree and in nobody's rail, and a demo writer can no longer open production without being stopped.",
       "headline": "`feat(nav)` — the reconciler: a derived inventory plus the authored order, with a visible Unplaced group (#1334)"

@@ -31,7 +31,7 @@ stale.
 
 <!-- docs-hub:begin -->
 
-**208 documents in 9 sections.** Every page carries the same nav block, generated
+**209 documents in 9 sections.** Every page carries the same nav block, generated
 from `docs/docs.json` by `scripts/docs-nav.mjs`; `pnpm docs:check` fails by name when a page is
 missing from this hub, a link does not resolve, or a nav block is stale.
 
@@ -45,7 +45,7 @@ missing from this hub, a link does not resolve, or a nav block is stale.
 - [Records & QA](#records-qa) — 26 documents
 - [Code wiki](#code-wiki) — 15 documents
 - [Diagrams](#diagrams) — 5 documents
-- [Release notes](#release-notes) — 32 documents
+- [Release notes](#release-notes) — 33 documents
 
 ## Start here
 
@@ -299,6 +299,7 @@ One page per release, a view of `CHANGELOG.md`.
 - [`changelog/v2-0-0-rc1-3.md`](changelog/v2-0-0-rc1-3.md) — **v2.0.0-rc1.3** — Which states, notices and plans did the pool make true from each seat?
 - [`changelog/v2-0-0-rc1-4.md`](changelog/v2-0-0-rc1-4.md) — **v2.0.0-rc1.4** — What did the register find when it read every doc's design against the live screen, and what did this cut repair?
 - [`changelog/v2-0-0-rc2.md`](changelog/v2-0-0-rc2.md) — **v2.0.0-rc2** — How does a route stop being lost between the tree and the rail, and how does a demo write stop reaching production?
+- [`changelog/v2-1-0.md`](changelog/v2-1-0.md) — **v2.1.0** — What makes the operator's tooling a surface with a boundary instead of a shelf of admin pages — and what can an operator reach on it now?
 
 <!-- docs-hub:end -->
 
