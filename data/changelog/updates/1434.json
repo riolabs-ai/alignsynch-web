@@ -1,0 +1,9 @@
+{
+  "pr": 1434,
+  "date": "2026-11-26",
+  "area": "flow",
+  "summary": "The answer screen asks the founder's four questions verbatim: `How do YOU FEEL it is now?` · `How do YOU WISH it to SLOWLY change?` · `How do YOU THINK THEY FEEL it is now?` · `How do YOU GUESS THEY WISH it to SLOWLY change?`.",
+  "reader_impact": "Someone answering an assessment reads the same four questions the home page teaches, SLOWLY included, and Advanced Mode finally says what Think and Guess are asking.",
+  "specs": ["docs/specs/flow-stages.md"],
+  "risk": "low"
+}
