@@ -1,11 +1,11 @@
 {
   "version": 1,
   "release": "2.0.0-rc1.2",
-  "main": "601ce260f",
-  "generatedAt": "2026-11-19",
+  "main": "0ebca6823",
+  "generatedAt": "2026-11-26",
   "source": {
     "file": "VALIDATION.csv",
-    "sha256": "b9cd94bcd21dd1a3564a27d3f53fbb8d31b718fd25a62d0bb6ffc4966abb1916"
+    "sha256": "0c14eed64fef1190b89abf8d668a4ab7a2313ef48ad0616acf612deaaee070d8"
   },
   "quotesIncluded": false,
   "rows": [
@@ -1916,7 +1916,7 @@
       "quote": null,
       "requirement": "A unique username is the account identifier.",
       "definitionOfDone": "n/a: replaced.",
-      "today": "Email (or Google) is the identifier; sign-up asks for no username, so there is no Forgot Username to need.",
+      "today": "Email is the identifier and is not editable in the product: /settings shows it read-only and directs a change to support.",
       "release": {
         "v200": "Offset in rc1.2",
         "rc2": "—",
@@ -1926,11 +1926,23 @@
       "evidence": [
         {
           "kind": "code",
-          "ref": "data/pages/register.ts:38"
+          "ref": "data/pages/settings.ts:109"
+        },
+        {
+          "kind": "code",
+          "ref": "data/pages/settings.ts:110"
+        },
+        {
+          "kind": "code",
+          "ref": "app/(mainlayout)/settings/password-actions.ts:32"
+        },
+        {
+          "kind": "code",
+          "ref": "lib/admin/invites.ts:140"
         }
       ],
       "parity": "n.a.",
-      "parityBasis": "Needs both a docs page and a main citation; this row has only one",
+      "parityBasis": "Needs both a docs page and a main citation; no docs page states the email-identifier or read-only decision (docs/specs and docs/guides searched), so only the code citations exist",
       "review": {
         "pm": "Pending",
         "design": "Pending"
@@ -1940,7 +1952,7 @@
         "walt": "Pending"
       },
       "next": null,
-      "note": null
+      "note": "A support-side address change does not strand the account: user_profile keys on user_id and carries no email column (db/migrations/0003_user_profile.sql:33, 0023_admin_role_audit.sql:21), so the profile row and the handle survive an address change made in Neon's managed auth. What it does strand is a live admin invite: the invites are matched by address (lib/admin/invites.ts:140, invite.email === email), so an invitation addressed to the old email is not matched by the new one and must be re-issued. Changing the address is a support act outside the product, not a screen; the password path on the same page is session-authorised (app/(mainlayout)/settings/password-actions.ts:32) and is unaffected by it."
     },
     {
       "id": "APP-29",
