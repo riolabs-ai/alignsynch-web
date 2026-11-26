@@ -67,7 +67,14 @@
  */
 import { act, type ActResult, type ActSql, type ActTransactionRunner } from "@/lib/admin/act";
 import type { AdminAction } from "@/lib/admin/roles";
-import type { AlignmentSetting, Assessment, AssessmentMode, PartyRole } from "@/content/assessment";
+import {
+  zAlignmentSetting,
+  zAssessmentMode,
+  type Assessment,
+  type AssessmentMode,
+  type AlignmentSetting,
+  type PartyRole,
+} from "@/content/assessment";
 import type { BillingInterval, BillingPlanId } from "@/data/billing-plans";
 import { readActiveSubscription } from "@/lib/db/billing";
 import { queryRows } from "@/lib/db/client";
@@ -268,6 +275,24 @@ export interface MemberRelationshipRow {
    * never shows a relationship as writable that the answer sheet would refuse.
    */
   readonly membership: Membership;
+  /**
+   * #1274 — **the Mode and the Setting, as the card states them at a glance.**
+   *
+   * Both are `session` columns, not `relationship` ones: a relationship carries no mode of its own,
+   * and the round is what plays under one (`0031`; `session.mode` is fixed at creation because it
+   * decided which questions were asked). So this reads the **latest** round, which is the round the
+   * card's Gap bar is about — two facts about one screen cannot come from two rounds.
+   *
+   * `null` is a real state, not a missing default: a relationship with no session yet (a draft the
+   * flow never opened, or a row written by the retired member-side create) has no stored mode, and
+   * printing `Basic`/`Soft` there would claim a choice nobody made. The card draws no chip rather
+   * than a guess — the same rule the detail screen's At a Glance card follows.
+   *
+   * Optional for the reason `pause` and `hygiene` are: a view literal written before these columns
+   * were selected carries neither, and the card then draws the two chips it drew before (none).
+   */
+  readonly mode?: AssessmentMode | null;
+  readonly setting?: AlignmentSetting | null;
 }
 
 interface RelationshipQueryRow {
@@ -294,6 +319,13 @@ interface RelationshipQueryRow {
   /** The latest round's ordinal and its date — the At a Glance card's `Latest Round` row. */
   readonly session_round?: number | null;
   readonly session_date?: Date | string | null;
+  /**
+   * #1274 — the latest round's Mode and Setting. `null`/absent for a relationship with no session;
+   * parsed back through the model's own enums, so a stored value neither schema accepts draws no
+   * chip instead of a word the glossary does not have.
+   */
+  readonly session_mode?: string | null;
+  readonly session_setting?: string | null;
   readonly aspect_count: number;
   readonly counterparty_name: string | null;
   readonly initiator_name: string | null;
@@ -416,6 +448,11 @@ const RELATIONSHIP_COLUMNS = `
   -- the round copy's own date. Both are NULL for a draft, which is what makes the row absent
   -- rather than invented.
   s.round AS session_round, sr.date AS session_date,
+  -- #1274 — the Mode and the Setting are the **round's** (session.mode,
+  -- session.alignment_setting), read from the same latest-round join the Gap bar is about. A
+  -- relationship carries neither column; NULL here is "no session yet", which the card draws as no
+  -- chip rather than as a default the person never chose.
+  s.mode AS session_mode, s.alignment_setting AS session_setting,
   -- #1128 — how many Aspects the viewer has answered in the latest round, so the Next Step can
   -- offer "Continue Assessment" rather than "Start Assessment". A count, never a score: the blind
   -- rule is a property of the party read, and this statement only counts rows of the viewer's own.
@@ -441,7 +478,7 @@ const RELATIONSHIP_FROM = `
   FROM relationship rel
   JOIN record t ON t.id = rel.template_id
   LEFT JOIN LATERAL (
-    SELECT si.record_id, si.round
+    SELECT si.record_id, si.round, si.mode, si.alignment_setting
       FROM session si
      WHERE si.relationship_id = rel.id
      ORDER BY si.round DESC
@@ -583,6 +620,11 @@ function relationshipOf(
         : instantOf(row.session_date),
     aspectCount: Number(row.aspect_count),
     viewerAnswered: Number(row.viewer_answered ?? 0),
+    // #1274 — the two session facts the card states in one look. Parsed by the model's own enums:
+    // a stored value the glossary does not have is drift, and the card then draws no chip rather
+    // than repeating it.
+    mode: zAssessmentMode.safeParse(row.session_mode).data ?? null,
+    setting: zAlignmentSetting.safeParse(row.session_setting).data ?? null,
     invite,
     counterpartyName: row.counterparty_name,
     initiatorName: row.initiator_name,

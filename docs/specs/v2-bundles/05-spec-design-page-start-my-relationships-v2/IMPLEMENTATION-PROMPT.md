@@ -54,6 +54,7 @@
 - Status filter toggle-group with counts and a search; filter empty state "Nothing Matches" + Show All; no-relationships empty state leads to the Library; `?filter=paused` deep-links a filter (keep in the app).
 
 - **Card kebab by status** (`reference/kebab-relationship-1280.png`): Live → Open, Leave · Invited → Open, Copy Invite Link, Resend Invite, Cancel Invite · Draft → Open, Continue Setup, Abandon Draft · Paused → Open, Add a Card (Initiator), Leave. Destructive items use the shared neutral confirm; results confirm with the toast (`?notice=abandoned` arrival in the prototype).
+- **The card also states its Mode and Setting (#1274), which the reference does not draw.** The agreement's register row **APP-20** asks the list to show each relationship's **Gap counts, Mode, Setting and last change**, and the card now carries three of the four: the five-mark bar with its legend counts, plus two `neutral` chips under the names — `Basic Mode` / `Advanced Mode` and `Soft` / `Full`, read from the **latest round's** `session.mode` and `session.alignment_setting`. They are the glossary's own words (`content/assessment.ts` `MODE_LABELS` / `SETTING_LABELS`), not screen copy, and they are drawn **only when the relationship has a round**: a draft nobody has configured states neither, because `basic`/`soft` are what a publish would write rather than a choice it has made. The last-change date is still outstanding on this row.
 - The header avatar opens the account menu (bundle 11).
 
 ### States and query params

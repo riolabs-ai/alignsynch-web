@@ -42,6 +42,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { PageCopy } from "@/content/pages";
+import { MODE_LABELS, SETTING_LABELS } from "@/content/assessment";
 import type { AlignmentSummary } from "@/lib/member/alignment-summary";
 import type { CardMenuData } from "@/components/dashboard/card-menu";
 import type { CardMenuWrite, CardMenuWriteId, RelationshipMenuWords } from "@/lib/member/card-menu";
@@ -129,6 +130,9 @@ export function cardWordsOf(copy: PageCopy): RelationshipCardWords & Relationshi
       smallGap: itemLabel(words, "legend-small"),
       gap: itemLabel(words, "legend-gap"),
     },
+    /* #1274 — the glossary's own Mode and Setting words, authored in `content/assessment.ts`. */
+    mode: MODE_LABELS,
+    setting: SETTING_LABELS,
     waitingNext: itemLabel(words, "waiting-next"),
     draftNext: itemLabel(words, "draft-next"),
     pausedNext: itemLabel(words, "paused-next"),
