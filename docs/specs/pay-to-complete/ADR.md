@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../../README.md) › **Specs & design briefs** › ADR · prev [Operator seam](../operator-seam.md) · next [Payer copy inventory](COPY-INVENTORY.md)
+[Docs hub](../../README.md) › **Specs & design briefs** › ADR · prev [The spec register's GitHub join](../spec-register-coverage.md) · next [Payer copy inventory](COPY-INVENTORY.md)
 
 <!-- docs-nav:end -->
 
@@ -201,6 +201,6 @@ keep: it found three fixture defects and the missing charge branch.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../../README.md) › **Specs & design briefs** › ADR · prev [Operator seam](../operator-seam.md) · next [Payer copy inventory](COPY-INVENTORY.md)
+[Docs hub](../../README.md) › **Specs & design briefs** › ADR · prev [The spec register's GitHub join](../spec-register-coverage.md) · next [Payer copy inventory](COPY-INVENTORY.md)
 
 <!-- docs-nav:end -->

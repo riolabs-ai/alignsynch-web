@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Operator seam · prev [Maintenance fields](maintenance-fields.md) · next [ADR](pay-to-complete/ADR.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Operator seam · prev [Maintenance fields](maintenance-fields.md) · next [The spec register's GitHub join](spec-register-coverage.md)
 
 <!-- docs-nav:end -->
 
@@ -108,6 +108,6 @@ fail by name — which is the point: the seam is a test, not a convention.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Specs & design briefs** › Operator seam · prev [Maintenance fields](maintenance-fields.md) · next [ADR](pay-to-complete/ADR.md)
+[Docs hub](../README.md) › **Specs & design briefs** › Operator seam · prev [Maintenance fields](maintenance-fields.md) · next [The spec register's GitHub join](spec-register-coverage.md)
 
 <!-- docs-nav:end -->
