@@ -122,6 +122,7 @@ What the product promises, written down before it was built.
 - [`specs/flow-stages.md`](specs/flow-stages.md) — **The five flow stages (binding spec)** — What are the stages, which fields does stage 1 carry, and where does the flow end?
 - [`specs/maintenance-fields.md`](specs/maintenance-fields.md) — **Maintenance fields** — Which fields does the relationship-maintenance form carry?
 - [`specs/operator-seam.md`](specs/operator-seam.md) — **Operator seam** — Which files are the operator tooling, what may they read, and how is the arrow enforced?
+- [`specs/spec-register-coverage.md`](specs/spec-register-coverage.md) — **The spec register's GitHub join** — Which agreement rows does a GitHub issue name, which rows have none, and would a backfill buy anything?
 - [`specs/pay-to-complete/ADR.md`](specs/pay-to-complete/ADR.md) — **ADR** — Which choice was made, what alternative did it beat, and what does it cost?
 - [`specs/pay-to-complete/COPY-INVENTORY.md`](specs/pay-to-complete/COPY-INVENTORY.md) — **Payer copy inventory** — Which payer strings already exist, at which line, and which are still unwritten?
 - [`specs/pay-to-complete/PAYER-PRESENT.md`](specs/pay-to-complete/PAYER-PRESENT.md) — **Payer-present state** — What does the spec actually say about a charge that needs the payer, and which of its strings may a mockup quote?

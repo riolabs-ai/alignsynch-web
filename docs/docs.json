@@ -290,6 +290,11 @@
           "question": "Which files are the operator tooling, what may they read, and how is the arrow enforced?"
         },
         {
+          "path": "specs/spec-register-coverage.md",
+          "title": "The spec register's GitHub join",
+          "question": "Which agreement rows does a GitHub issue name, which rows have none, and would a backfill buy anything?"
+        },
+        {
           "path": "specs/pay-to-complete/ADR.md",
           "title": "ADR",
           "question": "Which choice was made, what alternative did it beat, and what does it cost?"
