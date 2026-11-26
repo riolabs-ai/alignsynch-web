@@ -23,7 +23,7 @@
 # refuses to write: the block is public release-note content, so a human writes it.
 #
 # **An entry is assembled from the update ledger, not only from commit subjects (issue #1351).** A
-# census says four commits happened; the ledger (`docs/changelog/updates/<pr>.json`, shipped in
+# census says four commits happened; the ledger (`data/changelog/updates/<pr>.json`, shipped in
 # #1346) says per merged pull request what changed, **who notices** (`reader_impact`) and where the
 # rule now lives (`specs[]`) — the two things a subject cannot say. So every bullet whose PR has an
 # entry is joined: `· Who notices: …` and `· Rule: <a link per specs[] path>`. A merged `feat`/`fix`
@@ -115,8 +115,9 @@ RECORD_TOOL="scripts/release-record.mjs"
 LEDGER_TOOL="scripts/release-ledger.mjs"
 # Where the update ledger lives, relative to the root. One spelling, shared with `lib/docs/updates.ts`
 # (`UPDATES_DIR`) — the module is TypeScript and this script is not, so the string is repeated and
-# `tests/release-ledger.test.ts` asserts the two agree.
-LEDGER_DIR="docs/changelog/updates"
+# `tests/release-ledger.test.ts` asserts the two agree. It is `data/` and not `docs/` since #1413: the
+# ledger is the app's record of each merge, and the published docs tree must not carry it.
+LEDGER_DIR="data/changelog/updates"
 
 # A subject is conventional when a lowercase type follows with an optional `(scope)` then a
 # separator: the `: ` the convention specifies, or the ` · ` and ` — ` this repo's commits use for
@@ -290,7 +291,7 @@ subject_class() { # Added | Fixed | Maintenance — every commit lands in one, s
 
 # --- the update ledger ----------------------------------------------------------
 # The ledger is the record a *reader* needs: per merged pull request, `summary`, `reader_impact` and
-# the `specs[]` the rule now lives in (`docs/changelog/updates/<pr>.json`, #1346). A commit subject
+# the `specs[]` the rule now lives in (`data/changelog/updates/<pr>.json`, #1346). A commit subject
 # cannot say "who notices", which is why the rc2 note was a census. So the generator joins it.
 #
 # **One node call for the whole range.** `release-ledger.mjs table` prints every entry as one TSV row

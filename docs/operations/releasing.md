@@ -191,7 +191,7 @@ bash scripts/release.sh --check-limits limits.md
 #### The entry is assembled from the update ledger
 
 A generated entry is not a census of commit subjects. Every bullet whose PR has an entry in
-`docs/changelog/updates/<pr>.json` is **joined**: the entry's `reader_impact` as a `Who notices:`
+`data/changelog/updates/<pr>.json` is **joined**: the entry's `reader_impact` as a `Who notices:`
 clause, and a link per `specs[]` path, pointing at the tagged tree
 (`blob/v<version>/<path>`) so a reader lands on the document as this release shipped it.
 
@@ -218,7 +218,7 @@ is.
 A _published_ entry is not re-judged — the tag fixes it, and a check that can only report published
 text cannot prevent anything. An unreadable ledger is a `release:check` failure (E44 refuses the same
 tree) but **not** a blocked cut: the entry is written with no rows joined, and its preamble says
-which `feat`/`fix` commits arrived unrecorded. A tree with no `docs/changelog/updates/` directory at
+which `feat`/`fix` commits arrived unrecorded. A tree with no `data/changelog/updates/` directory at
 all is a pre-ledger tree and is not refused.
 
 `pnpm changelog` then derives `docs/changelog/v<x-y-z>.md` from the entry, and `pnpm changelog:check`

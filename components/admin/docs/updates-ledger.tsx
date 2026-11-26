@@ -4,7 +4,7 @@
  * `/admin/docs/updates` — the update ledger (the owner ask of 2026-11-21).
  *
  * **A server component, and it has to be.** The rows are derived on the request from
- * `docs/changelog/updates/*.json` and `docs/docs.json` (`lib/docs/tree.ts`, `lib/docs/updates.ts`);
+ * `data/changelog/updates/*.json` and `docs/docs.json` (`lib/docs/tree.ts`, `lib/docs/updates.ts`);
  * there is no state, no filter and no control, so shipping the entries to the browser to re-render
  * what the server already drew would be a cost this screen does not have to pay.
  *

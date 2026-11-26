@@ -3,7 +3,7 @@
  * scripts/release-ledger.mjs — the update ledger, as `scripts/release.sh` needs it.
  *
  * **What this is for.** An entry generated from commit subjects is a census: it says four commits
- * happened and nothing about who noticed. The ledger (`docs/changelog/updates/<pr>.json`) carries,
+ * happened and nothing about who noticed. The ledger (`data/changelog/updates/<pr>.json`) carries,
  * per merged pull request, the `reader_impact` and the `specs[]` the rule now lives in — the two
  * things a subject cannot say and a reader needs. So the generator joins the ledger into each
  * bullet, and `--check` proves the join afterwards.

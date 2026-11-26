@@ -190,9 +190,9 @@ test("the coverage problem names the commit that owed the entry, and clears on a
   const subjects = ["chore(x): something", "feat(admin) · the update ledger (#1341)"];
   assert.match(
     coverageProblem(subjects, ["app/(mainlayout)/admin/docs/updates/page.tsx"]) ?? "",
-    /docs\/changelog\/updates\/<pr>\.json is missing.*feat\(admin\)/,
+    /data\/changelog\/updates\/<pr>\.json is missing.*feat\(admin\)/,
   );
-  assert.equal(coverageProblem(subjects, ["docs/changelog/updates/1341.json"]), null);
+  assert.equal(coverageProblem(subjects, ["data/changelog/updates/1341.json"]), null);
   // The caller supplies *added* paths only (`git diff --diff-filter=A`), so a change that adds no
   // entry is the failing case however much of the ledger it touches.
   assert.match(coverageProblem(subjects, ["lib/docs/updates.ts"]) ?? "", /is missing/);
@@ -231,7 +231,7 @@ test("the check fails a feat commit with no added entry, and passes one with it"
     run: fakeGit({
       ...base,
       "log --format=%s": { status: 0, stdout: "feat(admin): the ledger\n" },
-      "diff --name-only": { status: 0, stdout: "docs/changelog/updates/9999.json\n" },
+      "diff --name-only": { status: 0, stdout: "data/changelog/updates/9999.json\n" },
     }),
   });
   assert.deepEqual(passing.problems, []);

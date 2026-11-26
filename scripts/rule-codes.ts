@@ -227,7 +227,7 @@ export const RULE_CODE_GROUPS: readonly RuleCodeGroup[] = [
   },
   {
     owner:
-      "the update ledger (docs/changelog/updates — scripts/updates-check.ts + lib/docs/updates.ts; the spec `alignsynch-admin-updates-spec.md` calls the rule E-updates)",
+      "the update ledger (data/changelog/updates — scripts/updates-check.ts + lib/docs/updates.ts; the spec `alignsynch-admin-updates-spec.md` calls the rule E-updates)",
     // Two files for the shape the nav and spec-register groups use: the *rule* is
     // `updateEntryProblems` / `coverageProblem` in `lib/docs/updates.ts` (pure — the files and the
     // host's paths arrive as values), the walk that reads the directory, checks each `specs[]` path
@@ -235,7 +235,7 @@ export const RULE_CODE_GROUPS: readonly RuleCodeGroup[] = [
     // the finding and the census line.
     files: ["data-check.ts"],
     codes: {
-      E44: "every `docs/changelog/updates/<pr>.json` parses, names its own PR, carries an ISO-8601 date and one sentence each of `summary` and `reader_impact`, names at least one `docs/` document that exists — and a `feat`/`fix` commit in `<base>..HEAD` must have added one",
+      E44: "every `data/changelog/updates/<pr>.json` parses, names its own PR, carries an ISO-8601 date and one sentence each of `summary` and `reader_impact`, names at least one `docs/` document that exists — and a `feat`/`fix` commit in `<base>..HEAD` must have added one",
     },
   },
   {

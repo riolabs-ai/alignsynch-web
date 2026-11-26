@@ -10,7 +10,7 @@
  * **The template is `/admin/docs/features`.** A server page behind both gates, an `OperatorFrame`, one
  * component whose every string comes from a `data/pages/**` fixture, and a read of the tree on the
  * request. The axis of variation is the data source: the features index reads `CHANGELOG.md` for
- * areas, this reads `docs/changelog/updates/*.json` for entries and joins each `specs[]` path to the
+ * areas, this reads `data/changelog/updates/*.json` for entries and joins each `specs[]` path to the
  * docs manifest so a spec link points at a document that exists.
  *
  * **Request-time, always.** `force-dynamic`: an entry merged a minute ago is on the page on the next

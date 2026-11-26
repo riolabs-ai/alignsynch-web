@@ -93,12 +93,12 @@ function sourceOf(relative: string): string {
 
 /** Every real entry, as the reader in `lib/docs/tree.ts` hands them over. */
 function realFiles() {
-  return readdirSync(`${ROOT}docs/changelog/updates`)
+  return readdirSync(`${ROOT}data/changelog/updates`)
     .filter((name) => name.endsWith(".json"))
     .sort()
     .map((name) => ({
       name,
-      raw: JSON.parse(readFileSync(`${ROOT}docs/changelog/updates/${name}`, "utf8")) as unknown,
+      raw: JSON.parse(readFileSync(`${ROOT}data/changelog/updates/${name}`, "utf8")) as unknown,
     }));
 }
 
@@ -213,7 +213,7 @@ describe("the render — the rows are the files", () => {
       <UpdatesLedger
         copy={adminDocsUpdatesPageCopy}
         rows={[]}
-        unreadable="docs/changelog/updates/1400.json is not valid JSON"
+        unreadable="data/changelog/updates/1400.json is not valid JSON"
       />,
     );
     expect(broken).toContain('data-unreadable="true"');
