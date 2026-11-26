@@ -6,6 +6,78 @@ conventional commits on `main` by [`scripts/release.sh`](scripts/release.sh) —
 and each `## [x.y.z] - <date>` block is also the body of its GitHub Release, byte for byte. Every entry ends
 with a **Known limits** block, because a release that does not say what it cannot do reads as a claim that it can.
 
+## [2.1.0] - 2026-11-26
+
+> **Ledger coverage — 3 `feat`/`fix` commit(s) in this range carry no `docs/changelog/updates/<pr>.json` entry:** #1392, #1387, #1376. Their bullets read as the commit subject alone. The ledger entry — its `reader_impact` and the `specs[]` the rule now lives in — is written in the pull request that makes the change, so this is a finding about the range, never a refusal of the cut.
+
+### Added
+
+- `feat(docs)` — the publish boundary — docs/ is a deterministic versioned bundle (#1398) ([#1407](https://github.com/riolabs-ai/alignsynch/pull/1407)) · Who notices: Nobody sees a different screen yet: `DOCS_SOURCE` unset reads `docs/` from the checkout exactly as before, so `/admin/docs*` and every docs-backed page render unchanged; the archive and its CI artifact are what a deployment opts into. · Rule: [docs/reference/env-spec.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/reference/env-spec.md)
+- `feat(billing)` — the Payment tab opens the customer's own invoices and receipts (#1282) ([#1397](https://github.com/riolabs-ai/alignsynch/pull/1397)) · Who notices: A member with a provider subscription can reach their invoices and receipts from `/dashboard/payment`; a card-free trial and the offline adapter's rows still read "No charges yet." and draw no control. · Rule: [docs/reference/billing.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/reference/billing.md)
+- `feat(operator)` — the operator seam — one read contract, one arrow, a baseline that only shrinks (#1391) ([#1395](https://github.com/riolabs-ai/alignsynch/pull/1395)) · Who notices: No screen changes — the same screens with the same geometry; what moves is that operator tooling can now change without editing the user platform, and a new coupling fails a test. · Rule: [docs/specs/operator-seam.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/specs/operator-seam.md)
+- `feat(admin)` — the operator back office is a capability of its own — `product.operator`, 404 for a build that does not claim it (#1391) ([#1394](https://github.com/riolabs-ai/alignsynch/pull/1394)) · Who notices: Nothing changes on either template this tree ships, and `FLAG_PRODUCT_OPERATOR=0` closes the twenty-three routes on a build that has them — gated, never moved. · Rule: [docs/diagrams/brand-boundary.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/diagrams/brand-boundary.md)
+- `feat(web)` — /glossary publishes docs/glossary.md; reviews stay deferred (#1289) ([#1393](https://github.com/riolabs-ai/alignsynch/pull/1393)) · Who notices: A visitor can look up what an Aspect, a Gap or a Template is without an account, and the words are the schema comments the product is built from; Reviews is deliberately not published because no real reviews exist yet. · Rule: [docs/diagrams/gate.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/diagrams/gate.md), [docs/ui-registry.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/ui-registry.md)
+- `feat(seo)` — the public site publishes a sitemap, and robots names the three private surfaces (#1290) ([#1392](https://github.com/riolabs-ai/alignsynch/pull/1392))
+- `feat(admin)` — the landing is /admin/dashboard and is called Dashboard (#1382) ([#1387](https://github.com/riolabs-ai/alignsynch/pull/1387))
+- `feat(triage)` — deterministic founder-issue classifier: enrich, re-title, label, milestone and ledger — append-only ([#1371](https://github.com/riolabs-ai/alignsynch/pull/1371)) · Who notices: The founder's twelve freeform issues stop being untitled, unlabelled duplicates: each carries an area, a class and a milestone, the original title is kept verbatim, and a standing ledger lists them. · Rule: [docs/operations/issue-intake.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/issue-intake.md)
+- `feat(admin)` — the Delivery history exhibit is a review artifact — one row, one file, no new surface ([#1379](https://github.com/riolabs-ai/alignsynch/pull/1379)) · Who notices: A signed-in reviewer opens `/admin/review?artifact=delivery-history-v1` and reads the Oct 28 → Nov 23 window in the shell, with its release grouping and the rest of the shelf, instead of asking the owner for a file. · Rule: [docs/review/artifacts.json](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/review/artifacts.json)
+- `feat(nav)` — five-section rail — Start surfaced, operations and settings untangled ([#1380](https://github.com/riolabs-ai/alignsynch/pull/1380)) · Who notices: An administrator's rail now opens on the admin landing and groups the six surfaces one operator uses together, while a member still sees the same six `/dashboard/*` rows under one section instead of two. · Rule: [docs/reference/env-spec.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/reference/env-spec.md)
+- `feat(admin)` — a shared submenu over the admin's sibling routes ([#1378](https://github.com/riolabs-ai/alignsynch/pull/1378)) · Who notices: An operator can now move between the admin landing and the console it points at without the header menu; both screens keep their gates, no page changed, and `/admin` still answers 404. · Rule: [docs/specs/ux-reference-patterns.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/specs/ux-reference-patterns.md)
+- `feat(gh)` — watch-mentions — an @alignsynch mention reaches the lead with the steer attached ([#1372](https://github.com/riolabs-ai/alignsynch/pull/1372)) · Who notices: The lead learns of an owner mention on its own, with the steer attached, instead of finding it only when someone pastes the link. · Rule: [docs/operations/mentions.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/mentions.md)
+- `feat(ci)` — mention queue — label a thread the moment `@alignsynch` appears (#1373) ([#1375](https://github.com/riolabs-ai/alignsynch/pull/1375)) · Who notices: Someone who addresses `@alignsynch` sees the thread marked within seconds even when the laptop that polls mentions is off, instead of the question sitting unanswered until they paste the link. · Rule: [docs/operations/issue-intake.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/issue-intake.md)
+- `feat(admin)` — a read-only start page as the admin landing (#1374) ([#1376](https://github.com/riolabs-ai/alignsynch/pull/1376))
+- `feat(ci)` — founder issue intake ([#1367](https://github.com/riolabs-ai/alignsynch/pull/1367)) · Who notices: Someone filing founder feedback gets a classified issue and a reply naming the form, instead of an unlabelled issue that triage must repair before it can be carded. · Rule: [docs/operations/issue-intake.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/issue-intake.md)
+- `feat(release)` — the changelog entry is assembled from the update ledger ([#1352](https://github.com/riolabs-ai/alignsynch/pull/1352)) · Who notices: Whoever reads the next release note gets each change's who-notices clause and the document its rule now lives in, instead of a census of commit subjects. · Rule: [docs/operations/releasing.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/releasing.md)
+- `feat(admin)` — the update ledger — one validated entry per PR, linked into the Admin Specs (#1345) ([#1346](https://github.com/riolabs-ai/alignsynch/pull/1346)) · Who notices: An admin or a stakeholder can see what one merge changed and which document the rule now lives in — from /admin/docs/updates and from each release's own commit rows. · Rule: [docs/specs/admin-updates.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/specs/admin-updates.md)
+
+### Fixed
+
+- `fix(admin)` — the operator gate closes the page but not the action (#1391) ([#1396](https://github.com/riolabs-ai/alignsynch/pull/1396)) · Who notices: Nothing changes on either template this tree ships; `FLAG_PRODUCT_OPERATOR=0` now closes the write path as well as the twenty-three pages, so an action id scraped from an older build cannot be POSTed. · Rule: [docs/diagrams/brand-boundary.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/diagrams/brand-boundary.md)
+- `fix(docs)` — md-normalised must not treat an inline backtick-less < as the start of an HTML tag (#1388) ([#1389](https://github.com/riolabs-ai/alignsynch/pull/1389)) · Who notices: Six pages that `md:normalised:check` could not see are covered again: `docs/operations/mentions.md` alone recovers 434 words, including `labeller`, `queue` and `founder`. · Rule: [docs/operations/repo-layers.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/repo-layers.md)
+- `fix(ci)` — the mention labeller ignores the answer, so answering drains the queue ([#1383](https://github.com/riolabs-ai/alignsynch/pull/1383)) · Who notices: A founder's question stays labelled until it is answered and the label is cleared, instead of the label returning six seconds after the reply. · Rule: [docs/operations/mentions.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/mentions.md)
+- `fix(env)` — env:sync --prune --write is a retire verb — it skips the value pass (#1349) ([#1350](https://github.com/riolabs-ai/alignsynch/pull/1350)) · Who notices: An operator running a prune sees one DELETE and a `prune mode — N declared row(s) not written` line instead of five new rows on the demo scope. · Rule: [docs/operations/resend-inbound.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/operations/resend-inbound.md), [docs/reference/env-spec.md](https://github.com/riolabs-ai/alignsynch/blob/v2.1.0/docs/reference/env-spec.md)
+
+### Maintenance
+
+- `chore(ops)` — repo-hygiene — the weekly offboarding run, with a df delta and an idempotence proof (#1404) ([#1408](https://github.com/riolabs-ai/alignsynch/pull/1408))
+- `docs(ops)` — the unlinked-branch triage — 55 clean branches classified, 1 wanted ([#1403](https://github.com/riolabs-ai/alignsynch/pull/1403))
+- `docs(review)` — land the two artefacts the 271-branch audit recovered — comments mockup v2 + APP-13 (#1400) ([#1402](https://github.com/riolabs-ai/alignsynch/pull/1402))
+- `chore(health)` — re-record the platform record — the 72 h freshness window had expired ([#1386](https://github.com/riolabs-ai/alignsynch/pull/1386))
+- `ops(env)` — refresh the store census after the render (#1338, #1339) ([#1348](https://github.com/riolabs-ai/alignsynch/pull/1348))
+- `ops(env)` — env:sync --prune retires a forbidden row (#1343) ([#1347](https://github.com/riolabs-ai/alignsynch/pull/1347))
+- `chore(health)` — re-record after v2.0.0-rc2 ([#1344](https://github.com/riolabs-ai/alignsynch/pull/1344))
+- `ops(env)` — the declared vault rows name the live project, and env:render refuses a retired endpoint (#1339) ([#1341](https://github.com/riolabs-ai/alignsynch/pull/1341))
+- `ops(mail)` — the demo deployment refuses the Resend account webhook — 410 by deployment identity (#1338) ([#1342](https://github.com/riolabs-ai/alignsynch/pull/1342))
+
+### Known limits
+
+## Known limits
+
+- **The scripts need Node 24.** `engines.node: 24.x` is not advisory. The `.mjs` entry points import
+  TypeScript source through `scripts/ts-modules.mjs`, which relies on Node's type stripping; on Node 18
+  `pnpm hygiene` and `pnpm release:check` die with `ERR_UNKNOWN_FILE_EXTENSION` or
+  `bad option: --disable-warning`. The failure names a file, not the engine, so it reads as a code bug.
+- **The operator surfaces are a build capability, not a permission.** `product.operator` returns 404 for
+  a build that does not claim it; it does not grant a role, and it is not an authorization check. The
+  role gates in front of `/admin/**` are unchanged and still the thing that decides who may act.
+- **One home for operator tooling is still undecided.** The seam exists (one read contract, one arrow, a
+  shrink-only baseline); whether the operator back office becomes a package, its own deployment or its
+  own repo is deliberately deferred. Nothing here makes that cheaper than it was, and nothing here makes
+  it harder.
+- **The prototype catalog is public and unlisted.** 252 HTML prototypes behind `noindex` on
+  `alignsynch-mockups.vercel.app`, rebuilt by hand in this release. No access control; anything shared
+  from it is readable by anyone with the link.
+- **The demo environment reseeds on a schedule driven by one credential.** The reset workflow needs a
+  Neon key scoped to `alignsynch-neon`; when the key's scope drifted, the workflow answered
+  `404 project not found` and the demo went stale for four days before anyone noticed. There is no
+  alarm on that path, only the next scheduled run.
+- **Branch and worktree hygiene is now a script, not a habit.** The repo reached 20 GB and 1,138 local
+  branches because nothing offboarded on merge. `repo-hygiene` prunes and reports, but nothing schedules
+  it yet, so the reclaim is still manual.
+- **32 branches remain held by worktrees** and are deliberately not deleted while those worktrees exist;
+  only the recovered-work bundle (`alignsynch-org/alignsynch-branch-archive`, release `v2026-11-25`) is
+  provably off-machine, and only for the branches deleted on 2026-11-26.
+
 ## [2.0.0-rc2] - 2026-11-21
 
 > **Declared override.** The commit census computes 2.1.0 (minor, 4 commit(s) since v2.0.0-rc1.4); this release is cut as 2.0.0-rc2 by decision: the 2.0.0-rc candidate line continues: 2.0.0 final has never been released and milestone #28 still holds 28 open spec issues (#1294 is the platform-acceptance criterion), so the census minor bump would claim a public line that does not exist; milestone #26 names this candidate; owner decision 2026-11-21 (option B) cuts rc2 now and holds the official number
@@ -2217,3 +2289,4 @@ The admin console, and relationship templates become products.
 [2.0.0-rc1.3]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.2...v2.0.0-rc1.3
 [2.0.0-rc1.4]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.3...v2.0.0-rc1.4
 [2.0.0-rc2]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc1.4...v2.0.0-rc2
+[2.1.0]: https://github.com/riolabs-ai/alignsynch/compare/v2.0.0-rc2...v2.1.0
