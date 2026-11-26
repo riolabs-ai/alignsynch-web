@@ -1,0 +1,9 @@
+{
+  "pr": 1412,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "`pnpm hygiene` now refuses to start on a Node below the `engines.node` this tree declares, naming the required range, the running version and the wrapper that supplies the pin — instead of dying in Node's module loader.",
+  "reader_impact": "Nobody outside the repository — it is an operator script; for the people who run it, a host on the wrong runtime gets one sentence naming both versions rather than `ERR_UNKNOWN_FILE_EXTENSION` pointing at a file that was never wrong.",
+  "specs": ["docs/operations/branch-triage.md"],
+  "risk": "low"
+}

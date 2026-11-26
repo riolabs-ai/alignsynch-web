@@ -503,6 +503,16 @@ $ pnpm hygiene                     # the same run, nothing deleted
   stash    stash@{0}               19 d old · On main: fixture: stale stash
 ```
 
+**The command checks the runtime before it runs, because the failure it replaces sent readers to the
+wrong file.** The script imports a `.ts` rules module, which Node 24 loads by stripping types and Node
+18 cannot load at all: on a host whose `node` is below the `engines.node` this tree declares (`24.x`),
+`pnpm hygiene` died inside Node's module loader with `ERR_UNKNOWN_FILE_EXTENSION` — before reaching a
+line of its own logic, and pointing at a file that was never wrong (#1410). The script was fine; the
+message was the defect. So `prehygiene` runs `scripts/require-node.mjs`, which names the declared range
+and the running version and shows the wrapper that supplies the pin, and
+`scripts/__tests__/repo-hygiene-entry.test.ts` runs the entry point as `package.json` documents it, in
+a throwaway repository, so the suite can no longer be green over a command that cannot start.
+
 **The order is not cosmetic.** Worktrees go first, then the branches they were pinning, then
 `git worktree prune` last. A merged branch cannot be deleted while a worktree holds it checked out, so
 a branch half that ran first would reclaim nothing and report the pinning as permanent.
