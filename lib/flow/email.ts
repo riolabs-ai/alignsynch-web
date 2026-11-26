@@ -130,6 +130,14 @@ export interface InvitationFields {
   readonly templateTitle: string;
   readonly token: string;
   readonly base?: string;
+  /**
+   * #1275 — the personal note the invitation carries, or `null`/absent for none.
+   *
+   * The caller passes the value the row holds (`SendResult.note`), never a paragraph assembled in
+   * the route: the recipient's page and the mailbox have to quote the same words, and the row is
+   * the only place both can read them from.
+   */
+  readonly note?: string | null;
 }
 
 export interface InvitationMessage {
@@ -160,6 +168,7 @@ export async function invitationMessage(fields: InvitationFields): Promise<Invit
     counterparty: fields.counterpartyName,
     template: fields.templateTitle,
     link,
+    note: fields.note ?? null,
   });
   return {
     to: fields.to,

@@ -112,6 +112,14 @@ export interface FlowInvite {
    * `RESEND_LIFETIME_CAP` so the cap is a visible budget rather than a surprise refusal.
    */
   readonly resentCount: number;
+  /**
+   * **What the person who sent it wrote** (#1275) — the invitation's own note, or `null`.
+   *
+   * Optional for the same reason `sentAt` is: every screen fixture written before the note existed
+   * stays valid, and absent is "no note", which is the ordinary state. The production read always
+   * supplies it (`readFlowScreen()`), so a surface that draws the note draws it from the row.
+   */
+  readonly note?: string | null;
   /** The link, once: while the invite is unclaimed, live and the caller holds the raw token. */
   readonly link: string | null;
 }

@@ -86,6 +86,10 @@ export async function POST(
       counterpartyName: sent.counterpartyName.trim(),
       templateTitle: sent.templateTitle,
       token: sent.inviteToken,
+      // #1275 — the note the stage saved before this press, read back off the row. The send
+      // carries no body for it: `saveInviteNote()` already wrote it, and this is the same value the
+      // recipient's page will quote.
+      note: sent.note,
     }),
   ).catch(() => {
     console.error("[invite] the send threw, which it must not — the link is shown in the app");

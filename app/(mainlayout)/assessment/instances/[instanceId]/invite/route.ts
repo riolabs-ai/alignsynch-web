@@ -89,6 +89,8 @@ export async function POST(
       counterpartyName: result.counterpartyName,
       templateTitle: result.templateTitle,
       token: result.inviteToken,
+      // #1275 — a re-invite re-sends the same invitation, so it carries the note that row holds.
+      note: result.note,
     }),
   ).catch(() => {
     console.error("[invite] the re-invite send threw, which it must not — the link is in the app");

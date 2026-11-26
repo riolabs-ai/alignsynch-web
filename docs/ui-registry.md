@@ -23,7 +23,7 @@ How a template picks from this page — the order a new surface is decided in �
 
 - routes: **107** — 68 static, 39 dynamic, from `app/**/page.tsx`
 - component domains: **46** — 410 files under `components/`, 401 of them `.tsx`
-- route handlers: **32** — `app/**/route.ts`, listed below and not a UI surface
+- route handlers: **33** — `app/**/route.ts`, listed below and not a UI surface
 - status: **mock** 17 · **fixture** 81 · **db** 46 · **live** 8 · **prototype** 1
 - templates: Both templates 55 · AlignSynch 54 · QuizHub 42 · No template yet 2
 - capability written as `undocumented`: **0**
@@ -940,6 +940,7 @@ HTTP handlers, not screens: they have no `page.tsx` and render nothing, so they 
 - `/assessment/instances/[instanceId]/answers` — `app/(mainlayout)/assessment/instances/[instanceId]/answers/route.ts`
 - `/assessment/instances/[instanceId]/answers/draft` — `app/(mainlayout)/assessment/instances/[instanceId]/answers/draft/route.ts`
 - `/assessment/instances/[instanceId]/invite` — `app/(mainlayout)/assessment/instances/[instanceId]/invite/route.ts`
+- `/assessment/instances/[instanceId]/note` — `app/(mainlayout)/assessment/instances/[instanceId]/note/route.ts`
 - `/assessment/instances/[instanceId]/send` — `app/(mainlayout)/assessment/instances/[instanceId]/send/route.ts`
 - `/assessment/instances/[instanceId]/steps` — `app/(mainlayout)/assessment/instances/[instanceId]/steps/route.ts`
 - `/assessment/new` — `app/(mainlayout)/assessment/new/route.ts`

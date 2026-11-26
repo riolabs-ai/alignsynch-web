@@ -374,6 +374,35 @@ comparison this panel starts from, and the forced downgrade it arrives with is c
 counterparty now_. `purchase`, `buy` and `save payment method` appear nowhere in the stage — the
 thing being paid for is a membership plan and an activated relationship, and not a checkout.
 
+### The invitation carries a personal note (#1275, register row APP-22)
+
+The column next to the walk opens with **What {name} Sees** and then **Add a note for {name}** — an
+optional paragraph the Initiator writes, which the person addressed reads on the invitation page and
+in the email. It is the one field on this stage whose value is prose rather than a choice, and it is
+the only sentence in the invitation nobody but the sender wrote.
+
+|              |                                                                                                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| field        | a `textarea`, labelled, `maxLength` from `lib/flow/invite-note.ts::INVITE_NOTE_MAX` (400 characters)                                                                                      |
+| stored on    | `session_invite.invite_note` (`0045_invite_note.sql`), written through `saveInviteNote()` while the relationship is `draft`/`pending`                                                     |
+| written when | on the field's committed gesture — a debounce while typing, a blur, and **awaited by the send** (`onBeforeSend`) so the invitation never mails a version the sender has already edited    |
+| read by      | the sender's stage (`screen.invite.note`, so a reload keeps the paragraph), the recipient's `/invite/<token>` first step (`previewInvite().note`), and the invitation mail (`facts.note`) |
+| absent       | `null`, never `''`: a blank note draws no figure on the page and no block in the mail                                                                                                     |
+
+**The note is text, and it is the sender's.** `plainNote()` normalises line endings and strips
+control characters, and nothing escapes or interprets it: the join step prints it with
+`whitespace-pre-line` (React escapes the children) and the mail composes it as a `verbatim` block,
+so the paragraph a person typed is the paragraph that arrives — line breaks included — in a
+text-only client and in the HTML one alike.
+
+**It is not a `{{note}}` placeholder in `content/email-bodies.md`, deliberately.** That body is the
+owner's and an admin may replace it (#1138); the note is a person's paragraph, so an override must
+not be able to drop or reword it, and the note must not go missing because somebody edited the
+template's opening line. The block is composed in `invitationDocument()` from the row's text.
+
+**No note, no refusal.** The field is optional and the stage never blocks on it: a person who writes
+nothing sends exactly the invitation this product sent before the field existed.
+
 ## How this is enforced
 
 - `tests/flow-stages.test.ts` reads `data/pages/lifecycle.ts` and fails unless the stage words are
@@ -402,6 +431,12 @@ thing being paid for is a membership plan and an activated relationship, and not
   is missing or disabled in either state, if `sendDraftInvitation()` starts refusing a send on a
   membership fact again (the trial opens at acceptance, so no membership exists at the send), or if
   this file's stage-5 section drifts back to send-or-draft.
+- `tests/invite-note.test.ts` holds the note's rules (normalisation, the 400-character ceiling counted
+  in characters a person sees, and `null` for a blank one); `tests/stage5-invite-note.test.tsx` holds
+  what stage 5 draws (the field, its `maxLength`, its initial value **from the row**, the counter and
+  the preview quotation); `tests/invite-note-step.test.tsx` holds the recipient's side; and
+  `tests/email-invitation-note.test.ts` holds the mail's, including the absence of the block when the
+  row carries no note and the fact that the owner's body gained no `{{note}}` placeholder.
 - `tests/trial-acceptance.test.ts` holds the anchor: a create and a send write **no**
   `billing_subscription` row, the acceptance writer is exported and account-keyed, and no grant call
   survives in the create path. `tests/claim-trial.test.ts` holds the other side — the claim writes

@@ -185,6 +185,8 @@ function preview(over: Partial<InvitePreview> = {}): InvitePreview {
     viewerRole: null,
     relationshipTitle: "Staying Close",
     templateSummary: "Relationship Basics, answered by Avery and Rowan.",
+    // #1275 — the note is optional on the row; these previews read the ordinary state.
+    note: null,
     mode: "basic",
     setting: "soft",
     aspects: [
