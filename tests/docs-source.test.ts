@@ -20,6 +20,13 @@
  * The bundle here is built by running the real script, not by calling `buildDocsBundle` in-process:
  * the CLI is what CI runs, and a test that bypassed its argument handling would stay green while
  * `node scripts/docs-bundle.ts --out …` failed.
+ *
+ * **And the screen is the same screen (#1399).** The last block renders `/admin/docs/<slug>` for
+ * three known documents twice — once with `DOCS_SOURCE` unset (the checkout) and once with
+ * `DOCS_SOURCE=bundle` — and compares the HTML byte for byte. Reader equality is necessary but not
+ * sufficient: what the boundary promises is that a deployment reading the published archive draws
+ * the page the checkout draws, and the only way to prove that is to render it. Each render asserts
+ * the source it ran under, so a test that quietly rendered the checkout twice cannot pass.
  */
 import { execFileSync } from "node:child_process";
 import { copyFileSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -28,6 +35,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { zstdCompressSync } from "node:zlib";
 
+import type { ReactElement } from "react";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { sha256 } from "@/scripts/docs-bundle";
@@ -41,6 +49,37 @@ import {
   resetDocsSource,
 } from "@/lib/docs/source";
 import { tarEntries, untarEntries } from "@/lib/docs/tar.mjs";
+
+/**
+ * The two gates `/admin/docs/**` sits behind, replaced with a pass (#892, #509).
+ *
+ * They are not what this file is about — a node worker cannot resolve `next/headers`, and the role
+ * policy's own answers are `tests/admin-docs.test.ts`'s subject. What is asserted here is that the
+ * *page*, through its real reader and its real renderer, draws the same HTML from either tree.
+ */
+vi.mock("@/lib/brand-boundary", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/brand-boundary")>();
+  return { ...real, requireAdminProduct: () => {} };
+});
+
+/** The auth module the policy needs, stubbed: a node worker cannot resolve `next/headers`. */
+vi.mock("@/lib/auth/session", () => ({ currentUser: async () => null }));
+
+vi.mock("@/lib/db/user-profiles", () => ({
+  readUserProfileByUserId: async () => null,
+  readUserProfileByHandle: async () => null,
+}));
+
+vi.mock("@/lib/auth/require-role", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/auth/require-role")>();
+  return {
+    ...real,
+    requireAdmin: async () => ({
+      user: { userId: "auth-1", email: "a@b.c", name: "", sessionId: null },
+      role: "admin" as const,
+    }),
+  };
+});
 
 /** The checkout this test runs in. */
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -235,5 +274,73 @@ describe("the switch", () => {
 
     vi.unstubAllEnvs();
     resetDocsSource();
+  });
+});
+
+/**
+ * Three documents a reader actually opens, chosen for the shapes the renderer has to handle: a page
+ * carrying tables and the gate's own measured numbers, a nested one behind two path segments, and a
+ * capture page whose README is mostly images. If the boundary moved a byte anywhere in the body,
+ * the link rewrite, the sibling list or the crumb would show it here.
+ */
+const RENDERED_SLUGS: readonly (readonly string[])[] = [
+  ["operations", "gate.md"],
+  ["wiki", "modules", "app-api.md"],
+  ["qa", "rail-handle", "README.md"],
+];
+
+/** Render one document out of whichever tree `DOCS_SOURCE` names, through the real page module. */
+async function renderUnder(source: "local" | "bundle", slug: readonly string[]): Promise<string> {
+  vi.stubEnv("DOCS_SOURCE", source === "bundle" ? "bundle" : "");
+  vi.stubEnv("DOCS_BUNDLE_DIR", source === "bundle" ? out : "");
+  resetDocsSource();
+  try {
+    // The page's own reader is `docsSource()`; asserting its name here is what makes the render
+    // below evidence about the bundle rather than about a second render of the checkout.
+    expect(docsSource().name, `the page read the ${source} tree`).toBe(source);
+
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { default: AdminDocPage } = await import("@/app/(mainlayout)/admin/docs/[...slug]/page");
+    const page = (await AdminDocPage({
+      params: Promise.resolve({ slug: [...slug] }),
+    })) as ReactElement;
+    return renderToStaticMarkup(page);
+  } finally {
+    vi.unstubAllEnvs();
+    resetDocsSource();
+  }
+}
+
+describe("/admin/docs renders the same page out of either tree", () => {
+  for (const slug of RENDERED_SLUGS) {
+    it(`draws ${slug.join("/")} identically from the bundle and the checkout`, async () => {
+      const local = await renderUnder("local", slug);
+      const bundle = await renderUnder("bundle", slug);
+
+      // Not two empty strings: the page drew the document it names.
+      expect(local).toContain(slug[slug.length - 1].replace(/\.md$/, ""));
+      expect(bundle).toBe(local);
+    });
+  }
+
+  it("draws the hub identically too, which is the manifest rather than one document", async () => {
+    const render = async (source: "local" | "bundle"): Promise<string> => {
+      vi.stubEnv("DOCS_SOURCE", source === "bundle" ? "bundle" : "");
+      vi.stubEnv("DOCS_BUNDLE_DIR", source === "bundle" ? out : "");
+      resetDocsSource();
+      try {
+        expect(docsSource().name).toBe(source);
+        const { renderToStaticMarkup } = await import("react-dom/server");
+        const { default: AdminDocsPage } = await import("@/app/(mainlayout)/admin/docs/page");
+        return renderToStaticMarkup((await AdminDocsPage()) as ReactElement);
+      } finally {
+        vi.unstubAllEnvs();
+        resetDocsSource();
+      }
+    };
+
+    const local = await render("local");
+    expect(local).toContain("/admin/docs/");
+    expect(await render("bundle")).toBe(local);
   });
 });

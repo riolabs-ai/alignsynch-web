@@ -43,12 +43,26 @@
  * neighbours and adds a row to the hub, moving their word sequence without a word of prose changing.
  * Those regions are stripped here because `docs:check` already fails when one is missing, stale or
  * wrong; this file measures the prose the author wrote.
+ *
+ * WHICH TREE (#1399): this checkout's `docs/`, or the published bundle when `DOCS_SOURCE=bundle`
+ * names one — the same switch `/admin/docs` reads through. The archive carries exactly what the
+ * index carries, so the "on disk, not in the index" question this file was fixed for (#1073) cannot
+ * arise there; the formatter's own scope still applies, and is read from this checkout's
+ * `.markdownlint-cli2.jsonc` because that file is not part of the published tree.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  checkoutDocsTree,
+  describeTree,
+  isWritable,
+  namedDocsTree,
+  readOnlyReason,
+  underDocs,
+} from "./docs-tree.mjs";
 import { indexedPaths } from "./git-index.mjs";
 import { markdownFiles } from "./md-style.mjs";
 
@@ -111,9 +125,10 @@ export function digest(text) {
 }
 
 /** Every markdown page under `docs/`, including the generated ones — a no-op there must be a no-op. */
-export function snapshot(root = ROOT, files) {
+export function snapshot(root, files) {
+  const tree = root === undefined ? checkoutDocsTree() : namedDocsTree(root);
   const out = {};
-  for (const rel of files) out[rel] = digest(readFileSync(join(root, rel), "utf8"));
+  for (const rel of files) out[rel] = digest(tree.readText(underDocs(rel)));
   return out;
 }
 
@@ -131,10 +146,33 @@ export function snapshot(root = ROOT, files) {
  * When git cannot answer for the root (no git binary, a fabricated `--root` tree) every walked page
  * is kept, exactly as `git-index.mjs` documents: a check that cannot read the index must never stop
  * checking.
+ *
+ * `root` undefined is this checkout and follows `DOCS_SOURCE`; a named root is always local. Under a
+ * bundle the archive *is* the index's file set, so the scope is the tree's own listing and nothing
+ * is skipped — the `.gitignore`d copies were never in the archive to begin with.
+ *
+ * @param {string} [root]
+ * @returns {{ files: string[], walked: number, skipped: string[] }}
  */
-export function scopedFiles(root = ROOT) {
-  const walked = markdownFiles(root);
-  const index = indexedPaths(root, "docs");
+export function scopedFiles(root) {
+  const tree = root === undefined ? checkoutDocsTree() : namedDocsTree(root);
+  if (tree.name === "bundle") {
+    // The formatter's own scope (`globs` + `ignores`) lives in the checkout's
+    // `.markdownlint-cli2.jsonc`, which is not part of the published tree — so the archive supplies
+    // the bytes and this checkout supplies which pages are in scope. Membership is then the
+    // intersection, which is the same set the local read produces: the bundle carries exactly what
+    // the index carries.
+    const inScope = new Set(markdownFiles(ROOT));
+    const carried = tree
+      .listFiles()
+      .filter((path) => path.endsWith(".md"))
+      .map((path) => `docs/${path}`);
+    const files = carried.filter((path) => inScope.has(path));
+    return { files, walked: carried.length, skipped: carried.filter((p) => !inScope.has(p)) };
+  }
+  const base = root === undefined ? ROOT : root;
+  const walked = markdownFiles(base);
+  const index = indexedPaths(base, "docs");
   const files = index === null ? walked : walked.filter((rel) => index.has(rel));
   const inScope = new Set(files);
   return {
@@ -145,28 +183,36 @@ export function scopedFiles(root = ROOT) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === resolve(fileURLToPath(import.meta.url))) {
-  const { files, skipped } = scopedFiles(ROOT);
+  const check = !process.argv.includes("--write");
+  const tree = checkoutDocsTree();
+  const { files, skipped } = scopedFiles();
   for (const rel of skipped) {
-    process.stdout.write(
-      `skipped  ${rel}  (on disk, not in the index — .gitignore keeps it out of the tree, #1020)\n`,
-    );
+    const why =
+      tree.name === "bundle"
+        ? "(in the archive, out of the formatter's scope — generated or byte-frozen)"
+        : "(on disk, not in the index — .gitignore keeps it out of the tree, #1020)";
+    process.stdout.write(`skipped  ${rel}  ${why}\n`);
   }
   const outOfScope =
     skipped.length === 0
       ? ""
       : ` (${skipped.length} page${skipped.length === 1 ? "" : "s"} on disk out of scope)`;
-  const fresh = snapshot(ROOT, files);
-  if (process.argv.includes("--write")) {
+  const fresh = snapshot(undefined, files);
+  if (!check) {
+    if (!isWritable(tree)) {
+      process.stderr.write(`✗ ${readOnlyReason(tree, "node scripts/md-normalise.mjs --write")}\n`);
+      process.exit(2);
+    }
     writeFileSync(join(ROOT, FIXTURE), `${JSON.stringify(fresh, null, 2)}\n`);
     process.stdout.write(
-      `md-normalise: ${files.length} pages snapshotted into ${FIXTURE}${outOfScope}\n`,
+      `md-normalise: ${files.length} pages snapshotted into ${FIXTURE}${outOfScope} — ${describeTree(tree)}\n`,
     );
   } else {
     const committed = JSON.parse(readFileSync(join(ROOT, FIXTURE), "utf8"));
     const moved = files.filter((rel) => committed[rel] !== fresh[rel]);
     for (const rel of moved) process.stdout.write(`moved  ${rel}\n`);
     process.stdout.write(
-      `md-normalise: ${files.length} pages, ${moved.length} with a changed word sequence${outOfScope}\n`,
+      `md-normalise: ${files.length} pages, ${moved.length} with a changed word sequence${outOfScope} — ${describeTree(tree)}\n`,
     );
     if (moved.length > 0) process.exit(1);
   }

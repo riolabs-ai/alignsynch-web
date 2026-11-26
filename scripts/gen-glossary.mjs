@@ -37,12 +37,24 @@
  *   node scripts/gen-glossary.mjs             # write docs/glossary.md
  *   node scripts/gen-glossary.mjs --check     # exit 1 + the first difference if stale
  *   node scripts/gen-glossary.mjs --root DIR  # generate under DIR (tests)
+ *
+ * WHICH TREE the committed page is read from (#1399): the checkout's `docs/`, or the published
+ * bundle when `DOCS_SOURCE=bundle` names one. `--root` names a tree and is always local, and only a
+ * local tree can be written — a published bundle is compared against, never regenerated.
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { entryFor as navEntryFor, navRegion } from "./docs-nav.mjs";
+import {
+  checkoutDocsTree,
+  describeTree,
+  isWritable,
+  namedDocsTree,
+  readOnlyReason,
+  underDocs,
+} from "./docs-tree.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -263,38 +275,56 @@ function difference(committed, generated) {
 function main(argv) {
   const check = argv.includes("--check");
   const rootFlag = argv.indexOf("--root");
-  const root = rootFlag === -1 ? ROOT : argv[rootFlag + 1];
+  const explicit = rootFlag !== -1;
+  const root = explicit ? argv[rootFlag + 1] : ROOT;
   if (root === undefined) {
     process.stderr.write("✗ --root needs a directory\n");
     return 1;
   }
-  return run(root, check);
+  return run(root, check, explicit);
 }
 
-function run(root, check) {
+/**
+ * `explicit` says whether `root` was named on the command line (a sandbox, another checkout) or is
+ * this checkout. The checkout follows `DOCS_SOURCE`; a named tree is always local, and only a local
+ * tree can be written.
+ */
+function run(root, check, explicit = false) {
   try {
+    const tree = explicit ? namedDocsTree(root) : checkoutDocsTree();
     const index = indexDeclarations(root);
     const entries = TERMS.map((spec) => entryFor(spec, index, root));
     const page = renderPage(entries);
     const target = join(root, OUTPUT);
 
     if (!check) {
+      if (!isWritable(tree)) {
+        process.stderr.write(`✗ ${readOnlyReason(tree, "pnpm glossary")}\n`);
+        return 1;
+      }
       mkdirSync(dirname(target), { recursive: true });
       writeFileSync(target, page);
       process.stdout.write(
-        `✓ wrote ${OUTPUT} — ${entries.length} terms from ${SCHEMA_FILES.length} schema files\n`,
+        `✓ wrote ${OUTPUT} — ${entries.length} terms from ${SCHEMA_FILES.length} schema files — ${describeTree(tree)}\n`,
       );
       return 0;
     }
 
-    const committed = existsSync(target) ? readFileSync(target, "utf8") : null;
+    let committed = null;
+    try {
+      committed = tree.readText(underDocs(OUTPUT));
+    } catch {
+      committed = null; // missing in this tree — the failure below names it
+    }
     if (committed === page) {
-      process.stdout.write(`  ${OUTPUT} is current (${entries.length} terms)\n`);
+      process.stdout.write(
+        `  ${OUTPUT} is current (${entries.length} terms) — ${describeTree(tree)}\n`,
+      );
       return 0;
     }
 
     process.stderr.write(
-      `✗ ${OUTPUT} is stale — ${committed === null ? "the file is missing" : "the committed page is not what the schema comments generate"}\n` +
+      `✗ ${OUTPUT} is stale — ${committed === null ? "the file is missing" : "the committed page is not what the schema comments generate"} — ${describeTree(tree)}\n` +
         `${difference(committed, page)}\n` +
         "  fix: run `pnpm glossary` and commit the page (change the schema comment, never the page)\n",
     );

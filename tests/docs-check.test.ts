@@ -121,10 +121,14 @@ function probe(): string {
   write(root, PAGE, "# Specs page\n\nA body the check has no quarrel with.\n");
   write(root, "docs/README.md", "# Docs\n\n<!-- docs-hub:begin -->\n\n<!-- docs-hub:end -->\n");
 
-  const nav = spawnSync(process.execPath, [NAV, "--write", "--root", root], {
-    encoding: "utf8",
-    env: CHILD_ENV,
-  });
+  const nav = spawnSync(
+    process.execPath,
+    ["--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", NAV, "--write", "--root", root],
+    {
+      encoding: "utf8",
+      env: CHILD_ENV,
+    },
+  );
   if (nav.status !== 0) throw new Error(`docs-nav --write failed: ${nav.stderr}`);
 
   git(root, "init", "--quiet");
@@ -134,10 +138,18 @@ function probe(): string {
 }
 
 function check(root: string) {
-  return spawnSync(process.execPath, [SCRIPT, "--root", root], {
-    encoding: "utf8",
-    env: CHILD_ENV,
-  });
+  // `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON` is what every `pnpm` script that loads a `.ts`
+  // module carries (#1399): `scripts/docs-check.mjs` reaches `lib/docs/source.ts` through
+  // `scripts/docs-tree.mjs`, and the flag keeps the one-line warning out of a stderr this file
+  // asserts is empty.
+  return spawnSync(
+    process.execPath,
+    ["--disable-warning=MODULE_TYPELESS_PACKAGE_JSON", SCRIPT, "--root", root],
+    {
+      encoding: "utf8",
+      env: CHILD_ENV,
+    },
+  );
 }
 
 /** Every hub row out of the generated region, so a case can drop exactly one. */

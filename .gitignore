@@ -63,6 +63,12 @@ data/generated/
 # leg, never committed — the committed half is the manifest and the summaries.
 tests/parity/artifacts/
 
+# The published docs tree (#1398, used by the gate in #1399). `node scripts/docs-bundle.ts --out
+# .docs-bundle` writes `docs.tar.zst` (106 MB) and its `manifest.json` here, and CI's `alignsynch`
+# lane builds it before running the gate with DOCS_SOURCE=bundle. It is a build artifact: the
+# committed half is `docs/` itself, and tests/docs-source.test.ts is what holds the two equal.
+/.docs-bundle/
+
 # The demo walkthrough's captures (`node scripts/demo-walkthrough.mjs`): 20 screenshots of
 # the live demo branch, ~6 MB, beside the run's own report.json. The committed half is
 # `docs/operations/demo-walkthrough.md` — the steps, the routes, the expected text — on the same

@@ -1,0 +1,9 @@
+{
+  "pr": 1411,
+  "date": "2026-11-26",
+  "area": "docs",
+  "summary": "The four docs-reading invariants read through `lib/docs/source.ts`, so CI's `alignsynch` lane builds `docs.tar.zst` and runs the same gate with `DOCS_SOURCE=bundle` while `quizhub` stays `local`.",
+  "reader_impact": "Nobody sees a different screen: both lanes draw `/admin/docs*`, `/glossary` and the spec register identically, and the run prints `docs source: local|bundle` beside its lane.",
+  "specs": ["docs/reference/env-spec.md"],
+  "risk": "low"
+}

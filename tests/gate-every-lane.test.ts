@@ -56,7 +56,12 @@ describe("a step whose input spans lanes runs in every lane", () => {
 
   it("runs the read-only mode, never a regeneration", () => {
     const script = PKG.scripts?.["md:normalised:check"];
-    expect(script).toBe("node scripts/md-normalise.mjs");
+    // The `--disable-warning` flag is the repo's convention for a script that loads TypeScript from
+    // plain node (`docs:bundle`, `env:check`, `ui:registry` all carry it, #1399): the module itself
+    // is still `node scripts/md-normalise.mjs`, and the mode is still the read-only one.
+    expect(script).toBe(
+      "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/md-normalise.mjs",
+    );
     expect(script).not.toContain("--write");
     // The fixture's own test keeps its teeth: the check is added beside it, not in place of it.
     const test = readFileSync(join(ROOT, "tests/md-normalised.test.ts"), "utf8");
