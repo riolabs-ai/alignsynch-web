@@ -25,16 +25,35 @@
  *   node scripts/docs-nav.mjs --check          # 0 = current, 1 = named failure per stale page
  *   node scripts/docs-nav.mjs --check --root . # same, against another tree
  *
+ * WHICH TREE: the checkout's `docs/`, or the published bundle when `DOCS_SOURCE=bundle` names one
+ * (`scripts/docs-tree.mjs`, #1399) — the same switch `/admin/docs` reads through. `--root` names a
+ * tree and is always read locally. `--write` refuses a bundle: a published archive is read, checked
+ * and never regenerated.
+ *
  * NO CLOCK, NO NETWORK, NO DEPENDENCY: the output is a pure function of `docs/docs.json` and the
  * manifest paths, so a run today and a run next week produce the same bytes.
  */
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join, posix, relative, resolve } from "node:path";
+import { writeFileSync } from "node:fs";
+import { dirname, join, posix, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+
+import {
+  checkoutDocsTree,
+  describeTree,
+  isWritable,
+  namedDocsTree,
+  readOnlyReason,
+  underDocs,
+} from "./docs-tree.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
-/** Repository root of this checkout — the default for every path below. */
+/**
+ * Repository root of this checkout — the default for every path below.
+ *
+ * A `root` argument of `undefined` means "this checkout", which is the only tree `DOCS_SOURCE`
+ * chooses between; a root that was named is read locally (`scripts/docs-tree.mjs`).
+ */
 export const DEFAULT_ROOT = resolve(HERE, "..");
 export const MANIFEST = "docs/docs.json";
 export const HUB = "docs/README.md";
@@ -46,16 +65,22 @@ export const HUB_END = "<!-- docs-hub:end -->";
 /** Pages another generator owns whole; they emit the nav themselves through `navRegion()`. */
 export const GENERATED_PAGES = new Set(["docs/glossary.md", "docs/ui-registry.md"]);
 
-function readJson(target) {
-  return JSON.parse(readFileSync(target, "utf8"));
+/** The tree a call reads: this checkout (source-switched) when unnamed, else the named one. */
+function treeFor(root) {
+  return root === undefined ? checkoutDocsTree() : namedDocsTree(root);
+}
+
+/** One manifest's text, out of whichever tree is being read. */
+function readManifestText(root) {
+  return treeFor(root).readText("docs.json");
 }
 
 /**
  * The manifest, flattened: one entry per document, in hub order, each carrying the section it
  * belongs to and the neighbours the nav block links to.
  */
-export function loadManifest(root = DEFAULT_ROOT) {
-  const manifest = readJson(join(root, MANIFEST));
+export function loadManifest(root) {
+  const manifest = JSON.parse(readManifestText(root));
   if (!Array.isArray(manifest.sections)) {
     throw new Error(`${MANIFEST}: "sections" must be an array`);
   }
@@ -91,23 +116,23 @@ export function loadManifest(root = DEFAULT_ROOT) {
   return { manifest, entries, listed: new Set(entries.map((entry) => entry.full)) };
 }
 
-/** Every markdown file under `docs/`, as repo-relative POSIX paths. */
-export function walkDocs(root = DEFAULT_ROOT) {
-  const found = [];
-  const base = join(root, "docs");
-  const walk = (dir) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name.endsWith(".md")) found.push(relative(root, full).split("\\").join("/"));
-    }
-  };
-  if (existsSync(base)) walk(base);
-  return found.sort();
+/**
+ * Every markdown file under `docs/`, as repo-relative POSIX paths.
+ *
+ * Read from the tree, not from a filesystem walk: under `DOCS_SOURCE=bundle` the tree is the
+ * verified archive's file set, which is the index's set by construction.
+ */
+export function walkDocs(root) {
+  const tree = treeFor(root);
+  return tree
+    .listFiles()
+    .filter((path) => path.endsWith(".md"))
+    .map((path) => `docs/${path}`)
+    .sort();
 }
 
 /** The manifest row for one document, for the generators that write a page whole. */
-export function entryFor(full, root = DEFAULT_ROOT) {
+export function entryFor(full, root) {
   const { entries } = loadManifest(root);
   const entry = entries.find((candidate) => candidate.full === full);
   if (!entry) {
@@ -215,19 +240,26 @@ export function withHubRegion(text, region) {
 /**
  * Every way the committed tree disagrees with what this script would write. Each string is a
  * complete, named failure — the caller prints them and returns 1.
+ *
+ * `root` undefined means this checkout (and therefore the source the lane selected); a named root is
+ * always the checkout flavour.
  */
-export function navProblems(root = DEFAULT_ROOT) {
+export function navProblems(root) {
+  const tree = treeFor(root);
   const state = loadManifest(root);
   const problems = [];
 
   for (const entry of state.entries) {
-    const target = join(root, entry.full);
-    if (!existsSync(target)) {
-      problems.push(`${entry.full}: listed in ${MANIFEST} and is not on disk`);
+    if (GENERATED_PAGES.has(entry.full)) continue; // its own generator emits the block
+    let committed;
+    try {
+      committed = tree.readText(underDocs(entry.full));
+    } catch {
+      problems.push(
+        `${entry.full}: listed in ${MANIFEST} and is not in the ${tree.name} docs tree`,
+      );
       continue;
     }
-    if (GENERATED_PAGES.has(entry.full)) continue; // its own generator emits the block
-    const committed = readFileSync(target, "utf8");
     const want = withNav(committed, entry);
     if (committed !== want) {
       const blocks = committed.split(NAV_BEGIN).length - 1;
@@ -241,17 +273,18 @@ export function navProblems(root = DEFAULT_ROOT) {
     }
   }
 
-  const hubTarget = join(root, HUB);
-  if (!existsSync(hubTarget)) {
+  let committedHub;
+  try {
+    committedHub = tree.readText(underDocs(HUB));
+  } catch {
     problems.push(`${HUB}: the hub is missing — run \`pnpm docs:nav\``);
-  } else {
-    const committed = readFileSync(hubTarget, "utf8");
-    const want = withHubRegion(committed, renderHub(state));
-    if (want === null) {
-      problems.push(`${HUB}: no ${HUB_BEGIN} / ${HUB_END} region — the hub cannot be regenerated`);
-    } else if (committed !== want) {
-      problems.push(`${HUB}: the contents region is stale — run \`pnpm docs:nav\``);
-    }
+    return problems;
+  }
+  const wantHub = withHubRegion(committedHub, renderHub(state));
+  if (wantHub === null) {
+    problems.push(`${HUB}: no ${HUB_BEGIN} / ${HUB_END} region — the hub cannot be regenerated`);
+  } else if (committedHub !== wantHub) {
+    problems.push(`${HUB}: the contents region is stale — run \`pnpm docs:nav\``);
   }
 
   return problems;
@@ -261,7 +294,9 @@ function main(argv) {
   const check = argv.includes("--check");
   const write = argv.includes("--write");
   const rootFlag = argv.indexOf("--root");
-  const root = rootFlag === -1 ? DEFAULT_ROOT : resolve(argv[rootFlag + 1] ?? "");
+  // `undefined` is this checkout, which is the only tree the source switch can choose; a named
+  // root is a different tree and is read locally.
+  const root = rootFlag === -1 ? undefined : resolve(argv[rootFlag + 1] ?? "");
   if (!check && !write) {
     process.stderr.write("✗ pass --check (verify) or --write (regenerate)\n");
     return 2;
@@ -271,50 +306,61 @@ function main(argv) {
     return 2;
   }
 
+  const tree = treeFor(root);
   const state = loadManifest(root);
   if (check) {
     const problems = navProblems(root);
     if (problems.length > 0) {
       process.stderr.write(
-        `✗ docs nav is stale (${problems.length} problem${problems.length === 1 ? "" : "s"}):\n`,
+        `✗ docs nav is stale (${problems.length} problem${problems.length === 1 ? "" : "s"}) — ${describeTree(tree)}:\n`,
       );
       for (const problem of problems) process.stderr.write(`  ✗ ${problem}\n`);
       return 1;
     }
     process.stdout.write(
-      `  ${state.entries.length} document(s) carry the current nav, ${HUB} is current\n`,
+      `  ${state.entries.length} document(s) carry the current nav, ${HUB} is current — ${describeTree(tree)}\n`,
     );
     return 0;
   }
 
+  if (!isWritable(tree)) {
+    process.stderr.write(`✗ ${readOnlyReason(tree, "pnpm docs:nav")}\n`);
+    return 2;
+  }
+
   let written = 0;
   for (const entry of state.entries) {
-    const target = join(root, entry.full);
-    if (!existsSync(target) || GENERATED_PAGES.has(entry.full)) continue;
-    const committed = readFileSync(target, "utf8");
+    if (GENERATED_PAGES.has(entry.full)) continue;
+    let committed;
+    try {
+      committed = tree.readText(underDocs(entry.full));
+    } catch {
+      continue;
+    }
     const want = withNav(committed, entry);
     if (committed !== want) {
-      writeFileSync(target, want);
+      writeFileSync(join(root ?? DEFAULT_ROOT, entry.full), want);
       written += 1;
     }
   }
-  const hubTarget = join(root, HUB);
-  if (!existsSync(hubTarget)) {
+  let hubCommitted;
+  try {
+    hubCommitted = tree.readText(underDocs(HUB));
+  } catch {
     process.stderr.write(`✗ ${HUB} does not exist — the hub is authored once, then generated\n`);
     return 1;
   }
-  const hubCommitted = readFileSync(hubTarget, "utf8");
   const hubWant = withHubRegion(hubCommitted, renderHub(state));
   if (hubWant === null) {
     process.stderr.write(`✗ ${HUB}: no ${HUB_BEGIN} / ${HUB_END} region\n`);
     return 1;
   }
   if (hubWant !== hubCommitted) {
-    writeFileSync(hubTarget, hubWant);
+    writeFileSync(join(root ?? DEFAULT_ROOT, HUB), hubWant);
     written += 1;
   }
   process.stdout.write(
-    `✓ docs nav — ${state.entries.length} documents, ${state.manifest.sections.length} sections, ${written} file(s) rewritten\n`,
+    `✓ docs nav — ${state.entries.length} documents, ${state.manifest.sections.length} sections, ${written} file(s) rewritten — ${describeTree(tree)}\n`,
   );
   return 0;
 }

@@ -61,12 +61,25 @@
  *   node scripts/gen-ui-registry.mjs             # write docs/ui-registry.md
  *   node scripts/gen-ui-registry.mjs --check     # exit 1 + what drifted, naming it
  *   node scripts/gen-ui-registry.mjs --root DIR  # generate under DIR (tests)
+ *
+ * WHICH TREE the page is compared against (#1399): the checkout's `docs/`, or the published bundle
+ * when `DOCS_SOURCE=bundle` names one. The *structure* is always derived from the checkout's
+ * `components/` and `app/` — the registry describes this tree's surfaces — while the page it writes
+ * is the docs tree's, and a published bundle is compared against, never regenerated.
  */
 import { existsSync, readFileSync, readdirSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { entryFor, navRegion } from "./docs-nav.mjs";
+import {
+  checkoutDocsTree,
+  describeTree,
+  isWritable,
+  namedDocsTree,
+  readOnlyReason,
+  underDocs,
+} from "./docs-tree.mjs";
 
 const DEFAULT_ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -730,8 +743,9 @@ function fileDrift(committed, structure) {
   return { added, removed };
 }
 
-async function run(root, check) {
+async function run(root, check, explicit = false) {
   ROOT = root;
+  const tree = explicit ? namedDocsTree(root) : checkoutDocsTree();
   const structure = derive();
   const entries = await loadJudgement(root);
 
@@ -753,18 +767,27 @@ async function run(root, check) {
   const target = join(root, OUTPUT);
 
   if (!check) {
+    if (!isWritable(tree)) {
+      process.stderr.write(`✗ ${readOnlyReason(tree, "pnpm ui:registry")}\n`);
+      return 1;
+    }
     writeFileSync(target, page);
     const files = structure.domains.reduce((sum, domain) => sum + domain.count, 0);
     process.stdout.write(
-      `✓ wrote ${OUTPUT} — ${structure.routeSurfaces.length} routes, ${structure.domains.length} domains, ${files} files, ${entries.length} entries\n`,
+      `✓ wrote ${OUTPUT} — ${structure.routeSurfaces.length} routes, ${structure.domains.length} domains, ${files} files, ${entries.length} entries — ${describeTree(tree)}\n`,
     );
     return 0;
   }
 
-  const committed = existsSync(target) ? readFileSync(target, "utf8") : null;
+  let committed = null;
+  try {
+    committed = tree.readText(underDocs(OUTPUT));
+  } catch {
+    committed = null; // missing in this tree — the failure below names it
+  }
   if (committed === page) {
     process.stdout.write(
-      `  ${OUTPUT} is current (${structure.routeSurfaces.length} routes, ${structure.domains.length} domains, ${entries.length} entries)\n`,
+      `  ${OUTPUT} is current (${structure.routeSurfaces.length} routes, ${structure.domains.length} domains, ${entries.length} entries) — ${describeTree(tree)}\n`,
     );
     return 0;
   }
@@ -787,18 +810,19 @@ async function run(root, check) {
 function main(argv) {
   const check = argv.includes("--check");
   const rootFlag = argv.indexOf("--root");
-  const root = rootFlag === -1 ? ROOT : argv[rootFlag + 1];
+  const explicit = rootFlag !== -1;
+  const root = explicit ? argv[rootFlag + 1] : ROOT;
   if (root === undefined) {
     process.stderr.write("✗ --root needs a directory\n");
     return 1;
   }
-  return { root, check };
+  return { root, check, explicit };
 }
 
 const args = main(process.argv.slice(2));
 if (typeof args === "number") process.exitCode = args;
 else {
-  run(args.root, args.check).then(
+  run(args.root, args.check, args.explicit).then(
     (code) => {
       process.exitCode = code;
     },

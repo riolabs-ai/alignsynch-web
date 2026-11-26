@@ -87,6 +87,19 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
 
+      # THE PUBLISH BOUNDARY, USED (#1399, parent #1398). `docs/` can be published as one
+      # deterministic `docs.tar.zst` plus a per-file `manifest.json`, and `lib/docs/source.ts` reads
+      # either that archive or the checkout behind `DOCS_SOURCE`. A switch nobody sets is dead code,
+      # so this lane sets it: the `alignsynch` leg (the deployment that ships the archive) builds the
+      # bundle and then runs the *same* gate with `DOCS_SOURCE=bundle`, and the four docs invariants
+      # judge the published tree instead of the checkout. The `quizhub` leg stays
+      # `DOCS_SOURCE=local`, because a boundary exercised on one side only is a branch nobody has
+      # compiled. The bundle is a build artifact (`/.docs-bundle/` is gitignored), and it is verified
+      # against its manifest on every open — see scripts/docs-tree.mjs and lib/docs/source.ts.
+      - name: docs bundle (the alignsynch leg reads the published tree)
+        if: matrix.brand == 'alignsynch'
+        run: node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/docs-bundle.ts --out .docs-bundle
+
       # Issue #138: `docs/glossary.md` is generated from the schema comments, so a comment
       # edited without regenerating the page is drift CI can see and no local typecheck can.
       # This step *regenerates* the page and fails on any byte that differs — the issue's
@@ -118,6 +131,12 @@ jobs:
       - name: verify (bash scripts/verify.sh)
         env:
           GATE_LANE: auto
+          # Two legs, two sources, one definition of the gate (#1399). `alignsynch` judges the
+          # published bundle this lane just built; `quizhub` judges the checkout. `verify.sh`
+          # refuses a bundle it cannot find rather than falling back, and prints the resolved
+          # source on its lane line, so each leg states which tree it was green about.
+          DOCS_SOURCE: ${{ matrix.brand == 'alignsynch' && 'bundle' || 'local' }}
+          DOCS_BUNDLE_DIR: ${{ matrix.brand == 'alignsynch' && '.docs-bundle' || '' }}
         run: bash scripts/verify.sh
 
       # The diagnostic half of brand parity (#171). `pnpm parity` never commits HTML — the

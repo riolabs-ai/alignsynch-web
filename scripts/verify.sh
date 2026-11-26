@@ -11,6 +11,22 @@
 # Usage:   bash scripts/verify.sh
 #          GATE_LANE=full bash scripts/verify.sh   # force the code lane
 #
+# THE DOCS SOURCE (#1399). Four invariants read `docs/` — the glossary page, the nav block on every
+# page, the md-normalised fixture and the UI registry — and they read it through
+# `scripts/docs-tree.mjs`, which is `lib/docs/source.ts` behind a switch:
+#
+#   DOCS_SOURCE=local    the checkout's `docs/` (the default; says so on the run's own line)
+#   DOCS_SOURCE=bundle   a published `docs.tar.zst` in DOCS_BUNDLE_DIR, verified against its
+#                        manifest.json before a byte of it is trusted
+#
+# This script passes both through and prints the resolved source beside the lane, so a green run
+# says which tree it was green about. It does **not** build the bundle: `ci.yml`'s `alignsynch` leg
+# runs `node scripts/docs-bundle.ts --out .docs-bundle` first and then the same gate with
+# DOCS_SOURCE=bundle, while the `quizhub` leg keeps `DOCS_SOURCE=local` — two lanes, two sources,
+# the same assertions. A missing or malformed bundle is a refusal, never a quiet fall back to the
+# checkout: a lane that asked for the archive and got the checkout back would report a green it did
+# not earn.
+#
 # LANES — the gate costs what the change costs (docs/operations/repo-layers.md)
 #
 # One job, one script, four depths. The lane is resolved once, up front, from
@@ -183,6 +199,34 @@ EXPECTED_PNPM="12.16.1"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+# --- the docs source (#1399) -------------------------------------------------
+# Resolved once, before any step: the four docs invariants read through it, and the lane line names
+# it. Refused by name rather than folded into `local` — see the header for why a quiet fallback is
+# the one failure this must not have.
+DOCS_SOURCE="${DOCS_SOURCE:-local}"
+case "$DOCS_SOURCE" in
+  local) ;;
+  bundle)
+    if [ -z "${DOCS_BUNDLE_DIR:-}" ]; then
+      printf '✗ DOCS_SOURCE=bundle needs DOCS_BUNDLE_DIR — the directory holding docs.tar.zst and manifest.json\n' >&2
+      exit 2
+    fi
+    for file in manifest.json docs.tar.zst; do
+      if [ ! -f "$DOCS_BUNDLE_DIR/$file" ]; then
+        printf '✗ DOCS_SOURCE=bundle: %s holds no %s\n' "$DOCS_BUNDLE_DIR" "$file" >&2
+        printf '  build it first:  node scripts/docs-bundle.ts --out %s\n' "$DOCS_BUNDLE_DIR" >&2
+        exit 2
+      fi
+    done
+    export DOCS_BUNDLE_DIR
+    ;;
+  *)
+    printf '✗ DOCS_SOURCE=%s is not a docs source — expected local | bundle\n' "$DOCS_SOURCE" >&2
+    exit 2
+    ;;
+esac
+export DOCS_SOURCE
+
 # --- presentation ------------------------------------------------------------
 if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
   C_BOLD=$'\033[1m'; C_DIM=$'\033[2m'; C_RED=$'\033[31m'; C_GRN=$'\033[32m'; C_YEL=$'\033[33m'
@@ -208,10 +252,21 @@ secs() { # ms -> "1.2s"
   printf '%s.%ss' "$(( $1 / 1000 ))" "$((( $1 % 1000) / 100))"
 }
 
+# The resolved docs source (#1399), for the lane line and the summary. Both lanes print one, so a
+# green run always says which tree it was green about.
+docs_source_line() {
+  if [ "$DOCS_SOURCE" = bundle ]; then
+    printf 'bundle (%s — docs.tar.zst verified against its manifest)' "$DOCS_BUNDLE_DIR"
+  else
+    printf 'local (docs/ in this checkout)'
+  fi
+}
+
 summary() {
   local i name ms total=0
   printf '\n%s── gate summary ──%s\n' "$C_DIM" "$C_OFF"
   printf '%s  lane %-42s %s%s\n' "$C_DIM" "$LANE" "${LANE_REASON}" "$C_OFF"
+  printf '%s  docs source: %s%s\n' "$C_DIM" "$(docs_source_line)" "$C_OFF"
   for i in "${!STEP_NAMES[@]}"; do
     name="${STEP_NAMES[$i]}"
     ms="${STEP_MS[$i]}"
@@ -473,6 +528,10 @@ fi
 
 printf '%s%s lane=%s%s %s(%s — %s)%s\n' "$C_BOLD" "$C_CYN" "$LANE" "$C_OFF" \
   "$C_DIM" "$(lane_paths "$LANE")" "$LANE_REASON" "$C_OFF"
+
+# WHICH DOCS TREE THIS RUN IS ABOUT (#1399). Beside the lane, because the lane is what decides how
+# much of the gate runs and the source is which tree the docs steps judge.
+printf '%s  docs source: %s%s\n' "$C_DIM" "$(docs_source_line)" "$C_OFF"
 
 # WHICH BASE, AND HOW IT GOT HERE. The lane line above names the sha; this line
 # names the path that resolved it whenever the answer was not simply "it was
