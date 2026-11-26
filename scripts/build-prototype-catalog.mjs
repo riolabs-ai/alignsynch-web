@@ -35,13 +35,27 @@
  * Usage:
  *   node scripts/build-prototype-catalog.mjs --out <dir>
  *        [--source <dir>[:<catalog prefix>]]... [--min-entries N]
- *        [--require <path>]... [--fail-on-untracked]
+ *        [--require <path>]... [--fail-on-untracked] [--allow-empty]
  *
  * With no `--source`, the two sources above are used.
  *
  * `--min-entries`, `--require` and `--fail-on-untracked` make an incomplete or
  * half-guessed build fail loudly instead of deploying a catalog that silently
  * lost rows or filled a date in from a file's mtime.
+ *
+ * AN ABSENT SOURCE is a hard error by default, and `--allow-empty` is the only
+ * thing that changes it (#1419). The distinction is about the caller, not about
+ * the tree: `prototypes/` is a tree that arrives by decision, so a tree that
+ * does not have it yet has nothing to publish, and the workflow says so with a
+ * notice. But a source that was *declared* and does not resolve — a typo in
+ * `--source`, a checkout that lost a directory — is broken input, and it must
+ * stay exit 1 wherever it happens. So the flag is a statement a caller makes
+ * about its own tree, never a property of the builder.
+ *
+ * It excuses nothing else. A run where every source is absent writes no output
+ * and exits 0 (that is "nothing to build"); a run where *some* source survives
+ * still has to clear `--min-entries`, `--require` and `--fail-on-untracked`, so
+ * a partially checked-out tree cannot publish a short catalog over a good one.
  */
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -69,7 +83,14 @@ const SKIP_DIRS = new Set([
 const HTML_EXT = new Set([".html", ".htm"]);
 
 function parseArgs(argv) {
-  const opts = { sources: [], out: null, minEntries: 0, require: [], failOnUntracked: false };
+  const opts = {
+    sources: [],
+    out: null,
+    minEntries: 0,
+    require: [],
+    failOnUntracked: false,
+    allowEmpty: false,
+  };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     const next = () => {
@@ -90,10 +111,11 @@ function parseArgs(argv) {
     else if (arg === "--min-entries") opts.minEntries = Number(next());
     else if (arg === "--require") opts.require.push(next());
     else if (arg === "--fail-on-untracked") opts.failOnUntracked = true;
+    else if (arg === "--allow-empty") opts.allowEmpty = true;
     else if (arg === "--help" || arg === "-h") {
       console.log(
         "usage: build-prototype-catalog.mjs --out <dir> [--source <dir>[:<prefix>]]... " +
-          "[--min-entries N] [--require <path>]... [--fail-on-untracked]",
+          "[--min-entries N] [--require <path>]... [--fail-on-untracked] [--allow-empty]",
       );
       process.exit(0);
     } else throw new Error(`unknown argument: ${arg}`);
@@ -209,11 +231,32 @@ function main() {
     return result;
   };
 
-  const sources = opts.sources.map((source) => {
+  const sources = [];
+  const absent = [];
+  for (const source of opts.sources) {
     const dir = path.resolve(source.dir);
-    if (!fs.existsSync(dir)) throw new Error(`prototype source does not exist: ${dir}`);
-    return { ...source, dir };
-  });
+    if (fs.existsSync(dir)) sources.push({ ...source, dir });
+    else absent.push(dir);
+  }
+
+  if (absent.length) {
+    if (!opts.allowEmpty) {
+      throw new Error(
+        `prototype source does not exist: ${absent[0]} — a declared source that does not resolve is broken input; pass --allow-empty only when an absent source means "nothing to build yet"`,
+      );
+    }
+    for (const dir of absent) {
+      console.log(`build-prototype-catalog: source absent (${dir}) — skipped (--allow-empty)`);
+    }
+    if (!sources.length) {
+      // Nothing to build, and nothing to say about `out`: the previous build
+      // stays where it is, so an empty run cannot erase a catalog that is live.
+      console.log(
+        `build-prototype-catalog: nothing to build — ${absent.length} declared source(s) absent. Wrote nothing to ${out}.`,
+      );
+      return;
+    }
+  }
 
   fs.rmSync(out, { recursive: true, force: true });
   fs.mkdirSync(path.join(out, "p"), { recursive: true });

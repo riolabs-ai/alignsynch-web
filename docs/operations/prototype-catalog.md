@@ -83,6 +83,28 @@ than a red workflow:
 
 `.catalog-site/` is gitignored: it is the deploy input, not a committed artifact.
 
+## Two absences, two answers
+
+`prototypes/` is a tree that arrives by decision (#1405), so the workflow has to survive a checkout
+that does not have it yet without going quiet about a checkout that is broken. One step decides — the
+`detect prototype root` step — and everything that needs the tree is gated on its `present` output.
+
+| What the tree looks like                                  | Workflow                                                                                                        | Builder                                                          |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `prototypes/` absent                                      | green: `::notice::prototype root absent (./prototypes) — nothing to build yet`; nothing built, nothing deployed | exit 1 — `--allow-empty` is how a caller says "nothing to build" |
+| `docs/` absent                                            | red: `::error::the docs source (docs/) is missing from this checkout` — a broken tree, not an empty one         | exit 1                                                           |
+| a declared source that does not resolve, in a hand run    | n/a                                                                                                             | exit 1 — a typo in `--source` is broken input, not missing input |
+| root present, rows under the floor, or a `--require` gone | red                                                                                                             | exit 1                                                           |
+| `VERCEL_TOKEN` absent                                     | red, naming the secret                                                                                          | n/a                                                              |
+| build error, or a deploy that never converges             | red, naming the reason                                                                                          | exit 1                                                           |
+
+The two failures stay different on purpose, and the quiet direction is the dangerous one: a guard that
+skipped on _any_ absent directory would turn a wrong `--source` into a green run that deployed nothing.
+So the default is the hard error, and `--allow-empty` is the caller's statement about its own tree —
+it writes no output at all (a previous build in `--out` is left where it is), and a run where some
+sources survive still has to clear `--min-entries`, `--require` and `--fail-on-untracked`. CI does not
+pass the flag; it gates the steps instead, so the builder keeps its strict default there.
+
 ## Secrets the workflow needs
 
 | Name                | What it is                                    | If it is absent                                                                            |

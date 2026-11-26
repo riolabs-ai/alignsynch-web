@@ -14,6 +14,16 @@ name: prototype catalog
 # and versions from `git describe --tags`, so a shallow clone would mark every
 # row as untracked (and `--fail-on-untracked` below would then fail the run,
 # which is the point: a guessed date is not a shipped date).
+#
+# TWO ABSENCES, TWO ANSWERS (#1419). `prototypes/` is a tree that arrives by
+# decision, so a checkout that does not have it yet has nothing to publish: the
+# job says so with a notice and stops green, because a red `main` for "no input"
+# teaches everyone to ignore this workflow. A source that should be in every
+# checkout and is not — `docs/` — is broken input, and it fails here, by name.
+# Everything that needs the tree (the token, the history check, the build, the
+# deploy, the smoke check) is gated on the same verdict and stays exactly as
+# loud as it was: the point is to tell "no input yet" from "input is broken",
+# never to make the job quiet.
 
 on:
   push:
@@ -46,10 +56,35 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      # The one judge. Everything below asks this step, so "is there a tree?" is
+      # answered once and the answer is visible in the log rather than inferred
+      # from a stack of skipped steps.
+      #
+      # `prototypes/` missing is the tree that has not arrived: a notice, and the
+      # job stops green. `docs/` missing is a checkout that lost its own source,
+      # which no notice can explain away — that is an error.
+      - name: detect prototype root
+        id: root
+        run: |
+          set -euo pipefail
+          if [ ! -d docs ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::error::the docs source (docs/) is missing from this checkout. That is a broken tree, not a tree with nothing to build — docs/ is in every checkout of this repository."
+            exit 1
+          fi
+          if [ ! -d prototypes ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::prototype root absent (./prototypes) — nothing to build yet. The prototypes are committed by the decision tracked in issue 1405 and this workflow rebuilds and deploys them the moment they land. Nothing was built and nothing was deployed."
+            exit 0
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "prototype root present: ./prototypes"
+
       # Fail loudly and first: a missing token must never look like a skipped
       # deploy. Without this the Vercel CLI fails later with an auth error that
       # reads like a build problem.
       - name: require VERCEL_TOKEN
+        if: steps.root.outputs.present == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
@@ -60,19 +95,25 @@ jobs:
           echo "VERCEL_TOKEN present"
 
       - uses: actions/setup-node@v4
+        if: steps.root.outputs.present == 'true'
         with:
           node-version-file: .nvmrc
 
       # Dates and tags are the whole point of this workflow, so refuse to build
       # from anything but a full, tracked checkout.
       - name: check out full history
+        if: steps.root.outputs.present == 'true'
         run: |
           set -euo pipefail
           git rev-parse --is-shallow-repository | grep -qx false || {
             echo "::error::shallow clone — git dates and tags would be guesses"; exit 1; }
           echo "commits: $(git rev-list --count HEAD) · tags: $(git tag | wc -l)"
 
+      # No --allow-empty here on purpose: this step only runs when the tree was
+      # found, so the builder keeps its strict default and a source that vanished
+      # between the two steps still fails loudly.
       - name: build catalog
+        if: steps.root.outputs.present == 'true'
         run: |
           node scripts/build-prototype-catalog.mjs \
             --out "$CATALOG_OUT" \
@@ -81,6 +122,7 @@ jobs:
             --require "$DEEP_LINK"
 
       - name: deploy to production
+        if: steps.root.outputs.present == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -93,6 +135,7 @@ jobs:
           npx --yes vercel@latest deploy "$CATALOG_OUT" --prod --yes --token "$VERCEL_TOKEN"
 
       - name: smoke every published path
+        if: steps.root.outputs.present == 'true'
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5 6; do
@@ -116,5 +159,6 @@ jobs:
             echo "| commit | \`${GITHUB_SHA:0:8}\` |"
             echo "| required row | \`$DEEP_LINK\` |"
             echo "| floor | $MIN_ENTRIES rows |"
+            echo "| tree | prototypes/ present: ${{ steps.root.outputs.present }} |"
             echo "| site | $SITE |"
           } >> "$GITHUB_STEP_SUMMARY"

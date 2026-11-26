@@ -1,0 +1,9 @@
+{
+  "pr": 1421,
+  "date": "2026-11-26",
+  "area": "ci",
+  "summary": "`prototype-catalog.yml` asks one question before it builds — is there a tree? — and answers two ways: a notice and a green job when `./prototypes` is absent, a named failure when `PROTOTYPE_ROOT` does not resolve.",
+  "reader_impact": "Operators reading the Actions tab: `main` stops being red for a tree that has not been committed yet, and a wrong PROTOTYPE_ROOT still fails by name instead of skipping the deploy.",
+  "specs": ["docs/operations/prototype-catalog.md"],
+  "risk": "low"
+}
