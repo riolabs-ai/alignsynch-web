@@ -2,7 +2,7 @@
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Operations** › The public site · prev [Orchestration rules](orchestration.md) · next [Release-train card template](release-train.md)
+[Docs hub](../README.md) › **Operations** › The public site · prev [The prototype catalogue](prototype-catalog.md) · next [Release-train card template](release-train.md)
 
 <!-- docs-nav:end -->
 
@@ -108,6 +108,6 @@ belong to the public site, not a second hand-kept list here.
 
 <!-- docs-nav:begin -->
 
-[Docs hub](../README.md) › **Operations** › The public site · prev [Orchestration rules](orchestration.md) · next [Release-train card template](release-train.md)
+[Docs hub](../README.md) › **Operations** › The public site · prev [The prototype catalogue](prototype-catalog.md) · next [Release-train card template](release-train.md)
 
 <!-- docs-nav:end -->

@@ -1,0 +1,88 @@
+name: prototype catalog
+
+# Rebuilds https://alignsynch-mockups.vercel.app from the prototypes in this
+# repository and deploys it. main only: a preview deployment of unreleased
+# prototypes would multiply the surface and leak them.
+#
+# The prototypes live at ./prototypes (override with the repo variable
+# PROTOTYPE_ROOT). `fetch-depth: 0` is not optional — dates come from
+# `git log -1 --format=%cs` and versions from `git describe --tags`, so a
+# shallow clone would mark every row as untracked.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prototype-catalog
+  cancel-in-progress: true
+
+env:
+  PROTOTYPE_ROOT: ${{ vars.PROTOTYPE_ROOT || 'prototypes' }}
+  CATALOG_OUT: .catalog-site
+  DEEP_LINK: project-spec/spec-design-page-relationship-detail/alignsynch-ui-specs.html
+  SITE: https://alignsynch-mockups.vercel.app
+
+jobs:
+  deploy:
+    name: build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      # Fail loudly and first: a missing token must never look like a skipped
+      # deploy. Without this the Vercel CLI fails later with an auth error that
+      # reads like a build problem.
+      - name: require VERCEL_TOKEN
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "${VERCEL_TOKEN}" ]; then
+            echo "::error::VERCEL_TOKEN is not set for this repository. Add it under Settings > Secrets and variables > Actions (a Vercel token scoped to riolabs-ais-projects). The catalog is not deployed without it."
+            exit 1
+          fi
+          echo "VERCEL_TOKEN present"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: build catalog
+        run: |
+          node scripts/build-prototype-catalog.mjs \
+            --root "$PROTOTYPE_ROOT" \
+            --out "$CATALOG_OUT" \
+            --min-entries 250 \
+            --require "$DEEP_LINK"
+
+      - name: deploy to production
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${VERCEL_ORG_ID}" ] || [ -z "${VERCEL_PROJECT_ID}" ]; then
+            echo "::error::VERCEL_ORG_ID / VERCEL_PROJECT_ID are not set. Run: gh secret set VERCEL_ORG_ID / VERCEL_PROJECT_ID."
+            exit 1
+          fi
+          npx --yes vercel@latest deploy "$CATALOG_OUT" --prod --yes --token "$VERCEL_TOKEN"
+
+      - name: smoke every published path
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5 6; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 25 "$SITE/p/$DEEP_LINK")
+            rows=$(curl -s --max-time 25 "$SITE/catalog.json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).length))}catch{process.stdout.write("0")}})')
+            echo "attempt $attempt: deep link $code · live rows $rows"
+            if [ "$code" = "200" ] && [ "$rows" -ge 250 ]; then exit 0; fi
+            sleep 10
+          done
+          echo "::error::catalog deploy did not converge — deep link $code, live rows $rows"
+          exit 1

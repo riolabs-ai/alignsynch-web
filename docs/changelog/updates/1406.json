@@ -1,0 +1,9 @@
+{
+  "pr": 1406,
+  "date": "2026-11-26",
+  "area": "ops",
+  "summary": "The prototype catalog builds from `scripts/build-prototype-catalog.mjs` on every push to main; dates come from `git log`, versions from the nearest release tag, and a prototype with no git provenance is marked rather than guessed.",
+  "reader_impact": "The catalog's 252 rows carry real provenance — 77 git dates and 54 release tags, with 175 untracked rows flagged amber — and every deep link still resolves on the public, `noindex` site.",
+  "specs": ["docs/operations/prototype-catalog.md"],
+  "risk": "low"
+}
