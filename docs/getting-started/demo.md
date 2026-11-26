@@ -140,6 +140,25 @@ is how the branch lost its only admin identity. Now phase 1 sweeps them:
 rows, and the account it signed up — in a `finally` and on `SIGINT`/`SIGTERM`. The sweep is the net
 for a `kill -9`, not the plan.
 
+### Start the server on a branch whose accounts exist (#1401)
+
+The loop `pnpm dev` cannot fix by itself: the branch's `demo_account` rows are gone, `/demo` draws no
+role buttons, and the fix is `pnpm db:seed` — which takes the fleet-wide `algn/1` lock even when
+nothing is wrong, so a second worktree's `pnpm dev` waits behind a seed it did not need.
+`pnpm dev:ready` answers the question rather than leaving it to a person:
+
+- it takes a **lock-free census** — content rows, `demo_account` rows, and which
+  `ADMIN_NN_EMAIL` addresses `neon_auth` already holds;
+- it **seeds only when that census says so**, and prints the reason it did;
+- it prints a **note** for an `ADMIN_NN` seat with only half a pair (the seed skips it, because a
+  seat is a pair, and no local run can finish it), and never prints a password;
+- a branch with **no `DATABASE_URL`** prints one line and starts, because QuizHub runs on fixtures
+  by design.
+
+`pnpm dev:ready -- --port 3001` forwards the flag to `next dev`. The `--check` above stays the
+question for _relationship_ drift: on a bare branch it prints `converged`, so it cannot decide
+whether to seed.
+
 `demo-base` must never hold content rows, auth users or an app deployment. It is a schema, not an
 environment: nothing reads it directly, so a row written there is invisible until a restore copies
 it into the demo, and a deployment pointed at it would serve an empty database. It **must** hold
