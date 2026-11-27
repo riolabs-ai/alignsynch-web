@@ -163,7 +163,7 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
     {
       id: "matrix-snapshot",
       label:
-        "Register snapshot — regenerated when VALIDATION.csv changes, not live from GitHub. The numbers below are the agreement's own record.",
+        "Register snapshot — regenerated when VALIDATION.csv changes, not live from GitHub. The numbers below are the agreement's own record; the delivery column on each row is read live from its linked issue, and says which source it came from.",
     },
     { id: "matrix-dod", label: "Definition of Done" },
     { id: "matrix-today", label: "v2.0 Today" },
@@ -216,6 +216,44 @@ export const adminSpecPageCopy: PageCopy = zPageCopy.parse({
       id: "issues-stale",
       label: "GitHub could not be reached. The issue column shows the last copy this server read.",
     },
+
+    /*
+     * The delivery comparison (#1452) — the register's status against the linked issue's, side by
+     * side. The two source labels are per column on every row, and the summary's dates are per
+     * source: the register's is the CSV's `generatedAt`, and the issue read's is the cache window
+     * (`issues-live`), never a date it does not have.
+     */
+    { id: "delivery-heading", label: "Delivery state" },
+    { id: "delivery-declared", label: "Declared by the register" },
+    { id: "delivery-derived", label: "From the linked issue" },
+    { id: "delivery-differs", label: "Differs from the register" },
+    { id: "delivery-no-issue", label: "No linked issue" },
+    { id: "delivery-delivered", label: "Delivered" },
+    { id: "delivery-not-planned", label: "Not planned" },
+    { id: "delivery-unrecorded", label: "Closed, reason not recorded" },
+    { id: "delivery-tier-differs", label: "Tier differs from the register" },
+    { id: "delivery-summary-heading", label: "Delivery · two readings" },
+    {
+      id: "delivery-summary-note",
+      label:
+        "A difference is the drift between the agreement and what GitHub says is being done. Nothing here writes to either side: the register is regenerated from VALIDATION.csv, and an issue is closed in GitHub.",
+    },
+    {
+      id: "delivery-register-source",
+      label: "Declared by the register · generated {date} · VALIDATION.csv@{sha}",
+    },
+    { id: "delivery-summary-read", label: "of {rows} rows have a reading from a linked issue" },
+    { id: "delivery-summary-agree", label: "agree with the register about delivery" },
+    { id: "delivery-summary-differ", label: "differ from the register" },
+    { id: "delivery-summary-none", label: "have no linked issue" },
+    { id: "delivery-list-heading", label: "Where the two readings differ" },
+    {
+      id: "delivery-list-none",
+      label: "Every linked issue agrees with the register about delivery.",
+    },
+    { id: "delivery-list-none-issues", label: "No register row carries a linked issue yet." },
+    { id: "delivery-list-row", label: "declared {declared} · issue says {derived}" },
+    { id: "delivery-list-tier", label: "Tier differs on {ids}" },
 
     /* One story page (s03). */
     { id: "story-eyebrow-story", label: "Project Spec 2.0 · Story · {number}" },

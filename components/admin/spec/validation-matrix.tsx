@@ -14,6 +14,14 @@
  * nothing is filled in, and the columns are drawn at every width — they stack below `sm` rather
  * than disappearing.
  *
+ * **The one derived cell is the delivery comparison (#1452), and it is drawn as a second reading
+ * rather than as a replacement.** `lib/spec/delivery.ts` compares the register's status with the
+ * linked issue's (closed as completed = delivered, closed as not planned = dropped, open = not yet,
+ * closed without a reason = unknown), and each row prints both under their own source labels with a
+ * marker where they disagree. The register's own status is still printed at the top of the row and
+ * is never overwritten: the drift between the agreement and the build is the thing this surface is
+ * for.
+ *
  * **Review and Approval read Pending, in words.** They are display-only until R2 (AS-15): there is
  * no sign-off store, so a chip that said "Approved" would be a claim nobody made. The register's
  * own fields are printed when they carry a value and the fixture's pending words when they do not.
@@ -41,12 +49,14 @@ import {
 } from "@/content/spec";
 import { adminSpecSectionNotes } from "@/data/pages/admin-spec";
 import { ADMIN_SPEC_VALIDATION_PATH } from "@/lib/admin/spec-paths";
+import { specDeliveryOf, type DeliveryReading } from "@/lib/spec/delivery";
 import { specEvidenceLink } from "@/lib/spec/evidence";
 import { specIssueFor, type SpecIssue, type SpecIssuesRead } from "@/lib/spec/issues";
 import { pageItemOf } from "@/lib/page-copy";
 import { cn } from "@/lib/utils";
 import { LeavingLink } from "@/components/layout/leaving-link";
 
+import { SpecDeliveryComparison, SpecDeliverySummary } from "./spec-delivery";
 import { SpecIssueFacts, SpecIssuesBar, SpecIssueUnfiled } from "./spec-issues";
 import { SpecCheckBox, SpecParityChip, SpecStatusChip } from "./spec-status";
 import { SpecStatusBox } from "./spec-status-box";
@@ -88,6 +98,7 @@ function RegisterRow({
   main,
   issue,
   issues,
+  reading,
 }: {
   copy: PageCopy;
   row: SpecRow;
@@ -95,6 +106,8 @@ function RegisterRow({
   issue: SpecIssue | null;
   /** Whether the GitHub column is drawn at all — false when the read produced no set. */
   issues: boolean;
+  /** The row's two readings; `null` when no comparison is drawn (a degraded read). */
+  reading: DeliveryReading | null;
 }) {
   const words = (id: string) => pageItemOf(copy, id).label;
   const review = `${row.review.pm}, ${row.review.design}`;
@@ -149,6 +162,10 @@ function RegisterRow({
             <SpecIssueFacts copy={copy} issue={issue} />
           )
         ) : null}
+
+        {reading === null ? null : (
+          <SpecDeliveryComparison copy={copy} row={row} reading={reading} />
+        )}
 
         <ReleaseMap copy={copy} row={row} />
 
@@ -248,7 +265,14 @@ export function ValidationMatrix({
 }) {
   const words = (id: string) => pageItemOf(copy, id).label;
   const sections = specSectionsOf(doc.rows);
-  const column = issues !== null && issues.kind === "ready";
+  /**
+   * The GitHub read, when it is a set. The comparison (#1452) is built only from a `ready` read:
+   * an unavailable or first-failure read means nobody knows which rows were filed, and a summary
+   * of zeroes would be a claim about GitHub that was never made.
+   */
+  const ready = issues !== null && issues.kind === "ready" ? issues : null;
+  const column = ready !== null;
+  const delivery = ready === null ? null : specDeliveryOf(doc.rows, ready);
 
   return (
     <div className="space-y-4">
@@ -269,6 +293,8 @@ export function ValidationMatrix({
       </header>
 
       <SpecIssuesBar copy={copy} read={issues} next={ADMIN_SPEC_VALIDATION_PATH} />
+
+      {delivery === null ? null : <SpecDeliverySummary copy={copy} doc={doc} summary={delivery} />}
 
       <div className="grid items-start gap-4 xl:grid-cols-[212px_minmax(0,1fr)]">
         <SpecStatusBox copy={copy} doc={doc} sections meta className="xl:sticky xl:top-0" />
@@ -344,6 +370,7 @@ export function ValidationMatrix({
                       main={doc.register.main}
                       issue={specIssueFor(issues, row.id)}
                       issues={column}
+                      reading={delivery === null ? null : (delivery.readings[row.id] ?? null)}
                     />
                   ))}
                 </div>

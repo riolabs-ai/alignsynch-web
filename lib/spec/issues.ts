@@ -62,6 +62,17 @@ export interface SpecIssue {
   /** The issue number, which is also the link's text. */
   readonly number: number;
   readonly state: "open" | "closed";
+  /**
+   * Why a closed issue was closed — `completed` when the work shipped, `not_planned` when it was
+   * dropped; `null` when the issue is open, or when GitHub recorded no reason.
+   *
+   * **A closed issue is not automatically a delivered one.** Reading only `state` is what makes a
+   * row dropped in November read as shipped, and the delivery comparison in `lib/spec/delivery.ts`
+   * cannot tell the two apart without this field. `null` is honest and stays `null`: an issue
+   * closed before GitHub recorded reasons answers nothing, and the page says so rather than
+   * assuming the better of the two meanings.
+   */
+  readonly stateReason: SpecIssueStateReason;
   /** The HTML address, built here so the page never composes a URL. */
   readonly url: string;
   /** The milestone's title, or `null` when the issue carries none. */
@@ -73,6 +84,9 @@ export interface SpecIssue {
   /** `spec:approved` is on the issue. */
   readonly approved: boolean;
 }
+
+/** `closed` says why it closed, or `null` when it did not say. An open issue has no reason. */
+export type SpecIssueStateReason = "completed" | "not_planned" | null;
 
 /** The mapped set, keyed by register row. A row with no issue is simply absent. */
 export type SpecIssueIndex = Readonly<Record<string, SpecIssue>>;
@@ -133,6 +147,19 @@ function tierOf(labels: readonly string[]): string | null {
   return labels.find((label) => label.startsWith(SPEC_TIER_PREFIX)) ?? null;
 }
 
+/**
+ * Why a closed issue closed, as GitHub records it — `null` for an open issue, for a reason this
+ * module does not recognise, and for an issue old enough to predate the field.
+ */
+function stateReasonOf(
+  entry: Record<string, unknown>,
+  state: "open" | "closed",
+): SpecIssueStateReason {
+  if (state === "open") return null;
+  const reason = entry.state_reason;
+  return reason === "completed" || reason === "not_planned" ? reason : null;
+}
+
 /** The register row a body claims, or `null` — a body with no marker is not a row. */
 export function specRowMarkerOf(body: unknown): string | null {
   if (typeof body !== "string") return null;
@@ -173,6 +200,7 @@ export function specIssueOf(raw: unknown): SpecIssue | null {
     rowId,
     number,
     state,
+    stateReason: stateReasonOf(entry, state),
     url,
     milestone: milestoneOf(entry),
     tier: tierOf(labels),
