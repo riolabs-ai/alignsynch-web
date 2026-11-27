@@ -46,6 +46,7 @@ import {
   SPEC_VALIDATION_SOURCE,
 } from "@/lib/spec/file";
 import { specDateLabel, specEvidenceLink } from "@/lib/spec/evidence";
+import { specIssuesOf, type SpecIssuesReady } from "@/lib/spec/issues";
 
 const copy = adminSpecPageCopy;
 
@@ -513,5 +514,148 @@ describe("the two identities", () => {
     // The issue column: live, with its cache window stated.
     const live = textOf(markup, /data-spec-issues-live[^>]*>([\s\S]*?)<\/p>/);
     expect(live).toBe("live from GitHub · 60 s cache · refresh on demand");
+  });
+});
+
+/**
+ * The delivery comparison (#1452) — **on the printed strings**, because the defect it answers was a
+ * page that showed one source and let a reader believe there was only one. A row whose declared and
+ * derived readings disagree must render *both*, under their own source labels, with the
+ * disagreement named; a row nobody filed must render the declared value plus "No linked issue"
+ * rather than an empty cell.
+ */
+describe("the delivery comparison", () => {
+  /** The matrix's rendered text, tags collapsed — what a reader actually sees. */
+  function text(markup: string): string {
+    return markup
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  /** One row's markup: from its own `data-spec-row` to the next row's. */
+  function rowSegment(markup: string, id: string): string {
+    const at = markup.indexOf(`data-spec-row="${id}"`);
+    if (at < 0) return "";
+    const next = markup.indexOf('data-spec-row="', at + 1);
+    return markup.slice(at, next < 0 ? undefined : next);
+  }
+
+  /** One issue as GitHub serves it, under the marker the row was filed with. */
+  function payloadOf(
+    number: number,
+    rowId: string,
+    overrides: { state?: "open" | "closed"; stateReason?: "completed" | "not_planned" } = {},
+  ) {
+    return {
+      number,
+      state: overrides.state ?? "open",
+      state_reason: overrides.stateReason ?? null,
+      body: `<!-- spec-row:${rowId} -->`,
+      html_url: `https://github.com/riolabs-ai/alignsynch-web/issues/${number}`,
+      milestone: { title: "v2.0.0 — the official release" },
+      labels: [{ name: "spec" }, { name: "tier/R1" }],
+    };
+  }
+
+  /**
+   * Two rows carry an issue: APP-02 is `Delivered` and its issue is **open** (the disagreement this
+   * card exists to show), APP-05 is `Tentative` and its issue **closed as completed** (the other
+   * direction). Every other row has no issue.
+   */
+  function read(): SpecIssuesReady {
+    const issues = specIssuesOf([
+      payloadOf(1268, "APP-02"),
+      payloadOf(1269, "APP-05", { state: "closed", stateReason: "completed" }),
+    ]);
+    if (issues === null) throw new Error("the fixture payload did not parse");
+    return issues;
+  }
+
+  it("renders both readings, under one source label per column, and names the difference", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ValidationMatrix, { copy, doc: register(), issues: read() }),
+    );
+
+    const segment = rowSegment(markup, "APP-02");
+    expect(segment).toContain('data-spec-delivery="differs"');
+    expect(segment).toContain("Declared by the register");
+    expect(segment).toContain("From the linked issue");
+    // Both values, in the same block: the register's word and the issue's.
+    expect(text(segment)).toContain("Declared by the register Delivered");
+    expect(text(segment)).toContain("From the linked issue Open");
+    // …and the disagreement, in words.
+    expect(text(segment)).toContain("Differs from the register");
+
+    // The other direction is also a disagreement, and it is not silently preferred either.
+    const tentative = rowSegment(markup, "APP-05");
+    expect(tentative).toContain('data-spec-delivery="differs"');
+    expect(text(tentative)).toContain("Declared by the register Tentative");
+    expect(text(tentative)).toContain("From the linked issue Delivered");
+  });
+
+  it("says a row has no linked issue rather than leaving its cell empty", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ValidationMatrix, { copy, doc: register(), issues: read() }),
+    );
+    const segment = rowSegment(markup, "APP-06");
+    expect(segment).toContain('data-spec-delivery="none"');
+    expect(segment).toContain('data-spec-derived-status="none"');
+    const shown = text(segment);
+    expect(shown).toContain("Declared by the register Delivered");
+    expect(shown).toContain("From the linked issue No linked issue");
+    expect(segment).not.toContain('data-spec-delivery="differs"');
+  });
+
+  it("counts the four numbers on the page, and lists the rows that differ by name", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ValidationMatrix, { copy, doc: register(), issues: read() }),
+    );
+    const summary = markup.match(/data-spec-delivery-summary[\s\S]*?<\/section>/)?.[0] ?? "";
+    expect(summary).not.toBe("");
+    const shown = text(summary);
+    expect(shown).toContain("2 of 88 rows have a reading from a linked issue");
+    expect(shown).toContain("0 agree with the register about delivery");
+    expect(shown).toContain("2 differ from the register");
+    expect(shown).toContain("86 have no linked issue");
+
+    // The list of disagreement, named: the row, its declared status, and what the issue says.
+    expect(summary).toContain('data-spec-delivery-differs="APP-02"');
+    expect(shown).toContain("APP-02 · declared Delivered · issue says Open");
+    expect(shown).toContain("APP-05 · declared Tentative · issue says Delivered");
+  });
+
+  it("gives each source its own freshness, and never a date the issue read does not have", () => {
+    const doc = register();
+    const markup = renderToStaticMarkup(
+      createElement(ValidationMatrix, { copy, doc, issues: read() }),
+    );
+    const summary = markup.match(/data-spec-delivery-summary[\s\S]*?<\/section>/)?.[0] ?? "";
+
+    const declared = text(
+      summary.match(/data-spec-delivery-source="register"[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? "",
+    );
+    expect(declared).toContain("Declared by the register");
+    expect(declared).toContain(specDateLabel(doc.register.generatedAt));
+    expect(declared).toContain(`VALIDATION.csv@${doc.register.csvSha256.slice(0, 8)}`);
+
+    const derived = text(
+      summary.match(/data-spec-delivery-source="issue"[^>]*>([\s\S]*?)<\/p>/)?.[1] ?? "",
+    );
+    expect(derived).toBe(
+      "From the linked issue · live from GitHub · 60 s cache · refresh on demand",
+    );
+  });
+
+  it("draws no comparison at all when GitHub answered nothing", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ValidationMatrix, {
+        copy,
+        doc: register(),
+        issues: { kind: "unavailable", reason: "failed" },
+      }),
+    );
+    expect(markup).not.toContain("data-spec-delivery-summary");
+    expect(markup).not.toContain("Declared by the register");
   });
 });

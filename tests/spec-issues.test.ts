@@ -133,6 +133,25 @@ describe("one entry, as a row", () => {
     expect(issue).toMatchObject({ reviewed: false, approved: false, tier: null, milestone: null });
   });
 
+  it("records why a closed issue closed, and leaves an open or unreasoned one null", () => {
+    const base = issueOf(1268, "APP-05");
+    expect(specIssueOf({ ...base, state: "closed", state_reason: "completed" })?.stateReason).toBe(
+      "completed",
+    );
+    expect(
+      specIssueOf({ ...base, state: "closed", state_reason: "not_planned" })?.stateReason,
+    ).toBe("not_planned");
+    // A closed issue that predates the field, or names a reason this module does not read.
+    expect(specIssueOf({ ...base, state: "closed" })?.stateReason).toBeNull();
+    expect(
+      specIssueOf({ ...base, state: "closed", state_reason: "duplicate" })?.stateReason,
+    ).toBeNull();
+    // An open issue has no reason, whatever the payload carries.
+    expect(
+      specIssueOf({ ...base, state: "open", state_reason: "completed" })?.stateReason,
+    ).toBeNull();
+  });
+
   it("is not a row when it is a pull request, has no marker, or has no usable number", () => {
     expect(specIssueOf({ ...issueOf(1, "APP-05"), pull_request: { url: "x" } })).toBeNull();
     expect(specIssueOf({ ...issueOf(2, "APP-05"), body: "no marker here" })).toBeNull();

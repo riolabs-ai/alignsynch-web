@@ -1,0 +1,9 @@
+{
+  "pr": 1453,
+  "date": "2026-11-27",
+  "area": "admin",
+  "summary": "Every Validation matrix row now shows two delivery readings side by side — the register's declared status and what its linked issue says — with the rows where they disagree named, counted and marked.",
+  "reader_impact": "A stakeholder can see that an issue closed last week beside a row the agreement still calls Tentative, instead of reading the register's snapshot as the only truth. The agreement columns are unchanged and still dated.",
+  "specs": ["docs/ui-registry.md", "docs/specs/spec-register-coverage.md"],
+  "risk": "low"
+}
