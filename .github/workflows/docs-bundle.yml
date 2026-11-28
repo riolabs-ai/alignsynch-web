@@ -112,7 +112,7 @@ jobs:
       contents: write
     steps:
       - name: download the bundle
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: docs-bundle-${{ github.sha }}
           path: dist/docs-bundle
