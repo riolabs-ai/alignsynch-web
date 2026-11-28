@@ -1,0 +1,9 @@
+{
+  "pr": 1462,
+  "date": "2026-11-28",
+  "area": "flow",
+  "summary": "Mode, Setting, Aspect, Opinion, Gap and Round each carry a short definition beside the place the flow names them, read from one record in content/terms.ts through a button-and-popover affordance.",
+  "reader_impact": "An Initiator meeting the flow's vocabulary now gets the word explained where it is used, without leaving the stage to find the glossary page.",
+  "specs": ["docs/specs/flow-stages.md", "docs/ui-registry.md"],
+  "risk": "low"
+}
