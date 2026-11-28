@@ -205,7 +205,11 @@ export async function gatherDrift({ target = "production", rotationsPath, from }
     rotations: rotations.map((entry) => ({
       id: entry.id,
       changedAt: entry.changedAt,
-      covers: entry.names.length + entry.platform.length + entry.prefixes.length,
+      covers:
+        entry.names.length +
+        entry.platform.length +
+        entry.prefixes.length +
+        (entry.ci?.length ?? 0),
     })),
     compared: report.compared,
     uncovered: report.uncovered,

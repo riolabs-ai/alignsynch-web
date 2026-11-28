@@ -28,7 +28,7 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-import { ENV_ROWS, declaredNames } from "../scripts/env-manifest";
+import { ENV_ROWS, OUT_OF_SCOPE, declaredNames } from "../scripts/env-manifest";
 import {
   dayOf,
   findDrift,
@@ -300,6 +300,7 @@ describe("the committed rotations cover real variables", () => {
     names: string[];
     platform: string[];
     prefixes: string[];
+    ci: string[];
   };
   const { rotations } = parseRotations(readFileSync(ROTATIONS, "utf8")) as {
     rotations: Rotation[];
@@ -332,6 +333,28 @@ describe("the committed rotations cover real variables", () => {
         ).not.toHaveLength(0);
       }
     }
+  });
+
+  it("files a CI-only credential as `ci`, never as a name a deployment is compared on", () => {
+    const outOfScope = new Set(OUT_OF_SCOPE.map((row) => row.name));
+    const covered = rotations.flatMap((entry) => entry.ci);
+    expect(covered.length, "no rotation records a CI-only credential").toBeGreaterThan(0);
+    for (const name of covered) {
+      expect(outOfScope.has(name), `${name} is not an out-of-scope row`).toBe(true);
+      expect(
+        declared.has(name),
+        `${name} is a deployment variable — declare it as a name so drift compares it`,
+      ).toBe(false);
+    }
+  });
+
+  it("refuses a name filed both as a deployment value and as a CI credential", () => {
+    const { problems } = parseRotations(
+      JSON.stringify({ rotations: [{ ...NEON, ci: ["DATABASE_URL"] }] }),
+    );
+    expect(problems.map((problem: { message: string }) => problem.message).join(" ")).toContain(
+      "both a deployment value and a CI-only credential",
+    );
   });
 });
 
