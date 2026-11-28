@@ -1205,8 +1205,28 @@ export function RelationshipDetail({
    * verb the state has outgrown.
    */
   const bothAnswered = align !== null && align !== undefined;
+  /**
+   * #1358 — **the control names the round it resumes, so a draft does not get it at all.**
+   *
+   * `draft`/`pending` is the one state where this page and the answer sheet disagree about what
+   * "Assessment" means. #1100b writes a session row from the create commit onward, so a draft
+   * relationship *has* a `sessionRecordId` and this band was drawn on it — the founder's screenshot
+   * read **Next Step · Continue Your Assessment** over an active **Continue Assessment** button on a
+   * relationship nobody had been invited to. That button resumes nothing: the round is a **draft
+   * session**, and `maySubmit("draft", …)` is false, so `lib/flow/answer-gate.ts` answers `readonly`
+   * with `action: null` and the address opens a sheet with no form on it. Its own docstring names
+   * the rule — *a control that can only fail* — and this is that control.
+   *
+   * So the answering band is drawn only for a **live round**, where the verb is true: `Start
+   * Assessment` at zero answers, `Continue Assessment` (the round's own sheet) once there are some.
+   * A draft's one Next Step on this screen is the Publish panel in the rail (`publishableNow`), which
+   * is the act the draft is actually waiting for, and the list card already names the same state
+   * *Continue Setup*. One control, one referent — and the words *Start/Continue Assessment* now
+   * cannot appear in a state where the assessment cannot be started or continued.
+   */
+  const draftRound = relationship.status === "draft" || relationship.status === "pending";
   const assessmentPanel =
-    paused || relationship.closed || answerHref === null || bothAnswered ? null : (
+    paused || relationship.closed || draftRound || answerHref === null || bothAnswered ? null : (
       <section
         data-next-step-assessment={answered > 0 ? "continue" : "start"}
         className={`space-y-3 ${DETAIL_CARD}`}
