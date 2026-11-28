@@ -1,0 +1,9 @@
+{
+  "pr": 1461,
+  "date": "2026-11-28",
+  "area": "flow",
+  "summary": "The relationship page's answering Next Step is drawn only for a live round, so a draft stops offering an active Continue Assessment whose address is a sheet with no form on it.",
+  "reader_impact": "A saved draft now shows one Next Step — the Publish panel that sends the invitation — instead of an assessment button that could not take an answer, while a live round keeps Start at zero answers and Continue over its own count.",
+  "specs": ["docs/specs/v2-rectification.md"],
+  "risk": "low"
+}
