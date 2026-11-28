@@ -1,0 +1,9 @@
+{
+  "pr": 1460,
+  "date": "2026-11-28",
+  "area": "admin",
+  "summary": "APP-20's two register cells now live in VALIDATION.csv rather than only in the generated JSON, so the spec row says what the shipped relationship card draws and a regeneration keeps it.",
+  "reader_impact": "A stakeholder reading the Project Spec sees APP-20 name the Gap bar with its legend counts and the round's Mode and Setting chips, with Next naming the last-change date, instead of claiming none are drawn.",
+  "specs": ["docs/ui-registry.md"],
+  "risk": "low"
+}

@@ -14,7 +14,9 @@
  * of the first one. Exit code is 1 if any E* check fails.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, dirname } from "node:path";
+import { homedir } from "node:os";
+import { spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 import { sessionTemplateProblems, zAssessment, zAssessmentSession } from "../content/assessment";
@@ -1974,7 +1976,7 @@ for (const issue of checkSocialInstants(
  * Definition of Done, its release map and its citations. It is *generated* by
  * `scripts/spec-validation-json.py` from `spec-scope-v2/VALIDATION.csv`, a register that
  * lives outside this repo because it carries one agreement quote per row — so the file in
- * this tree is the quote-free projection, and the two properties that make it publishable
+ * this tree is the quote-free projection, and the properties that make it publishable
  * are gated here rather than trusted:
  *
  *   schema        `zSpecValidation` (`content/spec.ts`) validates it, and that schema
@@ -1983,6 +1985,22 @@ for (const issue of checkSocialInstants(
  *   data          `specRegisterProblems` refuses an ID twice, a group no story and no
  *                 `Beyond the Agreement` claims, and a story with no row — the three
  *                 defects a schema cannot see and a reader would meet as a blank page.
+ *   derivation    the generator runs again over the CSV and the file must reproduce **byte
+ *                 for byte** — the only check that can tell a regenerated register from a
+ *                 hand-edited one.
+ *
+ * **The third one is the correction (#1441).** Until it existed this rule was decorative:
+ * its docstring said the register "cannot be hand-edited" while every assertion under it
+ * held for a file that had been. PR #1432 proved it — it wrote APP-20's two cells straight
+ * into the JSON, `csvSha256` still described the untouched CSV, and schema + structure were
+ * perfectly happy. Only re-deriving can see that, so `--check` re-derives.
+ *
+ * **It skips, loudly, where the source is not on the machine.** The CSV is deliberately not
+ * in this checkout (Exhibit C quotes), so CI has nothing to compare against and a step that
+ * demanded it would be red on every clone that is not the owner's. The run therefore looks
+ * for the register (env `SPEC_VALIDATION_CSV`, a `project-spec/` above the checkout, or the
+ * project folder under `$HOME`) and, finding none, prints `○ … skipped` with the reason —
+ * the contract `demo:verify` already has. What it cannot do is stay silent.
  *
  * The *counts* (28 / 20 / 13 / 27 and 44 of 76 met) are deliberately not asserted here:
  * they are the register's own figures, they move when the agreement moves, and
@@ -1990,7 +2008,32 @@ for (const issue of checkSocialInstants(
  * a reviewed diff rather than a silent one.
  * ------------------------------------------------------------------ */
 
+/**
+ * The register's source, or `null` when this machine does not hold it.
+ *
+ * The env var wins, so a workstation can point at any copy; then the project folder, where
+ * `spec-register-coverage.mjs` looks for the same file; then every ancestor of the checkout,
+ * because a worktree under `.worktrees/` sits three levels deeper than the tree that was
+ * cloned and a fixed `../../project-spec` would silently miss it there.
+ */
+function specRegisterSource(): string | null {
+  const named = process.env.SPEC_VALIDATION_CSV;
+  if (named && existsSync(named)) return named;
+  const candidates = [
+    join(homedir(), "Desktop/dev.local/alignsynch/project-spec/spec-scope-v2/VALIDATION.csv"),
+  ];
+  let directory = process.cwd();
+  for (let depth = 0; depth < 6; depth += 1) {
+    candidates.push(join(directory, "project-spec/spec-scope-v2/VALIDATION.csv"));
+    const parent = dirname(directory);
+    if (parent === directory) break;
+    directory = parent;
+  }
+  return candidates.find((candidate) => existsSync(candidate)) ?? null;
+}
+
 const specRegisterPath = join(process.cwd(), "data/spec/validation.json");
+let specRegisterCensus = "E42 source compare did not run";
 if (!existsSync(specRegisterPath)) {
   err(
     "E42",
@@ -2018,6 +2061,41 @@ if (!existsSync(specRegisterPath)) {
   } else {
     for (const problem of specRegisterProblems(specParsed.data)) {
       err("E42", `data/spec/validation.json: ${problem}`);
+    }
+  }
+
+  // The derivation. `--check` writes nothing: it rebuilds the document from the CSV and
+  // compares it with the file, naming the row and field of every difference.
+  const source = specRegisterSource();
+  const digest = specParsed.success ? specParsed.data.register.csvSha256.slice(0, 8) : "????????";
+  if (source === null) {
+    specRegisterCensus =
+      "E42 source compare skipped — VALIDATION.csv is not on this machine (set SPEC_VALIDATION_CSV to point at the register)";
+  } else {
+    const checked = spawnSync(
+      "python3",
+      [
+        join(process.cwd(), "scripts", "spec-validation-json.py"),
+        source,
+        specRegisterPath,
+        "--check",
+      ],
+      { encoding: "utf8" },
+    );
+    if (checked.error) {
+      // A missing python3 is not a register defect — the same reason
+      // `spec-register-coverage.mjs` stays out of the gate. Say which check did not run,
+      // never that it passed.
+      specRegisterCensus = `E42 source compare skipped — ${checked.error.message}, so the register was not re-derived`;
+    } else if (checked.status !== 0) {
+      const lines = `${checked.stdout ?? ""}${checked.stderr ?? ""}`
+        .split("\n")
+        .map((line) => line.replace(/^E42\s*/, "").trim())
+        .filter(Boolean);
+      for (const line of lines) err("E42", line);
+      specRegisterCensus = `E42: ${source} does not reproduce data/spec/validation.json`;
+    } else {
+      specRegisterCensus = `register reproduced byte for byte from VALIDATION.csv@${digest} (E42)`;
     }
   }
 }
@@ -2216,6 +2294,7 @@ console.log(
 );
 console.log(`      ${brandWordCensus} (E37)`);
 console.log(`      ${vocabularyCensus} (E41)`);
+console.log(`      ${specRegisterCensus}`);
 console.log(`      ${leavingCensus} (E39)`);
 console.log(`      ${uiCensusSummary} (E40)`);
 console.log(
