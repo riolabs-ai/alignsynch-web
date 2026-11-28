@@ -211,7 +211,7 @@ export const RULE_CODE_GROUPS: readonly RuleCodeGroup[] = [
     // is `data-check.ts`. Same shape as the brand-icon group below.
     files: ["data-check.ts"],
     codes: {
-      E42: "the project spec's register is the generated, quote-free projection of `VALIDATION.csv` — `zSpecValidation` accepts it (a file written with quotes is refused by name), no ID appears twice, every group is a story `SPEC_STORY_GROUPS` carries or `Beyond the Agreement`, and no story page is left with no row",
+      E42: "the project spec's register is the generated, quote-free projection of `VALIDATION.csv` — `zSpecValidation` accepts it (a file written with quotes is refused by name), no ID appears twice, every group is a story `SPEC_STORY_GROUPS` carries or `Beyond the Agreement`, no story page is left with no row, and — when the CSV is on the machine — the generator re-derives the file and it must reproduce byte for byte, so a hand-edited cell fails by row and field instead of passing",
     },
   },
   {

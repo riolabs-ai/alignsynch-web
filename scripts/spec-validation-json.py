@@ -11,6 +11,12 @@ is a number nobody can regenerate, which is exactly what `data:check` E42 refuse
       ../../project-spec/spec-scope-v2/VALIDATION.csv \\
       data/spec/validation.json
 
+    # `--check` writes nothing: it derives the document again in memory and compares it with the
+    # committed one, byte for byte, naming the row and field of every difference. `data:check` E42
+    # runs this whenever the CSV is reachable on the machine, so a hand-edited register fails the
+    # gate instead of passing it (#1441).
+    python3 scripts/spec-validation-json.py <csv> data/spec/validation.json --check
+
     # `--with-quotes` writes the private file. It is NOT repo-safe: quotes are NDA text, so the
     # private copy is stored outside this tree and `content/spec.ts` refuses it (quote is
     # `z.literal(null)`, quotesIncluded `z.literal(false)`).
@@ -54,17 +60,15 @@ DEFAULT_RELEASE = "2.0.0-rc1.2"
 DEFAULT_MAIN = "0ebca6823"
 
 
-def main(argv: list[str]) -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("source", type=pathlib.Path, help="the VALIDATION.csv register")
-    parser.add_argument("destination", type=pathlib.Path, help="where the JSON is written")
-    parser.add_argument("--with-quotes", action="store_true", help="write agreement quotes (private storage only)")
-    parser.add_argument("--release", default=DEFAULT_RELEASE, help=f"the register's release label (default {DEFAULT_RELEASE})")
-    parser.add_argument("--main", default=DEFAULT_MAIN, help=f"the commit the citations were checked at (default {DEFAULT_MAIN})")
-    parser.add_argument("--generated-at", default=None, help="YYYY-MM-DD (default: today, UTC)")
-    args = parser.parse_args(argv)
-
-    raw = args.source.read_bytes()
+def build_document(
+    raw: bytes,
+    *,
+    with_quotes: bool,
+    release: str,
+    main: str,
+    generated_at: str | None,
+) -> dict:
+    """The whole register, derived from the CSV's bytes and nothing else."""
     rows = []
     for record in csv.DictReader(raw.decode("utf-8").splitlines()):
         evidence = [item for item in record["evidence"].split("; ") if item and item != "—"]
@@ -79,7 +83,7 @@ def main(argv: list[str]) -> int:
                 # The quote is NDA text: dropped unless asked for, and a file that carries one is
                 # never committed (see the module docstring).
                 "quote": (None if record["agreement_quote"] == "—" else record["agreement_quote"])
-                if args.with_quotes
+                if with_quotes
                 else None,
                 "requirement": record["requirement"],
                 "definitionOfDone": record["definition_of_done"],
@@ -104,26 +108,144 @@ def main(argv: list[str]) -> int:
             }
         )
 
-    document = {
+    return {
         "version": 1,
         "register": {
-            "release": args.release,
-            "main": args.main,
-            "generatedAt": args.generated_at
-            or datetime.datetime.now(datetime.UTC).date().isoformat(),
+            "release": release,
+            "main": main,
+            "generatedAt": generated_at or datetime.datetime.now(datetime.UTC).date().isoformat(),
             "csvSha256": hashlib.sha256(raw).hexdigest(),
         },
-        "quotesIncluded": bool(args.with_quotes),
+        "quotesIncluded": bool(with_quotes),
         "rows": rows,
     }
 
+
+def dump(document: dict) -> str:
+    """The one serialisation both the writer and `--check` use, so 'equal' means equal bytes."""
+    return json.dumps(document, ensure_ascii=False, indent=2) + "\n"
+
+
+def field_differences(before: object, after: object, path: str, out: list[str]) -> None:
+    """Every leaf where the committed register disagrees with the derivation, by path."""
+    if isinstance(before, dict) and isinstance(after, dict):
+        for key in sorted(set(before) | set(after)):
+            field_differences(before.get(key), after.get(key), f"{path}.{key}", out)
+        return
+    if isinstance(before, list) and isinstance(after, list) and len(before) == len(after):
+        for index, (left, right) in enumerate(zip(before, after, strict=True)):
+            field_differences(left, right, f"{path}[{index}]", out)
+        return
+    if before != after:
+        out.append(f"{path.lstrip('.')}: the file has {before!r}, VALIDATION.csv derives {after!r}")
+
+
+def differences(current: dict, derived: dict, limit: int = 6) -> list[str]:
+    """What to say about a register that its own source does not reproduce."""
+    found: list[str] = []
+    for key in ("version", "quotesIncluded"):
+        if current.get(key) != derived.get(key):
+            found.append(f"{key}: the file has {current.get(key)!r}, the source derives {derived.get(key)!r}")
+    if (current.get("register") or {}).get("csvSha256") != derived["register"]["csvSha256"]:
+        found.append(
+            "register.csvSha256: the file records "
+            f"{(current.get('register') or {}).get('csvSha256')!r}, the CSV hashes to "
+            f"{derived['register']['csvSha256']!r} — the register was not regenerated after the CSV moved"
+        )
+    rows_value = current.get("rows")
+    current_rows: list = rows_value if isinstance(rows_value, list) else []
+    derived_rows: list = derived["rows"]
+    for index, derived_row in enumerate(derived_rows):
+        if index >= len(current_rows):
+            found.append(f"rows[{index}] ({derived_row['id']}): the file has no such row")
+            continue
+        current_row = current_rows[index]
+        row_id = current_row.get("id") if isinstance(current_row, dict) else None
+        if row_id != derived_row["id"]:
+            found.append(
+                f"rows[{index}]: the file has {row_id!r} where the source derives {derived_row['id']!r}"
+            )
+            continue
+        row_found: list[str] = []
+        field_differences(current_row, derived_row, f"{derived_row['id']}", row_found)
+        found.extend(row_found)
+        if len(found) >= limit:
+            break
+    if len(current_rows) > len(derived_rows):
+        found.append(f"rows: the file carries {len(current_rows) - len(derived_rows)} row(s) the CSV does not")
+    return found[:limit]
+
+
+def main(argv: list[str]) -> int:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("source", type=pathlib.Path, help="the VALIDATION.csv register")
+    parser.add_argument("destination", type=pathlib.Path, help="the JSON to write, or to check")
+    parser.add_argument("--check", action="store_true", help="write nothing: derive and compare with the destination")
+    parser.add_argument("--with-quotes", action="store_true", help="write agreement quotes (private storage only)")
+    parser.add_argument("--release", default=DEFAULT_RELEASE, help=f"the register's release label (default {DEFAULT_RELEASE})")
+    parser.add_argument("--main", default=DEFAULT_MAIN, help=f"the commit the citations were checked at (default {DEFAULT_MAIN})")
+    parser.add_argument("--generated-at", default=None, help="YYYY-MM-DD (default: today, UTC)")
+    args = parser.parse_args(argv)
+
+    raw = args.source.read_bytes()
+
+    if args.check:
+        # The snapshot's identity (`release`, `main`, `generatedAt`) is declared, not derived: it
+        # describes when the citations were taken, so a check compares what the CSV *derives* —
+        # the rows and the digest — while leaving the declared block alone. A check that demanded
+        # today's date would fail every clone on every day that is not the snapshot's.
+        if not args.destination.exists():
+            print(
+                f"E42 {args.destination} is missing — it is generated, so run this script without --check",
+                file=sys.stderr,
+            )
+            return 1
+        text = args.destination.read_text(encoding="utf-8")
+        try:
+            current = json.loads(text)
+        except json.JSONDecodeError as cause:
+            print(f"E42 {args.destination} is not JSON ({cause}) — it is generated, not authored", file=sys.stderr)
+            return 1
+        declared = current.get("register") if isinstance(current.get("register"), dict) else {}
+        document = build_document(
+            raw,
+            with_quotes=args.with_quotes or bool(current.get("quotesIncluded")),
+            release=declared.get("release", args.release),
+            main=declared.get("main", args.main),
+            generated_at=declared.get("generatedAt", args.generated_at),
+        )
+        if dump(document) == text:
+            print(
+                f"register ok — {len(document['rows'])} rows reproduce {args.destination} byte for byte "
+                f"from VALIDATION.csv@{document['register']['csvSha256'][:8]}"
+            )
+            return 0
+        print(
+            f"E42 {args.destination} is not what VALIDATION.csv derives — it was edited by hand, "
+            "or the CSV moved and the register was not regenerated:",
+            file=sys.stderr,
+        )
+        for line in differences(current, document):
+            print(f"E42   {line}", file=sys.stderr)
+        print(
+            "E42   fix: edit the CSV (never the JSON), then run this script without --check",
+            file=sys.stderr,
+        )
+        return 1
+
+    document = build_document(
+        raw,
+        with_quotes=args.with_quotes,
+        release=args.release,
+        main=args.main,
+        generated_at=args.generated_at,
+    )
+
     args.destination.parent.mkdir(parents=True, exist_ok=True)
-    with args.destination.open("w", encoding="utf-8") as handle:
-        json.dump(document, handle, ensure_ascii=False, indent=2)
-        handle.write("\n")
+    args.destination.write_text(dump(document), encoding="utf-8")
 
     print(
-        f"{len(rows)} rows -> {args.destination} "
+        f"{len(document['rows'])} rows -> {args.destination} "
         f"(register {document['register']['release']} @ {document['register']['main']}, "
         f"csv {document['register']['csvSha256'][:8]}, "
         f"quotes {'IN — private storage only' if args.with_quotes else 'dropped'})"
