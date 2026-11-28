@@ -515,6 +515,7 @@ export function CreateRelationship({
     {
       name: "mode",
       legend: itemLabel(mode, "mode-label"),
+      term: "mode",
       badge: itemLabel(mode, "mode-fixed"),
       options: modeOptions,
       requiredSentence: fieldSentence("mode", "required") ?? "",
@@ -522,6 +523,7 @@ export function CreateRelationship({
     {
       name: "alignmentSetting",
       legend: itemLabel(mode, "setting-label"),
+      term: "setting",
       intro: itemLabel(mode, "setting-help"),
       note: itemLabel(mode, "setting-note"),
       options: settingOptions,

@@ -49,6 +49,7 @@ const GROUPS: ChoiceGroup[] = [
   {
     name: "mode",
     legend: itemLabel(MODE, "mode-label"),
+    term: "mode",
     badge: itemLabel(MODE, "mode-fixed"),
     options: ASSESSMENT_MODES.map((value) => ({
       value,
@@ -60,6 +61,7 @@ const GROUPS: ChoiceGroup[] = [
   {
     name: "alignmentSetting",
     legend: itemLabel(MODE, "setting-label"),
+    term: "setting",
     intro: itemLabel(MODE, "setting-help"),
     note: itemLabel(MODE, "setting-note"),
     options: ALIGNMENT_SETTINGS.map((value) => ({

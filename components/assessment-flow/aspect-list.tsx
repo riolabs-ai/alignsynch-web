@@ -49,6 +49,7 @@ import {
   type DrawerAspect,
   type DrawerSaveResult,
 } from "@/components/assessment-flow/aspect-drawer";
+import { TermHelp } from "@/components/assessment-flow/term-help";
 import { type AspectDraft, canRemoveAspect, moveAspect } from "@/lib/flow/aspects";
 import { SAVE_ASPECTS_PATH } from "@/lib/flow/paths";
 import { fillLabel, itemLabel, sectionOf } from "@/lib/page-copy";
@@ -278,8 +279,10 @@ export function AspectList({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-xs text-muted-foreground">{itemLabel(words, "tap-to-edit")}</p>
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
           {fillLabel(itemLabel(words, "count"), { count: rows.length })}
+          {/* #1270 — the term the count is counting, glossed once at the list it heads. */}
+          <TermHelp term={"aspect"} />
         </span>
       </div>
 

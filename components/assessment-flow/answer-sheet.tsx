@@ -38,6 +38,7 @@
  */
 import { AnswerReview } from "@/components/assessment-flow/answer-review";
 import { AspectAnswerCard } from "@/components/assessment-flow/aspect-answer-card";
+import { TermHelp } from "@/components/assessment-flow/term-help";
 import type { AssessmentMode, PartyRole } from "@/content/assessment";
 import type { PageCopy } from "@/content/pages";
 import { answeredCount, type SheetPosition } from "@/lib/flow/answer-position";
@@ -302,6 +303,17 @@ export function AnswerSheet({
       </section>
     ) : null;
 
+  /**
+   * #1270 — the two terms the position line speaks, glossed once and drawn on both bands. The
+   * sentence is the record's (`content/terms.ts`); this node only says where it is mounted.
+   */
+  const bandHelp = (
+    <>
+      <TermHelp term={"round"} />
+      <TermHelp term={"aspect"} />
+    </>
+  );
+
   /** The sealed copy of the sheet: what the viewer said, and what happens next. */
   const sealed = (
     <div className="space-y-4">
@@ -319,6 +331,7 @@ export function AnswerSheet({
         })}
         chip={<SaveChip state={SEALED_CHIP_STATE} label={itemLabel(progress, "sealed-state")} />}
         segments={segmentsDone}
+        help={bandHelp}
       />
       <section
         data-frozen-status={resultsReady === true ? "ready" : "waiting"}
@@ -408,6 +421,7 @@ export function AnswerSheet({
               />
             }
             segments={segments}
+            help={bandHelp}
           />
 
           {position.review ? (
@@ -485,17 +499,29 @@ function SheetBand({
   label,
   chip,
   segments,
+  help,
 }: {
   readonly label: string;
   readonly chip: ReactNode;
   readonly segments: readonly Segment[];
+  /**
+   * #1270 — the terms the position line names (`Round 1 · Aspect n of 5`), glossed beside it.
+   * Rendered after the label and before the chip, so the reader's line reads
+   * `Round 1 · Aspect 3 of 5 (?) … Saved` and the pattern holds on the sealed band too.
+   */
+  readonly help?: ReactNode;
 }) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3 text-xs">
-        <p className="font-semibold uppercase tracking-wider text-deep" aria-live="polite">
-          {label}
-        </p>
+        {/* The label is the live region; the gloss buttons sit beside it so a save announcement
+            never reads them out. */}
+        <span className="flex items-center gap-1.5">
+          <p className="font-semibold uppercase tracking-wider text-deep" aria-live="polite">
+            {label}
+          </p>
+          {help ?? null}
+        </span>
         {chip}
       </div>
       <div className="flex gap-1" aria-hidden="true">
