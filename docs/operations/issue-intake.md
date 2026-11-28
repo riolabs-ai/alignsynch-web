@@ -71,14 +71,25 @@ pnpm triage:founder --apply --issue 1363 # write that one issue
 
 What a row decides, in this order:
 
-| Question      | Answer                                                                                  |
-| ------------- | --------------------------------------------------------------------------------------- |
-| **Area**      | the first row of `AREA_TABLE` that matches: billing → flow → ui → product               |
-| **Class**     | the first row of `CLASS_RULES` that matches: `?` → enhancement → bug                    |
-| **Milestone** | the area's (`#28 v2.0.0`), `#25 v2.deferred` when a parked term matched, otherwise none |
-| **Title**     | `area/<x>: <claim>`, the claim stripped of the founder's `… Questions -` prefix         |
+| Question      | Answer                                                                                   |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| **Area**      | the first row of `AREA_TABLE` that matches: billing → flow → ui → product                |
+| **Class**     | the first row of `CLASS_RULES` that matches: `?` → enhancement → bug                     |
+| **Milestone** | the area's pool, `v2.deferred` when a parked term matched, otherwise none — by **title** |
+| **Title**     | `area/<x>: <claim>`, the claim stripped of the founder's `… Questions -` prefix          |
 
 Anything the table cannot place is `needs-info` with **no milestone** — an honest miss, never a guess.
+
+**The milestone is a title prefix, never a number.** `DESTINATION_MILESTONE = "v2.2.0"` and
+`PARKED_MILESTONE = "v2.deferred"` are resolved against the repo's open milestones at run time
+(`resolveMilestone`), because a number is a local handle: the re-pool of 2026-11-26 closed #28,
+moved the founder flow into `v2.2.0 — the member surface` (#32), and a table hard-coding `28` stopped
+the whole workflow. A handle that resolves to nothing is a named refusal — the run prints every open
+milestone it saw and exits 1, and `--apply` writes nothing rather than inventing a pool. A title
+prefix survives a re-pool, because the pool keeps its name when GitHub hands it a new number. A claim
+this tool already rewrote (`area/flow: …`) is normalised back to the claim, so a re-triage does not
+stack a second prefix on the founder's title.
+
 Two issues that normalise to the same claim are _named_ as possible duplicates
 (`Possible duplicate of #N — …`) and get their own number as a title suffix; `duplicate` is applied to
 neither, and nothing is closed. The original title is preserved verbatim in the appended block, because

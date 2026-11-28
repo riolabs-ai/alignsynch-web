@@ -1,0 +1,9 @@
+{
+  "pr": 1465,
+  "date": "2026-11-28",
+  "area": "triage",
+  "summary": "Founder triage resolves its destination pool and the parked pool by title prefix against the open milestones at run time, instead of hard-coding a milestone number that a backlog re-pool retires.",
+  "reader_impact": "A maintainer can run `pnpm triage:founder` again: a founder issue lands in `v2.2.0 — the member surface` and a parked one in `v2.deferred` at whatever numbers those pools carry, and a pool that is gone stops the run by name.",
+  "specs": ["docs/operations/issue-intake.md"],
+  "risk": "low"
+}
