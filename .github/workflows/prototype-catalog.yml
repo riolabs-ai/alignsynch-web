@@ -98,7 +98,7 @@ jobs:
           fi
           echo "VERCEL_TOKEN present"
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         if: steps.root.outputs.present == 'true'
         with:
           node-version-file: .nvmrc
