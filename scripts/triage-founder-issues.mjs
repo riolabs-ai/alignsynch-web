@@ -71,6 +71,17 @@ export const LEDGER_TITLE = "Founder issue ledger";
 export const LEDGER_LABEL = "standing";
 
 /**
+ * The pools this table routes into, **named by title prefix and never by number**.
+ *
+ * A milestone number is a local handle: the re-pool of 2026-11-26 closed #28 and moved the founder
+ * flow into `v2.2.0 — the member surface` (#32), which retired the number this table used to carry
+ * and stopped triage dead. A title prefix survives a re-pool, because the pool keeps its name when
+ * GitHub hands it a new number. The number is resolved at run time from the open milestones
+ * (`resolveMilestone`), and a handle that resolves to nothing is a named refusal — never a guess.
+ */
+export const DESTINATION_MILESTONE = "v2.2.0";
+
+/**
  * The area table, **ordered, first match wins**. Billing before flow because "the plan price on the
  * stage screen" is a billing issue; flow before UI because "the stage modal" is about the stage; UI
  * before product because "the label on the colour picker" is a visual defect.
@@ -86,12 +97,12 @@ export const LEDGER_LABEL = "standing";
 export const AREA_TABLE = [
   {
     area: "billing",
-    milestone: 28,
+    milestone: DESTINATION_MILESTONE,
     keywords: ["pricing", "plan", "billing", "checkout", "stripe"],
   },
   {
     area: "flow",
-    milestone: 28,
+    milestone: DESTINATION_MILESTONE,
     keywords: [
       "aspect",
       "aspects",
@@ -113,19 +124,19 @@ export const AREA_TABLE = [
   },
   {
     area: "ui",
-    milestone: 28,
+    milestone: DESTINATION_MILESTONE,
     keywords: ["color", "colour", "font", "layout", "spacing", "modal", "appearance"],
   },
   {
     area: "product",
-    milestone: 28,
+    milestone: DESTINATION_MILESTONE,
     keywords: ["copy", "wording", "name", "called", "label", "lexicon"],
   },
 ];
 
 /** A parked issue is deferred, not classified elsewhere: the row adds the label and moves the milestone. */
 export const PARKED_TERMS = ["later", "not now", "someday", "nice to have"];
-export const PARKED_MILESTONE = 25;
+export const PARKED_MILESTONE = "v2.deferred";
 
 /**
  * Class rules, **ordered, first match wins**: a question phrased as a report is still a question, so
@@ -236,6 +247,16 @@ export function stripPrefixes(title) {
     .replace(/^\s*question:\s*/i, "");
 }
 
+/**
+ * The routing prefix **this tool** writes: `area/<x>: ` and `needs-info: `.
+ *
+ * A re-triage reads a title the previous pass already rewrote, so without this the claim is
+ * `area/flow: What is this page called?` and the new title reads
+ * `area/flow: area/flow: What is this page called?` — a prefix stacked on a prefix, on someone
+ * else's issue, every time the issue is edited. Stripping it first makes `--apply` idempotent.
+ */
+export const ROUTING_PREFIX = /^(?:area\/[a-z0-9-]+|needs-info):\s*/i;
+
 /** Collapse every run of whitespace to one space and trim. */
 export function collapse(text) {
   return String(text ?? "")
@@ -255,9 +276,10 @@ export function cutToWidth(text, max = CLAIM_MAX) {
   return text.slice(0, max).trimEnd();
 }
 
-/** title → claim: prefixes stripped, whitespace collapsed, cut at 72 on a word boundary. */
+/** title → claim: our own routing prefix and the founder's prefixes stripped, whitespace collapsed,
+ * cut at 72 on a word boundary. A title this tool already rewrote normalises to the same claim. */
 export function normaliseClaim(title) {
-  return cutToWidth(collapse(stripPrefixes(title)));
+  return cutToWidth(collapse(stripPrefixes(String(title ?? "").replace(ROUTING_PREFIX, ""))));
 }
 
 /** `area/flow: What is this page called?` — the area slug is the label without its `area/` prefix. */
@@ -282,7 +304,7 @@ export function classifyClass(text) {
 /**
  * The first area row that matches, or `null`. Returns the row, so the milestone travels with it.
  * @param {string} text
- * @returns {{area: string, milestone: number, keywords: string[]} | null}
+ * @returns {{area: string, milestone: string, keywords: string[]} | null}
  */
 export function classifyArea(text) {
   for (const row of AREA_TABLE) {
@@ -336,6 +358,61 @@ export function jaccard(a, b) {
   return shared / (left.size + right.size - shared);
 }
 
+/** Does `title` carry `handle` as a leading version token? `v2.2.0` matches `v2.2.0 — the member
+ * surface`, and never `v2.2.01`, because the character after the handle must not extend it. */
+export function titleHasHandle(title, handle) {
+  const text = String(title ?? "");
+  if (!text.toLowerCase().startsWith(String(handle).toLowerCase())) return false;
+  const next = text.charAt(String(handle).length);
+  return next === "" || !/[0-9.]/.test(next);
+}
+
+/**
+ * Resolve a title handle against the open milestones.
+ *
+ * The number is whatever GitHub currently gives the pool; the title prefix is the handle this table
+ * carries. `null` means "not open here" — the caller refuses by name rather than inventing one.
+ *
+ * @param {string} handle e.g. `"v2.2.0"`
+ * @param {{number: number, title: string}[]} milestones the repo's open milestones
+ * @returns {{number: number, title: string} | null}
+ */
+export function resolveMilestone(handle, milestones = []) {
+  const row = milestones.find((milestone) => titleHasHandle(milestone.title, handle));
+  return row === undefined ? null : { number: row.number, title: row.title };
+}
+
+/** What the repo actually carries, for a refusal to print: `v2.deferred (#25), v2.2.0 — … (#32)`. */
+export function openMilestoneList(milestones = []) {
+  return milestones.length === 0
+    ? "none"
+    : milestones.map((milestone) => `${milestone.title} (#${milestone.number})`).join(", ");
+}
+
+/**
+ * The loud failure, kept: a planned row whose destination pool is not open stops the run **by
+ * name**, prints every milestone it saw, and invents nothing.
+ *
+ * It is a plain throw so `main` exits 1 through the one catch at the bottom — the plan is never
+ * applied on a repo where the destination is missing.
+ *
+ * @param {{milestoneHandle?: string | null, milestone?: number | null}[]} rows
+ * @param {string} repo
+ * @param {{number: number, title: string}[]} milestones
+ */
+export function assertMilestonesOpen(rows, repo, milestones = []) {
+  const missing = rows.filter(
+    (row) =>
+      row.milestoneHandle !== undefined && row.milestoneHandle !== null && row.milestone === null,
+  );
+  if (missing.length === 0) return;
+  const handles = [...new Set(missing.map((row) => row.milestoneHandle))];
+  throw new Error(
+    `milestone ${handles.map((handle) => `"${handle}"`).join(", ")} is not open on ${repo} — ` +
+      `refusing to invent it. open milestones: ${openMilestoneList(milestones)}`,
+  );
+}
+
 /**
  * One issue's classification. `text` is the founder's own words: the original title **and** the body,
  * because the founder's body is where the nouns are and the title is where the routing prefix is.
@@ -352,7 +429,7 @@ export function classifyIssue(issue) {
   // read a milestone that was guessed, and a milestone on a half-triaged issue reads as finished.
   const area = row === null ? null : row.area;
   const placed = row !== null && klass !== UNCLASSIFIED;
-  const milestone = placed ? (parked ? PARKED_MILESTONE : row.milestone) : null;
+  const milestoneHandle = placed ? (parked ? PARKED_MILESTONE : row.milestone) : null;
 
   const labels = [];
   if (area !== null) labels.push(`area/${area}`);
@@ -365,7 +442,7 @@ export function classifyIssue(issue) {
     area,
     areaLabel: area === null ? null : `area/${area}`,
     parked,
-    milestone,
+    milestoneHandle,
     labels,
     decisionNeeded: needsDecision(text, klass),
     surface: surfaceFor(text),
@@ -662,12 +739,15 @@ export function fetchLabels(repo) {
   return JSON.parse(raw).map((row) => row.name);
 }
 
-/** Open milestones by number, so a milestone in the table is resolved, never guessed. */
+/**
+ * The open milestones as `{number, title}[]`.
+ *
+ * The array is deliberate: the table routes by **title prefix**, so the number travels with the
+ * title rather than keying a map. A pool that a re-pool renumbers still resolves by its name.
+ */
 export function fetchMilestones(repo) {
   const raw = gh(["api", `repos/${repo}/milestones?state=open&per_page=100`]);
-  const out = {};
-  for (const row of JSON.parse(raw)) out[row.number] = row.title;
-  return out;
+  return JSON.parse(raw).map((row) => ({ number: row.number, title: row.title }));
 }
 
 /** The standing ledger issue, if the repo has one. */
@@ -693,13 +773,24 @@ export function fetchLedger(repo) {
  * The whole plan, offline from the caller's point of view: read the issues, classify, pair the
  * duplicates, resolve titles. No write, no clock in the output (the plan must be diffable run to run).
  *
+ * `milestones` is the repo's open milestones as `{number, title}[]`, because the table carries a
+ * *title* handle and the number is resolved here — a pool that was renumbered resolves to the new
+ * number, and a pool that is gone resolves to `null` so `assertMilestonesOpen` can refuse.
+ *
  * @param {any[]} issues
- * @param {{scope?: number[], milestones?: Record<number, string>, knownLabels?: string[], ledger?: any}} [options]
+ * @param {{scope?: number[], milestones?: {number: number, title: string}[], knownLabels?: string[], ledger?: any}} [options]
  */
 export function buildPlan(
   issues,
-  { scope = [], milestones = {}, knownLabels = [], ledger = null } = {},
+  { scope = [], milestones = [], knownLabels = [], ledger = null } = {},
 ) {
+  /** handle → `{number, title} | null`, computed once and shared by every row. */
+  const resolved = new Map();
+  const milestoneFor = (handle) => {
+    if (handle === null || handle === undefined) return null;
+    if (!resolved.has(handle)) resolved.set(handle, resolveMilestone(handle, milestones));
+    return resolved.get(handle);
+  };
   const scoped =
     scope.length === 0 ? issues : issues.filter((issue) => scope.includes(issue.number));
   const open = scoped.filter((issue) => issue.state === "open");
@@ -771,41 +862,48 @@ export function buildPlan(
     };
   });
 
-  const rows = claims.map((row) => ({
-    number: row.number,
-    url: row.issue.url,
-    state: row.state,
-    originalTitle: row.issue.title,
-    claim: row.claim,
-    proposedTitle: row.proposedTitle,
-    titleChanged: row.titleChanged,
-    class: row.klass.class,
-    area: row.klass.area,
-    areaLabel: row.klass.areaLabel,
-    surface: row.klass.surface,
-    labels: row.klass.labels,
-    milestone: row.klass.milestone,
-    milestoneTitle: row.klass.milestone === null ? null : (milestones[row.klass.milestone] ?? null),
-    decisionNeeded: row.klass.decisionNeeded,
-    acceptance: row.klass.acceptance,
-    parked: row.klass.parked,
-    duplicateOf: row.duplicateOf,
-    markerAt: row.markerAt,
-    reTriage: row.markerAt !== null,
-    comments: (row.issue.comments ?? []).length,
-  }));
+  const rows = claims.map((row) => {
+    const milestone = milestoneFor(row.klass.milestoneHandle);
+    return {
+      number: row.number,
+      url: row.issue.url,
+      state: row.state,
+      originalTitle: row.issue.title,
+      claim: row.claim,
+      proposedTitle: row.proposedTitle,
+      titleChanged: row.titleChanged,
+      class: row.klass.class,
+      area: row.klass.area,
+      areaLabel: row.klass.areaLabel,
+      surface: row.klass.surface,
+      labels: row.klass.labels,
+      milestoneHandle: row.klass.milestoneHandle,
+      milestone: milestone === null ? null : milestone.number,
+      milestoneTitle: milestone === null ? null : milestone.title,
+      decisionNeeded: row.klass.decisionNeeded,
+      acceptance: row.klass.acceptance,
+      parked: row.klass.parked,
+      duplicateOf: row.duplicateOf,
+      markerAt: row.markerAt,
+      reTriage: row.markerAt !== null,
+      comments: (row.issue.comments ?? []).length,
+    };
+  });
 
   const used = [...new Set(rows.flatMap((row) => row.labels))].sort();
   const unknown = used.filter((label) => !knownLabels.includes(label));
 
-  const ledgerRows = all.map((row) => ({
-    number: row.number,
-    class: row.klass.class,
-    area: row.klass.area,
-    milestone: row.klass.milestone,
-    state: row.state,
-    triagedAt: row.triagedAt ?? (row.markerAt ? String(row.markerAt).slice(0, 10) : null),
-  }));
+  const ledgerRows = all.map((row) => {
+    const milestone = milestoneFor(row.klass.milestoneHandle);
+    return {
+      number: row.number,
+      class: row.klass.class,
+      area: row.klass.area,
+      milestone: milestone?.number ?? null,
+      state: row.state,
+      triagedAt: row.triagedAt ?? (row.markerAt ? String(row.markerAt).slice(0, 10) : null),
+    };
+  });
 
   return {
     mode: "dry-run",
@@ -823,10 +921,9 @@ export function buildPlan(
       skipped,
     },
     milestones: Object.fromEntries(
-      [...new Set(rows.map((row) => row.milestone).filter((n) => n !== null))].map((n) => [
-        n,
-        milestones[n] ?? null,
-      ]),
+      [...resolved.values()]
+        .filter((value) => value !== null)
+        .map((value) => [value.number, value.title]),
     ),
     labels: { known: knownLabels.length, used, unknown },
     issues: rows,
@@ -1043,17 +1140,12 @@ function main(argv) {
 
   if (plan.labels.unknown.length > 0) {
     throw new Error(
-      `triage: the table names labels this repo does not carry: ${plan.labels.unknown.join(", ")}`,
+      `the table names labels this repo does not carry: ${plan.labels.unknown.join(", ")}`,
     );
   }
-  const missing = plan.issues.filter(
-    (row) => row.milestone !== null && row.milestoneTitle === null,
-  );
-  if (missing.length > 0) {
-    throw new Error(
-      `triage: milestone #${missing[0].milestone} is not open on ${repo} — refusing to invent it`,
-    );
-  }
+  // The destination is a title handle; a run whose pool is not open refuses by name and prints
+  // every milestone it saw. It never invents a number, and it never applies half a plan.
+  assertMilestonesOpen(plan.issues, repo, milestones);
 
   if (!args.apply) {
     if (args.json) {

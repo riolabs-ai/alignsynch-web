@@ -14,7 +14,8 @@
  */
 
 import { Buffer } from "node:buffer";
-import { chmodSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { spawnSync } from "node:child_process";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -25,6 +26,7 @@ import {
   BODY_SEPARATOR,
   CLASS_RULES,
   CLAIM_MAX,
+  DESTINATION_MILESTONE,
   DUPLICATE_THRESHOLD,
   FOUNDER_LOGINS,
   MARKER,
@@ -32,6 +34,7 @@ import {
   PARKED_MILESTONE,
   acceptanceFor,
   applyRow,
+  assertMilestonesOpen,
   assertWriteIdentity,
   buildPlan,
   classifyArea,
@@ -49,10 +52,12 @@ import {
   needsDecision,
   normaliseClaim,
   planTable,
+  resolveMilestone,
   shouldTriage,
   stripPrefixes,
   surfaceFor,
   titleFor,
+  titleHasHandle,
   titleTokens,
   triageGhArgs,
   writesFor,
@@ -93,7 +98,12 @@ describe("the area table is ordered, and the order decides the answer", () => {
 
   test("the table itself is in that order, so a reorder is a visible diff", () => {
     expect(AREA_TABLE.map((row) => row.area)).toEqual(["billing", "flow", "ui", "product"]);
-    expect(AREA_TABLE.map((row) => row.milestone)).toEqual([28, 28, 28, 28]);
+    expect(AREA_TABLE.map((row) => row.milestone)).toEqual([
+      DESTINATION_MILESTONE,
+      DESTINATION_MILESTONE,
+      DESTINATION_MILESTONE,
+      DESTINATION_MILESTONE,
+    ]);
   });
 
   test("keywords match whole words only — `plan` must not fire on `explain`", () => {
@@ -106,7 +116,7 @@ describe("the area table is ordered, and the order decides the answer", () => {
     expect(klass.parked).toBe(true);
     expect(klass.area).toBe("flow");
     expect(klass.labels).toContain("parked");
-    expect(klass.milestone).toBe(PARKED_MILESTONE);
+    expect(klass.milestoneHandle).toBe(PARKED_MILESTONE);
     expect(isParked("nothing deferred here")).toBe(false);
   });
 });
@@ -144,7 +154,7 @@ describe("the class rules are ordered too", () => {
     expect(klass.area).toBe("flow");
     expect(klass.class).toBe("needs-info");
     expect(klass.labels).toEqual(["area/flow", "needs-info"]);
-    expect(klass.milestone).toBeNull();
+    expect(klass.milestoneHandle).toBeNull();
   });
 });
 
@@ -204,6 +214,20 @@ describe("title normalisation", () => {
     expect(titleFor("flow", "Aspect Title")).toBe("area/flow: Aspect Title");
     expect(titleFor(null, "Aspect Title")).toBe("needs-info: Aspect Title");
   });
+
+  test("a title this tool already rewrote normalises to the same claim — re-triage is idempotent", () => {
+    // Re-triage reads the title the previous pass wrote; stacking a second prefix on it would
+    // rewrite a founder's issue to `area/flow: area/flow: …` on every edit.
+    expect(normaliseClaim("area/flow: What is this page called?")).toBe(
+      "What is this page called?",
+    );
+    expect(normaliseClaim("needs-info: APP-02 button to the demo site")).toBe(
+      "APP-02 button to the demo site",
+    );
+    expect(titleFor("flow", normaliseClaim("area/flow: What is this page called?"))).toBe(
+      "area/flow: What is this page called?",
+    );
+  });
 });
 
 describe("duplicates are named, never closed", () => {
@@ -260,7 +284,7 @@ describe("duplicates are named, never closed", () => {
         ),
       ],
       {
-        milestones: { 28: "v2.0.0 — the official release" },
+        milestones: [{ number: 32, title: "v2.2.0 — the member surface" }],
         knownLabels: ["area/flow", "area/product", "question", "duplicate"],
       },
     );
@@ -356,14 +380,14 @@ describe("the write path never guesses an identity and never removes a label", (
       decisionNeeded: false,
       acceptance: "none — question only",
     };
-    const { block, args } = writesFor(row, "v2.0.0 — the official release");
+    const { block, args } = writesFor(row, "v2.2.0 — the member surface");
     expect(args).toContain("--add-label");
     expect(args.join(" ")).not.toContain("--remove-label");
     expect(args.join(" ")).not.toContain("--close");
     expect(args.join(" ")).not.toContain("close");
     expect(args.slice(args.indexOf("--milestone"), args.indexOf("--milestone") + 2)).toEqual([
       "--milestone",
-      "v2.0.0 — the official release",
+      "v2.2.0 — the member surface",
     ]);
     expect(args[args.indexOf("--title") + 1]).toBe(row.proposedTitle);
     expect(block).toContain(`**Original title:** ${row.originalTitle}`);
@@ -499,7 +523,10 @@ describe("the plan over the founder's twelve", () => {
   ];
 
   const plan = buildPlan(twelve, {
-    milestones: { 28: "v2.0.0 — the official release", 25: "v2.deferred" },
+    milestones: [
+      { number: 25, title: "v2.deferred" },
+      { number: 32, title: "v2.2.0 — the member surface" },
+    ],
     knownLabels: [
       "area/billing",
       "area/flow",
@@ -525,7 +552,7 @@ describe("the plan over the founder's twelve", () => {
       expect(row.class).toBeTruthy();
       expect(row.labels.length).toBeGreaterThan(0);
       expect(row.proposedTitle).toMatch(/^(area\/[a-z]+|needs-info): /);
-      expect(row.milestone === null || row.milestone === 28 || row.milestone === 25).toBe(true);
+      expect([null, 32, 25]).toContain(row.milestone);
     }
   });
 
@@ -540,7 +567,7 @@ describe("the plan over the founder's twelve", () => {
     const billing = plan.issues.filter((row) => row.number === 1365)[0];
     expect(billing.area).toBe("billing");
     expect(billing.labels).toContain("needs-decision");
-    expect(billing.milestoneTitle).toBe("v2.0.0 — the official release");
+    expect(billing.milestoneTitle).toBe("v2.2.0 — the member surface");
     expect(plan.issues.filter((row) => row.decisionNeeded).map((row) => row.number)).toEqual([
       1365,
     ]);
@@ -552,6 +579,121 @@ describe("the plan over the founder's twelve", () => {
     expect(table).toContain("1354");
     expect(plan.ledger.rows).toBe(12);
     expect(plan.ledger.action).toBe("create");
+  });
+});
+
+/**
+ * The destination is a *title*, never a number.
+ *
+ * The re-pool of 2026-11-26 closed milestone #28 and moved the founder flow into a freshly numbered
+ * pool, and a table carrying `milestone: 28` stopped the whole workflow dead. These cases pin the
+ * replacement: a title-prefix handle resolves against whatever open milestones the repo has, and a
+ * missing pool is a refusal that names itself and prints what it saw — never an invented number.
+ */
+describe("the destination pool is resolved by title, not by number", () => {
+  const open = [
+    { number: 25, title: "v2.deferred" },
+    { number: 32, title: "v2.2.0 — the member surface" },
+    { number: 35, title: "v2.0.0 — the acceptance certificate" },
+  ];
+
+  const labels = [
+    "area/billing",
+    "area/flow",
+    "question",
+    "enhancement",
+    "bug",
+    "needs-decision",
+    "parked",
+  ];
+
+  test("the table and PARKED_MILESTONE carry title handles, not milestone numbers", () => {
+    for (const row of AREA_TABLE) expect(typeof row.milestone).toBe("string");
+    expect(typeof PARKED_MILESTONE).toBe("string");
+    expect(DESTINATION_MILESTONE).toBe("v2.2.0");
+    expect(PARKED_MILESTONE).toBe("v2.deferred");
+  });
+
+  test("a handle resolves to whatever number the pool currently has", () => {
+    expect(resolveMilestone("v2.2.0", open)).toEqual({
+      number: 32,
+      title: "v2.2.0 — the member surface",
+    });
+    // The same pool, renumbered by a later re-pool, still resolves — the number is not the handle.
+    expect(
+      resolveMilestone("v2.2.0", [{ number: 61, title: "v2.2.0 — the member surface" }]),
+    ).toEqual({ number: 61, title: "v2.2.0 — the member surface" });
+    expect(resolveMilestone("v2.deferred", [{ number: 77, title: "v2.deferred" }])).toEqual({
+      number: 77,
+      title: "v2.deferred",
+    });
+  });
+
+  test("a handle never matches a longer version token, and a missing pool resolves to null", () => {
+    expect(titleHasHandle("v2.2.01 — a later pool", "v2.2.0")).toBe(false);
+    expect(titleHasHandle("v2.2.0 — the member surface", "v2.2.0")).toBe(true);
+    expect(resolveMilestone("v2.2.0", [{ number: 1, title: "v2.2.01 — a later pool" }])).toBeNull();
+    expect(resolveMilestone("v2.2.0", [])).toBeNull();
+  });
+
+  test("with no v2.2.0 pool the run fails by name and lists the milestones it saw", () => {
+    // The pool that a re-pool closed is gone; what remains is the parked pool.
+    const seen = [{ number: 25, title: "v2.deferred" }];
+    const plan = buildPlan([issue(1400, "The stage modal is broken", "It is broken.")], {
+      milestones: seen,
+      knownLabels: labels,
+    });
+    expect(plan.issues[0].milestoneHandle).toBe("v2.2.0");
+    expect(plan.issues[0].milestone).toBeNull();
+    expect(() => assertMilestonesOpen(plan.issues, "riolabs-ai/alignsynch-web", seen)).toThrow(
+      'milestone "v2.2.0" is not open on riolabs-ai/alignsynch-web — refusing to invent it',
+    );
+    expect(() => assertMilestonesOpen(plan.issues, "riolabs-ai/alignsynch-web", seen)).toThrow(
+      "open milestones: v2.deferred (#25)",
+    );
+  });
+
+  test("with the pool present the same issue lands there, at the number it carries", () => {
+    const plan = buildPlan([issue(1400, "The stage modal is broken", "It is broken.")], {
+      milestones: [{ number: 61, title: "v2.2.0 — the member surface" }],
+      knownLabels: labels,
+    });
+    expect(() =>
+      assertMilestonesOpen(plan.issues, "riolabs-ai/alignsynch-web", [
+        { number: 61, title: "v2.2.0 — the member surface" },
+      ]),
+    ).not.toThrow();
+    expect(plan.issues[0].milestone).toBe(61);
+    expect(plan.issues[0].milestoneTitle).toBe("v2.2.0 — the member surface");
+  });
+
+  test("a parked issue lands in v2.deferred by title, and only when that pool is open", () => {
+    const parked = issue(1401, "Aspects we should do later", "Nice to have: aspects.");
+    const withParked = buildPlan([parked], { milestones: open, knownLabels: labels });
+    expect(withParked.issues[0].milestoneHandle).toBe("v2.deferred");
+    expect(withParked.issues[0].milestone).toBe(25);
+    expect(withParked.issues[0].milestoneTitle).toBe("v2.deferred");
+
+    const withoutParked = buildPlan([parked], {
+      milestones: [{ number: 32, title: "v2.2.0 — the member surface" }],
+      knownLabels: labels,
+    });
+    expect(() =>
+      assertMilestonesOpen(withoutParked.issues, "riolabs-ai/alignsynch-web", [
+        { number: 32, title: "v2.2.0 — the member surface" },
+      ]),
+    ).toThrow('milestone "v2.deferred" is not open');
+  });
+
+  test("an issue with no milestone at all is not a refusal", () => {
+    // needs-info carries no handle, so a repo with no pools open still plans it — and writes none.
+    const plan = buildPlan(
+      [issue(1402, "APP-02 button to the demo site", "Completed Demo Relationships.")],
+      { milestones: [], knownLabels: ["area/flow", "needs-info"] },
+    );
+    expect(plan.issues[0].milestone).toBeNull();
+    expect(plan.issues[0].milestoneHandle).toBeNull();
+    expect(() => assertMilestonesOpen(plan.issues, "riolabs-ai/alignsynch-web", [])).not.toThrow();
   });
 });
 
@@ -646,7 +788,7 @@ describe("applyRow, driven against a stub gh and a stub gh-id.sh", () => {
       milestoneTitle: null,
     };
 
-    const result = applyRow(row, { milestoneTitle: "v2.0.0 — the official release" });
+    const result = applyRow(row, { milestoneTitle: "v2.2.0 — the member surface" });
     expect(result.ok).toBe(true);
 
     const calls = readFileSync(log, "utf8").trim().split("\n");
@@ -667,7 +809,7 @@ describe("applyRow, driven against a stub gh and a stub gh-id.sh", () => {
     expect(calls.join("\n")).not.toContain("gh-id app gh ");
     expect(edit).not.toContain("--remove-label");
     expect(edit).toContain("--add-label area/flow --add-label question");
-    expect(edit).toContain("--milestone v2.0.0 — the official release");
+    expect(edit).toContain("--milestone v2.2.0 — the member surface");
 
     const bodyFile = /--body-file (\S+)/.exec(edit)?.[1] ?? "";
     const written = readFileSync(bodyFile, "utf8");
@@ -703,5 +845,156 @@ describe("applyRow, driven against a stub gh and a stub gh-id.sh", () => {
     expect(String(result.reason)).toMatch(/body changed since the plan/);
     // One read and nothing else: a refused row is a row nobody wrote.
     expect(readFileSync(log, "utf8").trim().split("\n")).toHaveLength(1);
+  });
+});
+
+/**
+ * The whole CLI, `--apply`, against a stubbed `gh` and a stubbed `gh-id.sh`.
+ *
+ * The unit cases above prove the pieces; this proves the wiring the card actually asked for — the
+ * CLI fetches the open milestones, resolves `v2.2.0` and `v2.deferred` **by title**, and the write
+ * that lands carries the pool's own title (which is what `gh issue edit --milestone` takes). No
+ * network, no token, no founder issue touched.
+ */
+describe("the CLI applies by title, through a stubbed gh", () => {
+  const LABELS = ["area/flow", "bug", "enhancement", "parked", "needs-info"];
+
+  function issueRow(number: number, title: string, body: string): Record<string, unknown> {
+    return {
+      number,
+      title,
+      body,
+      author: { login: "WaltJohnsonIII" },
+      state: "OPEN",
+      updatedAt: "2026-11-27T08:00:00Z",
+      labels: [],
+      milestone: null,
+      comments: [],
+      url: `https://github.com/riolabs-ai/alignsynch/issues/${number}`,
+    };
+  }
+
+  const rows = [
+    issueRow(1400, "The stage modal is broken", "It is broken when I open the stage screen."),
+    issueRow(1401, "Aspects we should do later", "Nice to have: aspects in the editor."),
+  ];
+
+  const OPEN_MILESTONES = [
+    { number: 25, title: "v2.deferred" },
+    { number: 32, title: "v2.2.0 — the member surface" },
+  ];
+
+  function runCli(repo: string, milestones = OPEN_MILESTONES) {
+    const dir = mkdtempSync(join(tmpdir(), "triage-cli-"));
+    const fixtures = join(dir, "fixtures");
+    mkdirSync(fixtures);
+    const log = join(dir, "gh.log");
+
+    writeFileSync(join(fixtures, "milestones.json"), JSON.stringify(milestones));
+    writeFileSync(join(fixtures, "labels.json"), JSON.stringify(LABELS.map((name) => ({ name }))));
+    writeFileSync(join(fixtures, "issues.json"), JSON.stringify(rows));
+    for (const row of rows) {
+      writeFileSync(
+        join(fixtures, `view-${row.number}.json`),
+        JSON.stringify({ body: row.body, title: row.title }),
+      );
+    }
+
+    const gh = join(dir, "gh");
+    writeFileSync(
+      gh,
+      `#!/usr/bin/env bash
+printf 'gh %s\\n' "$*" >> "$TRIAGE_LOG"
+case "$1" in
+  api)
+    case "$2" in
+      *milestones*) cat "$TRIAGE_FIXTURES/milestones.json" ;;
+      *) printf '"owner/repo"\\n' ;;
+    esac
+    ;;
+  label) cat "$TRIAGE_FIXTURES/labels.json" ;;
+  issue)
+    case "$2" in
+      list)
+        case "$*" in
+          *in:title*) printf '[]\\n' ;;
+          *) cat "$TRIAGE_FIXTURES/issues.json" ;;
+        esac
+        ;;
+      view) cat "$TRIAGE_FIXTURES/view-$3.json" ;;
+    esac
+    ;;
+esac
+exit 0
+`,
+    );
+    chmodSync(gh, 0o755);
+
+    const wrapper = join(dir, "gh-id.sh");
+    writeFileSync(
+      wrapper,
+      `#!/usr/bin/env bash
+printf 'gh-id %s\\n' "$*" >> "$TRIAGE_LOG"
+if [ "$1" = "app" ] && [ "$2" = "--whoami" ]; then echo 'alignsynch-fleet[bot]'; exit 0; fi
+shift
+exec gh "$@"
+`,
+    );
+    chmodSync(wrapper, 0o755);
+    writeFileSync(log, "");
+
+    const result = spawnSync(
+      process.execPath,
+      [join(process.cwd(), "scripts/triage-founder-issues.mjs"), "--apply", "--repo", repo],
+      {
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${dir}:${process.env.PATH ?? ""}`,
+          TRIAGE_LOG: log,
+          TRIAGE_FIXTURES: fixtures,
+          GH_ID: wrapper,
+        },
+      },
+    );
+    return { result, calls: readFileSync(log, "utf8").trim().split("\n") };
+  }
+
+  test("--apply lands a founder issue in v2.2.0 and a parked one in v2.deferred, by title", () => {
+    const { result, calls } = runCli("riolabs-ai/alignsynch-web");
+    expect(result.stderr).toBe("");
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("applied 2 of 2 on riolabs-ai/alignsynch-web: #1400, #1401");
+
+    const edits = calls.filter((line) => /^gh-id app issue edit \d+ /.test(line));
+    expect(edits).toHaveLength(2);
+
+    const live = edits.find((line) => line.startsWith("gh-id app issue edit 1400 ")) ?? "";
+    expect(live).toContain("--milestone v2.2.0 — the member surface");
+    expect(live).toContain("--add-label area/flow --add-label bug");
+    expect(live).toContain("--title area/flow: The stage modal is broken");
+    // The prefix is not stacked: the claim is the founder's, once.
+    expect(live).not.toContain("area/flow: area/flow:");
+
+    const parked = edits.find((line) => line.startsWith("gh-id app issue edit 1401 ")) ?? "";
+    expect(parked).toContain("--milestone v2.deferred");
+    expect(parked).toContain("--add-label parked");
+
+    // Every write goes through the wrapper: `gh-id app gh …` would be gh's help text, not a write.
+    expect(calls.join("\n")).not.toContain("gh-id app gh ");
+  });
+
+  test("a repo whose v2.2.0 pool is gone refuses by name, exits 1, and writes nothing", () => {
+    // Same CLI, same stubs, only the milestone list differs: the pool the table routes into is closed.
+    const { result, calls } = runCli("riolabs-ai/alignsynch-web", [
+      { number: 25, title: "v2.deferred" },
+    ]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toContain(
+      'milestone "v2.2.0" is not open on riolabs-ai/alignsynch-web — refusing to invent it',
+    );
+    expect(result.stderr).toContain("open milestones: v2.deferred (#25)");
+    expect(calls.filter((line) => line.startsWith("gh-id app issue edit"))).toHaveLength(0);
   });
 });
