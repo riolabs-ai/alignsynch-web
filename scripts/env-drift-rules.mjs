@@ -46,6 +46,13 @@
  *               `tests/env-drift.test.ts` can hold each list to its own claim — a name in `names`
  *               that the manifest does not declare, or a `platform` value it does, is a mistake.
  *   `prefixes`  a family, for the values the integration writes as a group (`NEON_OBJSTORE_`)
+ *   `ci`        credentials **no deployment ever holds**: they live only in the workflow that calls
+ *               a provider (`VERCEL_TOKEN`, the prototype-catalog deploy's credential, is an
+ *               Actions secret; the Vercel project has no row for it). They are a fourth list
+ *               rather than a `names` entry because the drift comparison has nothing to compare
+ *               them against — the day is recorded so the ledger stays a complete history, and
+ *               `tests/env-drift.test.ts` holds every `ci` name to an `OUT_OF_SCOPE` row so a
+ *               deployment variable cannot be filed here to escape the comparison.
  */
 
 /** Where the declared rotations live, repo-relative. Read by the script, never by this module. */
@@ -55,7 +62,7 @@ export const DEFAULT_ROTATIONS_PATH = "data/env/rotations.json";
 export const FILE_KEYS = ["$comment", "rotations"];
 
 /** The keys one rotation may hold. Every other key is a problem, by name. */
-export const ROTATION_KEYS = ["id", "changedAt", "why", "names", "platform", "prefixes"];
+export const ROTATION_KEYS = ["id", "changedAt", "why", "names", "platform", "prefixes", "ci"];
 
 /** An env name: what a coverage entry must look like, so a value cannot be written as one. */
 const ENV_NAME = /^[A-Z][A-Z0-9_]*$/;
@@ -175,14 +182,20 @@ export function parseRotations(text) {
     const names = entry.names === undefined ? [] : entry.names;
     const platform = entry.platform === undefined ? [] : entry.platform;
     const prefixes = entry.prefixes === undefined ? [] : entry.prefixes;
-    if (!Array.isArray(names) || !Array.isArray(platform) || !Array.isArray(prefixes)) {
+    const ci = entry.ci === undefined ? [] : entry.ci;
+    if (
+      !Array.isArray(names) ||
+      !Array.isArray(platform) ||
+      !Array.isArray(prefixes) ||
+      !Array.isArray(ci)
+    ) {
       problems.push({
         where: at,
-        message: "`names`, `platform` and `prefixes` must be lists when present",
+        message: "`names`, `platform`, `prefixes` and `ci` must be lists when present",
       });
       return;
     }
-    const bad = [...names, ...platform, ...prefixes].filter(
+    const bad = [...names, ...platform, ...prefixes, ...ci].filter(
       (name) => typeof name !== "string" || !ENV_NAME.test(name),
     );
     if (bad.length > 0) {
@@ -198,7 +211,14 @@ export function parseRotations(text) {
         message: `${both.join(", ")} is declared as both a name the app reads and a platform value`,
       });
     }
-    if (names.length === 0 && platform.length === 0 && prefixes.length === 0) {
+    const twice = [...names, ...platform].filter((name) => ci.includes(name));
+    if (twice.length > 0) {
+      problems.push({
+        where: `${at}.ci`,
+        message: `${twice.join(", ")} is declared as both a deployment value and a CI-only credential — a value a deployment holds is compared, not filed here`,
+      });
+    }
+    if (names.length === 0 && platform.length === 0 && prefixes.length === 0 && ci.length === 0) {
       problems.push({
         where: at,
         message: "covers no variable — list the `names` (or `prefixes`) this rotation governs",
@@ -212,6 +232,7 @@ export function parseRotations(text) {
         names: [...new Set(names.filter((name) => typeof name === "string"))],
         platform: [...new Set(platform.filter((name) => typeof name === "string"))],
         prefixes: [...new Set(prefixes.filter((name) => typeof name === "string"))],
+        ci: [...new Set(ci.filter((name) => typeof name === "string"))],
       });
     }
   });
@@ -223,6 +244,10 @@ export function parseRotations(text) {
  * prefix wins between two. Deterministic, because a variable is covered by at most one rotation —
  * a name claimed twice would print two accusations for one stale value, and the fix for that is a
  * narrower prefix, not a merged message.
+ *
+ * `ci` is deliberately not consulted: no deployment holds those names, so there is no row to match
+ * and nothing to accuse. Filing one there is how its rotation date is recorded, not how it is
+ * checked — that needs a provider probe, which is a different card.
  */
 export function rotationFor(name, rotations) {
   const exact = rotations.find(
@@ -324,7 +349,12 @@ export function staleLines(stale) {
 /** The census line every run prints, green or red. */
 export function summary(report, rotations, { target = "production" } = {}) {
   const declared = rotations.reduce(
-    (total, entry) => total + entry.names.length + entry.platform.length + entry.prefixes.length,
+    (total, entry) =>
+      total +
+      entry.names.length +
+      entry.platform.length +
+      entry.prefixes.length +
+      (entry.ci?.length ?? 0),
     0,
   );
   return (
