@@ -104,6 +104,7 @@ export const OPERATOR_ACTION_FILES: readonly string[] = [
   "app/(mainlayout)/admin/instances/[id]/actions.ts",
   "app/(mainlayout)/admin/instances/[id]/report/actions.ts",
   "app/(mainlayout)/admin/review/actions.ts",
+  "app/(mainlayout)/admin/settings/actions.ts",
 ];
 
 /**

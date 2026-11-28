@@ -174,6 +174,11 @@ export const adminHealthPageCopy: PageCopy = zPageCopy.parse({
         { id: "recorder", label: "Written by {command}" },
         { id: "config-env", label: "{variable} · this environment" },
         { id: "config-default", label: "default · {variable} is not set" },
+        {
+          id: "config-setting",
+          label: "{variable} · a stored setting",
+          body: "Set on `/admin/settings` rather than in this deployment's environment. The environment wins when both carry the key, so a stored value here is not shadowed.",
+        },
       ],
     },
     {

@@ -23,7 +23,7 @@
  * request, so the body is never printed.
  */
 import { brand } from "@/data/brand";
-import { DEFAULT_FROM, type MailOutcome, mailEndpoint } from "@/lib/flow/email";
+import { type MailOutcome, resolvedMailSettings } from "@/lib/flow/email";
 import type { ContactSubmission } from "./validation";
 
 /** The message as it reaches the mailbox: the sender's words, under a subject that names them. */
@@ -86,11 +86,11 @@ export async function sendContactMessage(
     );
     return "unset";
   }
-  const from = process.env.RESEND_FROM?.trim() || DEFAULT_FROM;
+  const { from, endpoint } = await resolvedMailSettings();
 
   let response: Response;
   try {
-    response = await fetchImpl(mailEndpoint(), {
+    response = await fetchImpl(endpoint, {
       method: "POST",
       headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
       body: JSON.stringify({

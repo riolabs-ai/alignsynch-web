@@ -72,6 +72,11 @@ export const operatorActionModules: readonly OperatorActionModule[] = [
     module: "app/(mainlayout)/admin/review/actions.ts",
     gates: ["requireAdminProduct", "requireOperator"],
   },
+  {
+    route: "/admin/settings",
+    module: "app/(mainlayout)/admin/settings/actions.ts",
+    gates: ["requireAdminProduct", "requireOperator"],
+  },
 ] as const;
 
 /** The module paths alone — what the audit matches its walk against. */

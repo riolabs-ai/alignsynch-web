@@ -45,11 +45,13 @@ import { PlatformHealth } from "@/components/admin/platform-health";
 import { adminHealthPageCopy } from "@/data/pages/admin-health";
 import { requireAdmin } from "@/lib/auth/require-role";
 import { requireAdminProduct, requireOperator } from "@/lib/brand-boundary";
+import { resolveGovernedSettings } from "@/lib/admin/settings/values";
 import {
   ADMIN_HEALTH_PATH,
   type HealthFacts,
   HealthRecordUnreadable,
   healthFactsOf,
+  knobsOf,
   readPlatformHealthRecord,
 } from "@/lib/admin/platform-health";
 
@@ -72,7 +74,11 @@ export default async function AdminHealthPage() {
   try {
     // The one clock in this screen (#599): the record's age is not derivable from the record, and
     // a render that read the clock twice could straddle its own freshness boundary.
-    facts = healthFactsOf(readPlatformHealthRecord(), new Date().toISOString());
+    facts = healthFactsOf(
+      readPlatformHealthRecord(),
+      new Date().toISOString(),
+      knobsOf((await resolveGovernedSettings()).resolutions),
+    );
   } catch (error) {
     if (!(error instanceof HealthRecordUnreadable)) throw error;
     console.error("admin-health: the health record could not be read", error);

@@ -36,6 +36,33 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { zPlatformHealthRecord, type PlatformHealthRecord } from "@/content/platform-health";
+import {
+  type GovernedResolution,
+  PLATFORM_HEALTH_DRIFT_LIMIT,
+  PLATFORM_HEALTH_DRIFT_LIMIT_FALLBACK,
+  PLATFORM_HEALTH_FRESHNESS_HOURS,
+  PLATFORM_HEALTH_FRESHNESS_HOURS_FALLBACK,
+  type SettingSource,
+  governedSpecOf,
+  resolveFromEnv,
+} from "@/lib/admin/settings/governed";
+
+/**
+ * The two governed variables this module reads, as specs.
+ *
+ * They come from the registry rather than from a literal here because the settings form, the
+ * precedence parser and this panel must agree on the default and the name: `governedSpecOf` throws
+ * for a name the registry does not carry, so a rename cannot leave this file reading a knob the
+ * form no longer draws.
+ */
+const DRIFT_LIMIT_SPEC = requiredSpec(PLATFORM_HEALTH_DRIFT_LIMIT);
+const FRESHNESS_SPEC = requiredSpec(PLATFORM_HEALTH_FRESHNESS_HOURS);
+
+function requiredSpec(key: string) {
+  const spec = governedSpecOf(key);
+  if (spec === null) throw new Error(`platform-health: ${key} is not a governed setting`);
+  return spec;
+}
 
 if (typeof window !== "undefined") {
   throw new Error(
@@ -50,10 +77,10 @@ export const ADMIN_HEALTH_PATH = "/admin/health";
 export const PLATFORM_HEALTH_RECORD_PATH = "data/health/platform-health.json";
 
 /** The knob an operator turns to move the deploy alarm. Defaulted, never required. */
-export const DRIFT_LIMIT_VARIABLE = "PLATFORM_HEALTH_DRIFT_LIMIT";
+export const DRIFT_LIMIT_VARIABLE = PLATFORM_HEALTH_DRIFT_LIMIT;
 
 /** Where the alarm starts, when the variable says nothing. */
-export const DEFAULT_DRIFT_LIMIT = 5;
+export const DEFAULT_DRIFT_LIMIT = Number.parseInt(PLATFORM_HEALTH_DRIFT_LIMIT_FALLBACK, 10);
 
 /* ------------------------------------------------------------------ *
  * A measured fact
@@ -309,46 +336,42 @@ export function releaseTruthOf(facts: {
 
 export interface DriftLimit {
   readonly limit: number;
-  readonly origin: "env" | "default";
+  readonly origin: SettingSource;
   readonly variable: string;
   /** A configured value that is not a count. Reported, never silently replaced. */
   readonly problem: string | null;
 }
 
 /**
- * The alarm's threshold.
+ * The alarm's threshold, from a resolved value.
  *
  * `PLATFORM_HEALTH_DRIFT_LIMIT=0` is a legal setting — "production must be exactly `main`" — so the
- * parser's only jobs are to refuse a value that is not a non-negative integer and to say so. A bad
- * value falls back to the default **and** carries the refusal, so the screen reads "5, and your
- * setting was ignored because it is not a count" rather than pretending the operator's knob worked.
+ * parser's only job is to read a count that `lib/admin/settings/governed.ts` already checked. A bad
+ * value never reaches here: the resolution falls to the default and carries the refusal, so the
+ * screen reads "5, and your setting was ignored because it is not a count" rather than pretending
+ * the operator's knob worked. `origin` names which of the three sources answered, so a stored
+ * override is visible on the panel as a stored override.
+ */
+export function driftLimitOf(resolution: GovernedResolution): DriftLimit {
+  return {
+    limit: Number.parseInt(resolution.value, 10),
+    origin: resolution.source,
+    variable: DRIFT_LIMIT_VARIABLE,
+    problem: resolution.problem,
+  };
+}
+
+/**
+ * The same, from an env record alone — no store, no database.
+ *
+ * The gate, `pnpm build` and a fresh clone have no `setting` table to read, and the panel behaves
+ * identically there because the precedence without a stored row is exactly this. Kept as a named
+ * export because the pure tests drive it and because it is the whole of `env > default`.
  */
 export function driftLimitFromEnv(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): DriftLimit {
-  const raw = env[DRIFT_LIMIT_VARIABLE];
-  if (raw === undefined || raw.trim() === "") {
-    return {
-      limit: DEFAULT_DRIFT_LIMIT,
-      origin: "default",
-      variable: DRIFT_LIMIT_VARIABLE,
-      problem: null,
-    };
-  }
-  if (!/^\d+$/.test(raw.trim())) {
-    return {
-      limit: DEFAULT_DRIFT_LIMIT,
-      origin: "default",
-      variable: DRIFT_LIMIT_VARIABLE,
-      problem: `${DRIFT_LIMIT_VARIABLE}="${raw}" is not a whole number of commits; the default applies`,
-    };
-  }
-  return {
-    limit: Number.parseInt(raw.trim(), 10),
-    origin: "env",
-    variable: DRIFT_LIMIT_VARIABLE,
-    problem: null,
-  };
+  return driftLimitOf(resolveFromEnv(DRIFT_LIMIT_SPEC, env));
 }
 
 export interface DeployDrift {
@@ -382,46 +405,43 @@ export function deployDriftOf(input: { behind: Measured<number>; limit: DriftLim
  * measurement in it, so a record does not have to be re-recorded when an operator moves the knob,
  * and `content/platform-health.ts`'s shape is unchanged by this assertion.
  */
-export const DEFAULT_FRESHNESS_HOURS = 72;
+export const DEFAULT_FRESHNESS_HOURS = Number.parseInt(
+  PLATFORM_HEALTH_FRESHNESS_HOURS_FALLBACK,
+  10,
+);
 
 /** The knob an operator turns to move the freshness window. */
-export const FRESHNESS_VARIABLE = "PLATFORM_HEALTH_FRESHNESS_HOURS";
+export const FRESHNESS_VARIABLE = PLATFORM_HEALTH_FRESHNESS_HOURS;
 
 export interface FreshnessWindow {
   readonly hours: number;
-  readonly origin: "env" | "default";
+  readonly origin: SettingSource;
   readonly variable: string;
   /** A configured value that is not a count. Reported, never silently replaced. */
   readonly problem: string | null;
 }
 
-/** `PLATFORM_HEALTH_FRESHNESS_HOURS=0` is legal ("the record must be from this minute"). */
+/**
+ * The window, from a resolved value.
+ *
+ * `PLATFORM_HEALTH_FRESHNESS_HOURS=0` is legal ("the record must be from this minute"), and the
+ * count has already been checked by the resolution — a value that is not a number of hours never
+ * reaches here, and the sentence it fell back with travels as `problem`.
+ */
+export function freshnessWindowOf(resolution: GovernedResolution): FreshnessWindow {
+  return {
+    hours: Number.parseInt(resolution.value, 10),
+    origin: resolution.source,
+    problem: resolution.problem,
+    variable: FRESHNESS_VARIABLE,
+  };
+}
+
+/** The same, from an env record alone — `env > default`, with no store to consult. */
 export function freshnessWindowFromEnv(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): FreshnessWindow {
-  const raw = env[FRESHNESS_VARIABLE];
-  if (raw === undefined || raw.trim() === "") {
-    return {
-      hours: DEFAULT_FRESHNESS_HOURS,
-      origin: "default",
-      problem: null,
-      variable: FRESHNESS_VARIABLE,
-    };
-  }
-  if (!/^\d+$/.test(raw.trim())) {
-    return {
-      hours: DEFAULT_FRESHNESS_HOURS,
-      origin: "default",
-      problem: `${FRESHNESS_VARIABLE}="${raw}" is not a whole number of hours; the default applies`,
-      variable: FRESHNESS_VARIABLE,
-    };
-  }
-  return {
-    hours: Number.parseInt(raw.trim(), 10),
-    origin: "env",
-    problem: null,
-    variable: FRESHNESS_VARIABLE,
-  };
+  return freshnessWindowOf(resolveFromEnv(FRESHNESS_SPEC, env));
 }
 
 export interface RecordFreshness {
@@ -482,15 +502,26 @@ export interface HealthFacts {
   readonly freshness: RecordFreshness;
 }
 
+/** The two governed knobs this screen reads, resolved once by the page (`env > setting > default`). */
+export interface HealthKnobs {
+  readonly drift: GovernedResolution;
+  readonly freshness: GovernedResolution;
+}
+
 /**
  * `nowIso` is handed in rather than read here: the page decides "now" exactly once per request
  * (it is the only place a clock is allowed) and this function stays a pure derivation of the
  * record, the checkout and that instant (#599).
+ *
+ * `knobs` is handed in for the same reason: the precedence is a database read, so the page
+ * resolves the two governed values and this function stays pure over them. A caller with no store
+ * (the gate, the build, a test) passes `knobsFromEnv()`, which is the same precedence with the
+ * middle arm empty.
  */
 export function healthFactsOf(
   record: PlatformHealthRecord,
   nowIso: string,
-  env: Readonly<Record<string, string | undefined>> = process.env,
+  knobs: HealthKnobs,
 ): HealthFacts {
   const tree = readTreeFacts(record);
   const production = record.production;
@@ -502,8 +533,38 @@ export function healthFactsOf(
   });
   const drift = deployDriftOf({
     behind: readBehindMain(record, production.commit),
-    limit: driftLimitFromEnv(env),
+    limit: driftLimitOf(knobs.drift),
   });
-  const freshness = freshnessOf(record, nowIso, freshnessWindowFromEnv(env));
+  const freshness = freshnessOf(record, nowIso, freshnessWindowOf(knobs.freshness));
   return { drift, freshness, record, release, tree };
+}
+
+/**
+ * The two knobs from a resolved set — the shape the page has after one read of the store.
+ *
+ * Throws when the registry no longer carries one of the two: a panel silently reading a default
+ * because a rename dropped its knob would be a wrong answer, not an empty one.
+ */
+export function knobsOf(resolutions: readonly GovernedResolution[]): HealthKnobs {
+  const drift = resolutions.find((resolution) => resolution.key === DRIFT_LIMIT_VARIABLE);
+  const freshness = resolutions.find((resolution) => resolution.key === FRESHNESS_VARIABLE);
+  if (drift === undefined || freshness === undefined) {
+    throw new Error("platform-health: the governed set no longer carries both health knobs");
+  }
+  return { drift, freshness };
+}
+
+/**
+ * The two knobs from an env record alone — no store, no database.
+ *
+ * The same precedence with nothing stored: this is what the gate, `pnpm build` and a fresh clone
+ * resolve, and it is the shape `tests/platform-health.test.ts` drives without a connection.
+ */
+export function knobsFromEnv(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+): HealthKnobs {
+  return {
+    drift: resolveFromEnv(DRIFT_LIMIT_SPEC, env),
+    freshness: resolveFromEnv(FRESHNESS_SPEC, env),
+  };
 }

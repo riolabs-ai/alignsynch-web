@@ -24,7 +24,20 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { ReactElement } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+/**
+ * The form's action is mocked, and that is not a shortcut.
+ *
+ * The component imports its server action so the `<form action={…}>` can be rendered; that module
+ * reaches `lib/auth/require-role`, whose `@neon/auth` import resolves `next/headers` in a way
+ * vitest's resolver rejects inside this workspace layout. What this file asserts is *markup* — which
+ * fields exist and which values they carry — so the action is replaced by a no-op and
+ * `tests/admin-settings-write.test.ts` proves the write itself against a fake transaction.
+ */
+vi.mock("@/app/(mainlayout)/admin/settings/actions", () => ({
+  updateSettingAction: async () => {},
+}));
 
 import { INTEGRATIONS } from "@/data/integrations";
 import { adminSettingsPageCopy } from "@/data/pages/admin-settings";
@@ -118,6 +131,97 @@ describe("the rendered tree carries no value", () => {
     const html = await render();
     const rows = html.match(/data-settings-variable="/g) ?? [];
     expect(rows).toHaveLength(ENV_ROWS.length + OUT_OF_SCOPE.length);
+  });
+});
+
+/**
+ * The governed band (#1443 §11) — the one place a value is rendered, and the reasons it cannot be a
+ * secret.
+ *
+ * The directory's band is proven above: no control at all. This band *does* carry a form, so the
+ * claims have to be sharper than "no markup":
+ *
+ *   - **the fields are exactly the writable governed keys**, by name — a field for a fifth key, or
+ *     for a vault-sourced row, fails the set comparison rather than hiding in a screenshot;
+ *   - **no credential-shaped environment value appears in the markup**, the same sweep the directory
+ *     is held to, run over the band that actually renders values;
+ *   - **a refused key draws its reason and no control**, so `NAV_SOURCE` is visible as "cannot be
+ *     overridden at runtime" instead of silently absent.
+ */
+describe("the governed band renders no secret", () => {
+  /** The band, rendered from the real registry with this process's environment (or one handed in). */
+  async function renderGoverned(
+    env: Readonly<Record<string, string | undefined>> | null = null,
+    settingsOverrides: Partial<import("@/lib/admin/settings/values").GovernedSettings> = {},
+  ): Promise<string> {
+    const { GovernedSettingsView } = await import("@/components/admin/settings/governed-settings");
+    const { governedSettingsFromEnv } = await import("@/lib/admin/settings/values");
+    const { renderToStaticMarkup } = await import("react-dom/server");
+    const { createElement } = await import("react");
+    const settings =
+      env === null
+        ? governedSettingsFromEnv()
+        : { ...governedSettingsFromEnv(env), ...settingsOverrides };
+    return renderToStaticMarkup(
+      createElement(GovernedSettingsView, {
+        copy: adminSettingsPageCopy,
+        settings,
+        unreadable: null,
+        status: null,
+        action: async () => {},
+      }) as ReactElement,
+    );
+  }
+
+  it("marks a row the environment also carries as shadowed, and shows the env value", async () => {
+    // `RESEND_FROM` carried by the deployment and stored in the table: the environment wins, and the
+    // row says so before anyone types — an edit that silently lost would be the worst outcome.
+    const html = await renderGoverned(
+      { RESEND_FROM: "env@example.com" },
+      {
+        store: "read",
+        resolutions: [
+          {
+            key: "RESEND_FROM",
+            value: "env@example.com",
+            source: "env",
+            shadowedByEnv: true,
+            stored: "stored@example.com",
+            problem: null,
+            writable: true,
+          },
+        ],
+      },
+    );
+    expect(html).toContain("data-settings-loses-to-env");
+    expect(html).toContain("shadowed by env");
+    expect(html).toContain('value="env@example.com"');
+    expect(html).toContain("Stored: stored@example.com");
+  });
+
+  it("draws a field for the four writable keys and for no other name", async () => {
+    const { WRITABLE_KEYS } = await import("@/lib/admin/settings/governed");
+    const html = await renderGoverned();
+    const fields = [...html.matchAll(/<input[^>]*name="value"/g)];
+    const rows = [...html.matchAll(/data-settings-key="([A-Z0-9_]+)"/g)].map((match) => match[1]);
+    expect(fields.length).toBe(WRITABLE_KEYS.length);
+    expect(rows.sort()).toEqual([...WRITABLE_KEYS, "DEMO_ALLOW_PRODUCTION", "NAV_SOURCE"].sort());
+  });
+
+  it("carries no credential-shaped environment value into the markup", async () => {
+    const html = await renderGoverned();
+    const SECRET_NAME = /(SECRET|TOKEN|PASSWORD|API_KEY|ACCESS_KEY|PRIVATE|_PASS$)/;
+    for (const [name, value] of Object.entries(process.env)) {
+      if (value === undefined || value.length < 8 || !SECRET_NAME.test(name)) continue;
+      if (html.includes(value)) throw new Error(`the governed band carries ${name}'s value`);
+    }
+  });
+
+  it("draws a refused key with its reason and no control", async () => {
+    const html = await renderGoverned();
+    expect(html).toContain("data-settings-fixed-reason");
+    expect(html).toContain("NAV_SOURCE");
+    expect(html).toContain("inlined into the client bundle");
   });
 });
 

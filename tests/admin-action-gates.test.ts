@@ -117,14 +117,14 @@ describe("every exported admin action opens with its page's capability gates", (
     ).toEqual([]);
   });
 
-  it("counts the surface: eight modules, twenty-four actions, seven operator modules", () => {
+  it("counts the surface: nine modules, twenty-five actions, eight operator modules", () => {
     // A census, not a promise: the numbers move only when a module is added or an action is
     // exported, and both are the change this suite exists to see.
     expect(audit.census).toEqual({
-      modules: 8,
-      actions: 24,
-      gated: 24,
-      operatorModules: 7,
+      modules: 9,
+      actions: 25,
+      gated: 25,
+      operatorModules: 8,
     });
   });
 
@@ -155,9 +155,9 @@ describe("the action table agrees with the pages it names", () => {
     }
   });
 
-  it("the seven operator modules are the seven the issue names", () => {
-    expect(OPERATOR_ACTION_MODULES).toHaveLength(7);
-    expect(new Set(OPERATOR_ACTION_MODULES).size).toBe(7);
+  it("the eight operator modules are the eight the issue names", () => {
+    expect(OPERATOR_ACTION_MODULES).toHaveLength(8);
+    expect(new Set(OPERATOR_ACTION_MODULES).size).toBe(8);
   });
 });
 

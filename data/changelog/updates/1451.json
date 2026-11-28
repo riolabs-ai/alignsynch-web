@@ -1,0 +1,9 @@
+{
+  "pr": 1451,
+  "date": "2026-11-26",
+  "area": "admin",
+  "summary": "`/admin/settings` gains its deferred write path: a `setting` table, an `env > setting > default` read, and an audited form for four governed non-secret keys, with the two a stored value could not move drawn as refused rows.",
+  "reader_impact": "An admin moves the drift alarm, the freshness window, the From address or the mail endpoint from the browser, sees when the environment shadows an edit, and reads both sides of each change in the audit log.",
+  "specs": ["docs/specs/settings-integrations.md", "docs/ui-registry.md"],
+  "risk": "medium"
+}

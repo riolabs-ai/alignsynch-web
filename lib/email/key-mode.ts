@@ -33,7 +33,7 @@
  * Pure: no `process`, no I/O. `mailKeyMode()` defaults to `process.env`, and a test passes its own
  * record.
  */
-import { mailEndpointIsCapture, type MailEnv } from "@/lib/flow/email";
+import { endpointIsCapture, mailEndpointIsCapture, type MailEnv } from "@/lib/flow/email";
 
 /** The four states, in the order the screen's banner table names them. */
 export const MAIL_KEY_MODES = ["live", "test", "captured", "unset"] as const;
@@ -59,18 +59,28 @@ function looksLikeATestKey(key: string, declared: string): boolean {
 }
 
 /**
- * The mode, from an env record.
+ * The mode, from an env record — and, when the caller has resolved it, from the endpoint a stored
+ * setting may have moved.
+ *
+ * `endpoint` is the second argument rather than a second function because the question is one
+ * question: `RESEND_ENDPOINT` is a governed setting since `/admin/settings` gained its write path
+ * (#1443 §11), and a deployment whose endpoint came from the `setting` table must answer
+ * `captured` for the same reason one set from the environment does — the banner and the refusal
+ * describe where mail actually goes, not where an env var says it goes. A caller that has not
+ * resolved one passes nothing and the environment is read, which is the pre-existing behaviour.
  *
  * `RESEND_KEY_MODE=live` is accepted and changes nothing — `live` is already what an unmarked key
  * resolves to. It is documented rather than required so an operator can state the mode without a
  * second code path to keep true, and it never overrides a test marker or a capture endpoint.
  */
-export function mailKeyMode(env: MailEnv = process.env): MailKeyMode {
+export function mailKeyMode(env: MailEnv = process.env, endpoint?: string): MailKeyMode {
   const key = (env.RESEND_API_KEY ?? "").trim();
   if (key === "") return "unset";
   const declared = (env.RESEND_KEY_MODE ?? "").trim().toLowerCase();
   if (looksLikeATestKey(key, declared)) return "test";
-  if (mailEndpointIsCapture(env)) return "captured";
+  if (endpoint === undefined ? mailEndpointIsCapture(env) : endpointIsCapture(endpoint)) {
+    return "captured";
+  }
   return "live";
 }
 
