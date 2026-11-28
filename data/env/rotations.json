@@ -1,5 +1,5 @@
 {
-  "$comment": "When each credential set last changed — dates only, never what it changed to. `pnpm env:drift` compares Vercel production's `updatedAt` against these and refuses a release cut when a governed variable is older. A rotation entry names the variables it governs: `names` are rows in scripts/env-manifest.ts, `platform` are values the deployment holds that no app code reads (the provider's own runtime consumes them), `prefixes` cover a family. Adding a set is one reviewed entry; moving a date to silence a red run is not a rotation.",
+  "$comment": "When each credential set last changed — dates only, never what it changed to. `pnpm env:drift` compares Vercel production's `updatedAt` against these and refuses a release cut when a governed variable is older. A rotation entry names the variables it governs: `names` are rows in scripts/env-manifest.ts, `platform` are values the deployment holds that no app code reads (the provider's own runtime consumes them), `prefixes` cover a family, and `ci` are credentials only a workflow ever holds (an Actions secret with no deployment row). Adding a set is one reviewed entry; moving a date to silence a red run is not a rotation.",
   "rotations": [
     {
       "id": "neon-account",
@@ -16,6 +16,12 @@
       ],
       "platform": ["NEON_AUTH_JWKS_URL"],
       "prefixes": ["NEON_OBJSTORE_"]
+    },
+    {
+      "id": "vercel-token",
+      "changedAt": "2026-11-28",
+      "why": "The Vercel token the prototype-catalog deploy authenticates with stopped working when the account moved on 2026-11-24; the prototype catalog then went red on every push from 2026-11-27 and stayed red until a fresh token was minted and written to the repository's Actions secret on 2026-11-28. It is a `ci` entry, not a `names` one: only the workflow ever holds it and the Vercel project carries no row for it, so `env:drift` records the day without a deployment value to compare.",
+      "ci": ["VERCEL_TOKEN"]
     }
   ]
 }

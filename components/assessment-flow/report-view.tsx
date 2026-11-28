@@ -35,6 +35,7 @@
  * No client code: a screen that only reads has no handlers. The words are
  * `data/pages/assessment-relationship-report.ts` (E23, budget 0).
  */
+import { TermHelp } from "@/components/assessment-flow/term-help";
 import { Chip } from "@/components/ui/badge";
 import type { OpinionKind } from "@/content/assessment";
 import {
@@ -111,50 +112,60 @@ function OpinionMatrix({
   copy: typeof relationshipReportPageCopy;
 }) {
   const matrix = sectionOf(copy, "matrix");
-  const gaps = sectionOf(copy, "gaps");
   const kinds = opinionKindsFor(mode);
   const parties: readonly ReportedParty[] = [row.left, row.right];
 
   return (
-    <table className="mt-3 w-full border-collapse text-sm" data-opinion-matrix="true">
-      <caption className="sr-only">{`${row.prompt} — ${matrix.heading ?? ""}`}</caption>
-      <thead>
-        <tr className="border-b border-border">
-          <th scope="col" className={COLUMN}>
-            {itemLabel(matrix, "party")}
-          </th>
-          {kinds.map((kind) => (
-            <th key={kind} scope="col" className={`${COLUMN} px-2 align-top`}>
-              <span className="block">{OPINION_LABELS[kind]}</span>
-              <span className="block font-normal normal-case text-muted-foreground">
-                {OPINION_DEFINITIONS[kind]}
-              </span>
+    <div className="mt-3 space-y-1">
+      {/*
+        #1270 — the matrix's own heading, drawn, with the term it titles glossed beside it. It was
+        a screen-reader-only caption before: the table had a name no reader could see, and the word
+        "Opinion" went undefined on the one screen that prints four of them per Aspect.
+      */}
+      <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {matrix.heading}
+        <TermHelp term={"opinion"} />
+      </p>
+      <table className="w-full border-collapse text-sm" data-opinion-matrix="true">
+        <caption className="sr-only">{`${row.prompt} — ${matrix.heading ?? ""}`}</caption>
+        <thead>
+          <tr className="border-b border-border">
+            <th scope="col" className={COLUMN}>
+              {itemLabel(matrix, "party")}
             </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody className="divide-y divide-border">
-        {parties.map((party) => (
-          <tr key={party.role} data-opinion-party={party.role}>
-            <th scope="row" className="py-1.5 pr-3 text-left font-medium text-foreground">
-              {party.name}
-            </th>
-            {kinds.map((kind) => {
-              const value = party.opinions[kind];
-              return (
-                <td
-                  key={kind}
-                  data-opinion-value={value === undefined ? "unscored" : String(value)}
-                  className="px-2 py-1.5 tabular-nums text-foreground"
-                >
-                  {value === undefined ? itemLabel(matrix, "unanswered") : value}
-                </td>
-              );
-            })}
+            {kinds.map((kind) => (
+              <th key={kind} scope="col" className={`${COLUMN} px-2 align-top`}>
+                <span className="block">{OPINION_LABELS[kind]}</span>
+                <span className="block font-normal normal-case text-muted-foreground">
+                  {OPINION_DEFINITIONS[kind]}
+                </span>
+              </th>
+            ))}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {parties.map((party) => (
+            <tr key={party.role} data-opinion-party={party.role}>
+              <th scope="row" className="py-1.5 pr-3 text-left font-medium text-foreground">
+                {party.name}
+              </th>
+              {kinds.map((kind) => {
+                const value = party.opinions[kind];
+                return (
+                  <td
+                    key={kind}
+                    data-opinion-value={value === undefined ? "unscored" : String(value)}
+                    className="px-2 py-1.5 tabular-nums text-foreground"
+                  >
+                    {value === undefined ? itemLabel(matrix, "unanswered") : value}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
@@ -183,8 +194,10 @@ function GapTable({
 
   return (
     <div className="mt-4" data-gap-group={group.id}>
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
         {group.heading}
+        {/* #1270 — the group heading names the Gap, so the term is glossed here. */}
+        <TermHelp term={"gap"} />
       </h3>
       <table className="mt-1 w-full border-collapse">
         <caption className="sr-only">{`${row.prompt} — ${group.heading}`}</caption>

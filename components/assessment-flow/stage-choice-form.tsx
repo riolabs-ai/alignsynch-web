@@ -36,6 +36,9 @@
 import { useState } from "react";
 import type { ReactNode } from "react";
 
+import { TermHelp } from "@/components/assessment-flow/term-help";
+import type { TermId } from "@/content/terms";
+
 /** One option of a single-select group: the value stored, the word, and what it does. */
 export interface ChoiceOption {
   readonly value: string;
@@ -51,6 +54,12 @@ export interface ChoiceGroup {
   /** The radio `name` — and the key into `selected`. */
   readonly name: string;
   readonly legend: string;
+  /**
+   * The key term this group asks for, glossed by `TermHelp` beside the legend (#1270): `mode` on
+   * Opinions Mode and `setting` on Alignment Setting. The definition itself is
+   * `content/terms.ts`'s, so the screen and every other surface read one sentence.
+   */
+  readonly term: TermId;
   readonly options: readonly ChoiceOption[];
   /**
    * The fixture's `{field} is required.` sentence with this group's own label already filled in.
@@ -195,7 +204,11 @@ function ChoiceFieldset({
       className="grid content-start gap-2 rounded-lg border border-gray-200 p-4 text-sm dark:border-gray-700"
     >
       <legend className="font-medium text-gray-800 dark:text-gray-100">
-        {group.legend}
+        <span className="inline-flex items-center gap-1.5 align-middle">
+          {group.legend}
+          {/* #1270 — the term's short definition, reachable by keyboard and by tap. */}
+          <TermHelp term={group.term} />
+        </span>
         {group.badge === undefined ? null : (
           <span className="ml-2 rounded-full bg-amber-50 px-2 py-0.5 align-middle text-xs font-medium text-amber-700 dark:bg-amber-950 dark:text-amber-300">
             {group.badge}
