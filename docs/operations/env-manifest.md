@@ -160,8 +160,10 @@ while production served every request, so nothing failed and nothing said so.
 
 `data/env/rotations.json` records **when** each credential set changed and **which variables it
 governs** — `names` the app reads, `platform` values the provider's own runtime consumes
-(`NEON_AUTH_JWKS_URL`), `prefixes` for a family. Dates only: no value, no prefix of one, no hash has
-anywhere to live in that file, and an unknown key is refused by name.
+(`NEON_AUTH_JWKS_URL`), `prefixes` for a family, `ci` for a credential only a workflow holds (an
+Actions secret such as `VERCEL_TOKEN`, which no deployment row exists to compare). Dates only: no
+value, no prefix of one, no hash has anywhere to live in that file, and an unknown key is refused by
+name.
 
 ```bash
 pnpm env:drift                            # production, against data/env/rotations.json
